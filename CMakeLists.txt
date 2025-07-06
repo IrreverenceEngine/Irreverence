@@ -26,6 +26,7 @@ target_link_libraries(irreverence PRIVATE
 
 target_include_directories(irreverence PUBLIC
     src/
+    src/Thirdparty
     vendor/glm/glm
     vendor/bgfx.cmake/bgfx/include
     vendor/SDL/include

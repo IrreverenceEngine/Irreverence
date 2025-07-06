@@ -52,12 +52,6 @@ namespace IR {
         }
     }
 
-    UInt32 CVar::GetFlags() const IR_RETURN(m_Flags)
-
-    CVar::Type CVar::GetType() const IR_RETURN(m_Type)
-
-    std::string CVar::GetName() const IR_RETURN(m_Name)
-
     void CVar::SetBool(const bool& v)
     {
         if (m_Type != CVar::Type::Bool) {
@@ -113,17 +107,6 @@ namespace IR {
             m_Value.as_string[len] = '\0';
             memcpy(m_Value.as_string, v, len);
         }
-    }
-
-    bool CVar::GetBool() const IR_RETURN(m_Value.as_bool)
-
-    Int64 CVar::GetInt64() const IR_RETURN(m_Value.as_int64)
-
-    Float64 CVar::GetFloat64() const IR_RETURN(m_Value.as_float64)
-
-    std::string CVar::GetString() const
-    {
-        return std::string(m_Value.as_string);
     }
 
     CVar* CVar::Get(const char* name)

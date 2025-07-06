@@ -1,30 +1,23 @@
 #include <IR_Input.hpp>
 
+#include <unordered_map>
+
 namespace IR::Input {
 
-    static UInt8 s_KeyStates[MAX_KEY];
-    static UInt8 s_MButtonStates[MAX_MBUTTON];
+    static std::unordered_map<UInt32, UInt8> s_KeyStates;
+    static UInt8 s_MButtonStates[(UInt8)MButton::_COUNT] = { 0 };
 
-    static glm::ivec2 s_MOldPos;
-    static glm::ivec2 s_MPos;
-
-    void Init()
-    {
-        memset(s_KeyStates, 0, sizeof(s_KeyStates));
-        memset(s_MButtonStates, 0, sizeof(s_MButtonStates));
-
-        s_MOldPos = glm::vec2(0);
-        s_MPos = glm::vec2(0);
-    }
+    static glm::ivec2 s_MOldPos = glm::vec2(0);
+    static glm::ivec2 s_MPos = glm::vec2(0);
 
     void Update()
     {
-        for (UInt32 i = 0; i < IR_ARRLEN(s_KeyStates); i++) {
-            s_KeyStates[i] &= 0x2; // Clear pressed state.
+        for (auto& kv : s_KeyStates) {
+            kv.second &= 0x2;
         }
 
         for (UInt32 i = 0; i < IR_ARRLEN(s_MButtonStates); i++) {
-            s_MButtonStates[i] &= 0x2; // Clear pressed state.
+            s_MButtonStates[i] &= 0x2;
         }
 
         s_MOldPos = s_MPos;
@@ -32,31 +25,28 @@ namespace IR::Input {
 
     void KeyEvent(Key key, bool down)
     {
-        UInt8 iKey = (UInt8)key;
-        if (iKey >= MAX_KEY) {
-            return;
-        }
-
+        UInt32 iKey = (UInt32)key;
         UInt8& state = s_KeyStates[iKey];
 
         if (down) {
-            state |= 0x2;
-        } else {
-            if (state & 0x2) {
-                state |= 0x1;
+            if ((state & 0x2) == 0) {
+                state = 0x1;
             }
 
-            state &= ~0x2;
+            state |= 0x2;
+        } else {
+            state = 0x0;
         }
     }
 
-    bool IsKeyPressed(Key key) IR_RETURN(s_KeyStates[(UInt8)key] & 0x1)
-    bool IsKeyDown(Key key) IR_RETURN(s_KeyStates[(UInt8)key] & 0x2)
+    bool IsKeyPressed(Key key) IR_RETURN(s_KeyStates[(UInt32)key] & 0x1)
+
+    bool IsKeyDown(Key key) IR_RETURN(s_KeyStates[(UInt32)key] & 0x2)
 
     void MButtonEvent(MButton button, bool pressed)
     {
         UInt8 iMButton = (UInt8)button;
-        if (iMButton >= MAX_MBUTTON) {
+        if (iMButton >= (UInt8)MButton::_COUNT) {
             return;
         }
 

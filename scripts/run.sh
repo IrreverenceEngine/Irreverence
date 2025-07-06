@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
@@ -6,6 +6,7 @@ set -e
 
 cd game
 
+echo
 echo [_______________GAME_______________]
 
 ./bin/irreverence

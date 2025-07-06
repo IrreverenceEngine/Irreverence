@@ -1,5 +1,3 @@
-#include "IR_Log.hpp"
-#include "SDL3/SDL_events.h"
 #include <IR_Window.hpp>
 #include <IR_Common.hpp>
 #include <IR_Defer.hpp>
@@ -9,13 +7,9 @@
 #include <SDL3/SDL.h>
 #include <bgfx/bgfx.h>
 
-#ifdef SDL_PLATFORM_WIN32
-#include <windows.h>
-#endif
-
 namespace IR::Window {
     
-    static SDL_Window* s_Window = nullptr; 
+    static SDL_Window* s_Window = nullptr;
     static UInt64 s_StartTime = 0;
     static UInt64 s_FTNowTime = 0;
     static UInt64 s_FTLastTime = 0;
@@ -43,8 +37,6 @@ namespace IR::Window {
         
         IR_MSG(INFO, "Successfully initialized Window");
 
-        Input::Init();
-
         return true;
     }
 
@@ -67,7 +59,7 @@ namespace IR::Window {
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
             case SDL_EVENT_QUIT:
-            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+            case SDL_EVENT_WINDOW_CLOSE_REQUESTED: 
                 return true;
             case SDL_EVENT_WINDOW_RESIZED:
                 SDL_GetWindowSize(s_Window, &Globals.width, &Globals.height);
@@ -76,10 +68,10 @@ namespace IR::Window {
             case SDL_EVENT_KEY_DOWN:
                 Input::KeyEvent((Input::Key)event.key.key, true);
                 break;
-                case SDL_EVENT_KEY_UP:
+            case SDL_EVENT_KEY_UP:
                 Input::KeyEvent((Input::Key)event.key.key, false);
                 break;
-                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 Input::MButtonEvent((Input::MButton)event.button.button, true);
                 break;
             case SDL_EVENT_MOUSE_BUTTON_UP:
@@ -91,11 +83,11 @@ namespace IR::Window {
             }
         }
 
-        Globals.curtime = (SDL_GetPerformanceCounter() - s_StartTime) / (Float64) SDL_GetPerformanceFrequency();
+        Globals.curtime = (SDL_GetPerformanceCounter() - s_StartTime) / (Float64)SDL_GetPerformanceFrequency();
 
         s_FTLastTime = s_FTNowTime;
         s_FTNowTime = SDL_GetPerformanceCounter();
-        Globals.frametime = (s_FTNowTime - s_FTLastTime) / (Float64) SDL_GetPerformanceFrequency();
+        Globals.frametime = (s_FTNowTime - s_FTLastTime) / (Float64)SDL_GetPerformanceFrequency();
 
         return s_Close;
     }

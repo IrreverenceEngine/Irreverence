@@ -1,6 +1,6 @@
-#include <IR_EntitySys.hpp>
+#include <IR_EntityMan.hpp>
 
-namespace IR::EntitySys {
+namespace IR::EntityMan {
 
     void Init()
     {

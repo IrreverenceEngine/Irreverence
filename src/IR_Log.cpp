@@ -31,6 +31,7 @@ namespace IR::Log {
         UInt8 attr;
         Float64 removeTime;
         UInt32 count;
+        MsgType type;
     };
 
     static std::vector<BGFXTextData> s_BGFXTexts;
@@ -71,22 +72,22 @@ namespace IR::Log {
         if (s_BGFXTexts.size() > 0) {
             BGFXTextData* lastText = &s_BGFXTexts[s_BGFXTexts.size() - 1];
             startTime = lastText->removeTime;
-            if (lastText->str == str) {
+            if (lastText->str == str && lastText->type == type) {
                 lastText->count++;
                 lastText->removeTime = Globals.curtime + stayTime;
                 return;
             }
-        } 
+        }
 
         if (s_BGFXTexts.size() >= MAX_SCRMSG_COUNT) {
             s_BGFXTexts.erase(s_BGFXTexts.begin());
         }
 
-        s_BGFXTexts.push_back({ str, s_MsgTypeInfos[(int)type].vgacode, startTime + stayTime, 1 });
+        s_BGFXTexts.push_back({ str, s_MsgTypeInfos[(int)type].vgacode, startTime + stayTime, 1, type });
     }
 
     void DrawScrMsgs()
-    {        
+    {
         int y = 0;
         for (UInt32 i = 0; i < s_BGFXTexts.size(); i++) {
             const BGFXTextData& textData = s_BGFXTexts[i];

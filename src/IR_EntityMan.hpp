@@ -1,6 +1,6 @@
 #pragma once
 
-namespace IR::EntitySys {
+namespace IR::EntityMan {
     void Init();
     void Shutdown();
 

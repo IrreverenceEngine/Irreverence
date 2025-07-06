@@ -1,13 +1,18 @@
-#include "IR_Input.hpp"
 #include <IR_Renderer.hpp>
 #include <IR_Common.hpp>
 #include <IR_Window.hpp>
+#include <IR_Input.hpp>
+#include <IR_AssetShader.hpp>
+#include <IR_AssetTexture.hpp>
 
-#include <glm/gtc/type_ptr.hpp>
 #include <SDL3/SDL.h>
 #include <bgfx/bgfx.h>
 #include <bgfx/platform.h>
-#include <cstdio>
+#include <glm/gtc/type_ptr.hpp>
+
+#ifdef SDL_PLATFORM_WIN32
+#include <windows.h>
+#endif
 
 namespace IR::Renderer {
 
@@ -65,6 +70,8 @@ namespace IR::Renderer {
 
     static bgfx::VertexBufferHandle s_VertBuffer;
     static bgfx::IndexBufferHandle s_IndexBuffer;
+    static bgfx::ProgramHandle s_Program;
+    static bgfx::TextureHandle s_Texturah;
 
     bool Init()
     {
@@ -118,6 +125,8 @@ namespace IR::Renderer {
 
         s_VertBuffer = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
         s_IndexBuffer = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
+        s_Program = Asset::Shader::LoadRaster("cube", true);
+        s_Texturah = Asset::Texture::Load("__NODRAW.png", false);
 
         return true;
     }
@@ -127,17 +136,34 @@ namespace IR::Renderer {
         bgfx::destroy(s_VertBuffer);
         bgfx::destroy(s_IndexBuffer);
 
+        bgfx::destroy(s_Program);
+
         bgfx::shutdown();
     }
 
     void Present()
     {
+		Renderer::DebugCamera(s_View, s_Projection);
+
         bgfx::setViewTransform(0, glm::value_ptr(s_View), glm::value_ptr(s_Projection));
         bgfx::setViewRect(0, 0, 0, Globals.width, Globals.height);
         bgfx::touch(0);
 
         bgfx::setVertexBuffer(0, s_VertBuffer);
         bgfx::setIndexBuffer(s_IndexBuffer);
+
+        UInt64 state = 0
+            |BGFX_STATE_WRITE_R
+            |BGFX_STATE_WRITE_G
+            |BGFX_STATE_WRITE_B
+            |BGFX_STATE_WRITE_A
+            |BGFX_STATE_WRITE_Z
+            |BGFX_STATE_DEPTH_TEST_LESS
+            |BGFX_STATE_MSAA
+            |BGFX_STATE_CULL_CCW;
+
+        bgfx::setState(state);
+        bgfx::submit(0, s_Program);
 
         bgfx::dbgTextClear();
         Log::DrawScrMsgs();
@@ -165,20 +191,20 @@ namespace IR::Renderer {
         // angles.y += mdelta.x;
         // angles.x -= mdelta.y;
 
-		if (Input::IsKeyDown(Input::Key::H)) {
-			angles.y -= 0.1f;
+		if (Input::IsKeyDown(Input::Key::LEFT)) {
+			angles.y -= 100.0f * Globals.frametime;
 		}
 
-		if (Input::IsKeyDown(Input::Key::L)) {
-			angles.y += 0.1f;
+		if (Input::IsKeyDown(Input::Key::RIGHT)) {
+			angles.y += 100.0f * Globals.frametime;
 		}
 
-		if (Input::IsKeyDown(Input::Key::J)) {
-			angles.x += 0.1f;
+		if (Input::IsKeyDown(Input::Key::DOWN)) {
+			angles.x -= 100.0f * Globals.frametime;
 		}
 
-		if (Input::IsKeyDown(Input::Key::K)) {
-			angles.x -= 0.1f;
+		if (Input::IsKeyDown(Input::Key::UP)) {
+			angles.x += 100.0f * Globals.frametime;
 		}
 
 		dir.x = cosf(glm::radians(angles.y)) * cosf(glm::radians(angles.x));
@@ -187,27 +213,27 @@ namespace IR::Renderer {
 
 		glm::vec3 side = glm::normalize(glm::cross(dir, { 0.0f, 1.0f, 0.0f }));
 		if (Input::IsKeyDown(Input::Key::W)) {
-			pos += dir * 0.01f;
+			pos += dir * 2.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::S)) {
-			pos -= dir * 0.01f;
+			pos -= dir * 2.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::A)) {
-			pos -= side * 0.01f;
+			pos -= side * 2.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::D)) {
-			pos += side * 0.01f;
+			pos += side * 2.0f * (Float32)Globals.frametime;
 		}
 
-		if (Input::IsKeyDown(Input::Key::Z)) {
-			pos.y += 0.01f;
+		if (Input::IsKeyDown(Input::Key::SPACE)) {
+			pos.y += 2.0f * Globals.frametime;
 		}
 
-		if (Input::IsKeyDown(Input::Key::X)) {
-			pos.y -= 0.01f;
+		if (Input::IsKeyDown(Input::Key::LCTRL)) {
+			pos.y -= 2.0f * Globals.frametime;
 		}
 
         outView = glm::lookAt(pos, pos + dir, glm::vec3(0, 1, 0));

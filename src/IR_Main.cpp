@@ -1,4 +1,3 @@
-#include "IR_Log.hpp"
 #include <IR_Window.hpp>
 #include <IR_Renderer.hpp>
 #include <IR_Input.hpp>
@@ -18,14 +17,10 @@ int main(int argc, char** argv)
 
     IR_MSG(INFO, "Successfully initialized Irreverence");
 
-	glm::mat4 view;
-	glm::mat4 proj;
-
 	while(!Window::ShouldClose()) {
-		Renderer::DebugCamera(view, proj);
 		Renderer::Present();
 
-		if (Input::IsKeyPressed(Input::Key::L)) {
+		if (Input::IsKeyPressed(Input::Key::X)) {
 			IR_SCRMSG(INFO, "yippe");
 		}
 

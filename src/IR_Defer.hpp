@@ -19,4 +19,4 @@ namespace IR {
 
 }
 
-#define IR_DEFER(...) IR::Defer IR_UNIQUE(__ir_defer)([&]() { __VA_ARGS__ })
+#define IR_DEFER(...) IR::Defer IR_UNIQUE(__ir_defer)([&]() __VA_ARGS__ )

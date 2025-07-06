@@ -7,11 +7,6 @@ namespace IR::Input {
     enum class Key;
     enum class MButton;
 
-    constexpr UInt8 MAX_KEY = 177;
-    constexpr UInt8 MAX_MBUTTON = 4;
-
-    void Init();
-
     void Update();
 
     void KeyEvent(Key key, bool down);
@@ -104,12 +99,45 @@ namespace IR::Input {
         PIPE = 0x0000007cu,
         RIGHTBRACE = 0x0000007du,
         TILDE = 0x0000007eu,
-        DELETE = 0x0000007fu
+        DELETE = 0x0000007fu,
+        F1 = 0x4000003au,
+        F2 = 0x4000003bu,
+        F3 = 0x4000003cu,
+        F4 = 0x4000003du,
+        F5 = 0x4000003eu,
+        F6 = 0x4000003fu,
+        F7 = 0x40000040u,
+        F8 = 0x40000041u,
+        F9 = 0x40000042u,
+        F10 = 0x40000043u,
+        F11 = 0x40000044u,
+        F12 = 0x40000045u,
+        PRINTSCREEN = 0x40000046u,
+        SCROLLLOCK = 0x40000047u,
+        PAUSE = 0x40000048u,
+        INSERT = 0x40000049u,
+        HOME = 0x4000004au,
+        PAGEUP = 0x4000004bu,
+        END = 0x4000004du,
+        PAGEDOWN = 0x4000004eu,
+        RIGHT = 0x4000004fu,
+        LEFT = 0x40000050u,
+        DOWN = 0x40000051u,
+        UP = 0x40000052u,
+        LCTRL = 0x400000e0u,
+        LSHIFT = 0x400000e1u,
+        LALT = 0x400000e2u,
+        LGUI = 0x400000e3u,
+        RCTRL = 0x400000e4u,
+        RSHIFT = 0x400000e5u,
+        RALT = 0x400000e6u,
+        _COUNT
     };
 
     enum class MButton {
-        Left = 1,
-        Middle = 2,
-        Right = 3
+        LEFT = 1,
+        MIDDLE = 2,
+        RIGHT = 3,
+        _COUNT
     };
 }
