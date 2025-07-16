@@ -1,11 +1,9 @@
 #include <IR_Window.hpp>
 #include <IR_Common.hpp>
-#include <IR_Defer.hpp>
 #include <IR_CVar.hpp>
 #include <IR_Input.hpp>
 
 #include <SDL3/SDL.h>
-#include <bgfx/bgfx.h>
 
 namespace IR::Window {
     
@@ -15,14 +13,16 @@ namespace IR::Window {
     static UInt64 s_FTLastTime = 0;
     static bool s_Close = false;
 
-    bool Init()
+    bool Init(Renderer::API api)
     {
-        SDL_Init(0);
+        SDL_Init(SDL_INIT_VIDEO);
 
         Globals.width = 1280;
         Globals.height = 720;
 
-        s_Window = SDL_CreateWindow("Irreverence", Globals.width, Globals.height, 0);
+        SDL_WindowFlags flags = Renderer::PreInit(api);
+
+        s_Window = SDL_CreateWindow("Irreverence", Globals.width, Globals.height, flags);
         if (!s_Window) {
             IR_MSG(ERROR, "Failed to init Window: Failed to create window");
             return false;
@@ -63,7 +63,6 @@ namespace IR::Window {
                 return true;
             case SDL_EVENT_WINDOW_RESIZED:
                 SDL_GetWindowSize(s_Window, &Globals.width, &Globals.height);
-                bgfx::reset(Globals.width, Globals.height, BGFX_RESET_VSYNC);
                 break;
             case SDL_EVENT_KEY_DOWN:
                 Input::KeyEvent((Input::Key)event.key.key, true);

@@ -1,13 +1,12 @@
 #include <IR_Renderer.hpp>
+#include <renderer/IR_GLRenderer.hpp>
+#include <renderer/IR_DXRenderer.hpp>
 #include <IR_Common.hpp>
 #include <IR_Window.hpp>
 #include <IR_Input.hpp>
-#include <IR_AssetShader.hpp>
 #include <IR_AssetTexture.hpp>
 
 #include <SDL3/SDL.h>
-#include <bgfx/bgfx.h>
-#include <bgfx/platform.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #ifdef SDL_PLATFORM_WIN32
@@ -16,165 +15,60 @@
 
 namespace IR::Renderer {
 
-    struct PosColorVertex
-    {
-        float m_x;
-        float m_y;
-        float m_z;
-        uint32_t m_abgr;
-
-        static void init()
-        {
-            ms_layout
-                .begin()
-                .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-                .add(bgfx::Attrib::Color0,   4, bgfx::AttribType::Uint8, true)
-                .end();
-        };
-
-        static bgfx::VertexLayout ms_layout;
-    };
-
-    bgfx::VertexLayout PosColorVertex::ms_layout;
-
-    static PosColorVertex s_cubeVertices[] =
-    {
-        {-1.0f,  1.0f,  1.0f, 0xff000000 },
-        { 1.0f,  1.0f,  1.0f, 0xff0000ff },
-        {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
-        { 1.0f, -1.0f,  1.0f, 0xff00ffff },
-        {-1.0f,  1.0f, -1.0f, 0xffff0000 },
-        { 1.0f,  1.0f, -1.0f, 0xffff00ff },
-        {-1.0f, -1.0f, -1.0f, 0xffffff00 },
-        { 1.0f, -1.0f, -1.0f, 0xffffffff },
-    };
-
-    static const uint16_t s_cubeTriList[] =
-    {
-        0, 1, 2, // 0
-        1, 3, 2,
-        4, 6, 5, // 2
-        5, 6, 7,
-        0, 2, 4, // 4
-        4, 2, 6,
-        1, 5, 3, // 6
-        5, 7, 3,
-        0, 4, 1, // 8
-        4, 5, 1,
-        2, 3, 6, // 10
-        6, 3, 7,
-    };
-
     static glm::mat4 s_View;
     static glm::mat4 s_Projection;
 
-    static bgfx::VertexBufferHandle s_VertBuffer;
-    static bgfx::IndexBufferHandle s_IndexBuffer;
-    static bgfx::ProgramHandle s_Program;
-    static bgfx::TextureHandle s_Texturah;
+    static API s_API = API::OpenGL;
+    static APIHandle* s_HAPI = nullptr;
+
+    UInt64 PreInit(API api)
+    {
+        UInt64 flags = 0;
+
+        if (s_API == API::DirectX) {
+
+        } else {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+            flags |= SDL_WINDOW_OPENGL;
+        }
+
+        flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
+
+        return flags;
+    }
 
     bool Init()
     {
-        s_View = glm::mat4(1);
-        s_Projection = glm::mat4(1);
+        s_View = glm::mat4(1.0f);
+        s_Projection = glm::mat4(1.0f);
 
-        SDL_Window* sdlWindow = (SDL_Window*) Window::GetHandle();
-
-        bgfx::PlatformData pd;
-    #if defined(SDL_PLATFORM_WIN32)
-        pd.nwh = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-        pd.ndt = NULL;
-    #elif defined(SDL_PLATFORM_MACOS)
-        pd.nwh = (__bridge NSWindow*) SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
-        pd.ndt = NULL;
-    #elif defined(SDL_PLATFORM_LINUX)
-        if(SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
-            pd.nwh = (void*) SDL_GetNumberProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
-            pd.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
-        } else if(SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
-            pd.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
-            pd.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
-        }
-    #endif
-
-        pd.context = NULL;
-        pd.backBuffer = NULL;
-        pd.backBufferDS = NULL;
-        bgfx::setPlatformData(pd);
-
-        bgfx::Init init;
-        init.type = bgfx::RendererType::OpenGL;
-        init.vendorId = BGFX_PCI_ID_NONE;
-        init.platformData.nwh = pd.nwh;
-        init.platformData.ndt = pd.ndt;
-        init.resolution.width = Globals.width;
-        init.resolution.height = Globals.height;
-        init.resolution.reset = BGFX_RESET_VSYNC;
-        if(!bgfx::init(init)) {
-            IR_MSG(ERROR, "Failed to init Renderer: failed to init BGFX");
-            return false;
+        if (s_API == API::DirectX) {
+            s_HAPI = new DX;
+        } else {
+            s_HAPI = new GL;
         }
 
-        bgfx::setDebug(BGFX_DEBUG_TEXT);
-        bgfx::reset(Globals.width, Globals.height, BGFX_RESET_VSYNC);
-        bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x1b2123ff, 1.0f, 0);
+        bool success = s_HAPI->Init();
 
-        IR_MSG(INFO, "Successfully initialized Renderer");
+        if (success) {
+            IR_MSG(INFO, "Successfully initialized %s Renderer", s_HAPI->GetName());
+        }
 
-        PosColorVertex::init();
-
-        s_VertBuffer = bgfx::createVertexBuffer(bgfx::makeRef(s_cubeVertices, sizeof(s_cubeVertices)), PosColorVertex::ms_layout);
-        s_IndexBuffer = bgfx::createIndexBuffer(bgfx::makeRef(s_cubeTriList, sizeof(s_cubeTriList)));
-        s_Program = Asset::Shader::LoadRaster("cube", true);
-        s_Texturah = Asset::Texture::Load("__NODRAW.png", false);
-
-        return true;
+        return success;
     }
 
     void Shutdown()
     {
-        bgfx::destroy(s_VertBuffer);
-        bgfx::destroy(s_IndexBuffer);
-
-        bgfx::destroy(s_Program);
-
-        bgfx::shutdown();
+        s_HAPI->Shutdown();
     }
 
     void Present()
     {
-		Renderer::DebugCamera(s_View, s_Projection);
-
-        bgfx::setViewTransform(0, glm::value_ptr(s_View), glm::value_ptr(s_Projection));
-        bgfx::setViewRect(0, 0, 0, Globals.width, Globals.height);
-        bgfx::touch(0);
-
-        bgfx::setVertexBuffer(0, s_VertBuffer);
-        bgfx::setIndexBuffer(s_IndexBuffer);
-
-        UInt64 state = 0
-            |BGFX_STATE_WRITE_R
-            |BGFX_STATE_WRITE_G
-            |BGFX_STATE_WRITE_B
-            |BGFX_STATE_WRITE_A
-            |BGFX_STATE_WRITE_Z
-            |BGFX_STATE_DEPTH_TEST_LESS
-            |BGFX_STATE_MSAA
-            |BGFX_STATE_CULL_CCW;
-
-        bgfx::setState(state);
-        bgfx::submit(0, s_Program);
-
-        bgfx::dbgTextClear();
-        Log::DrawScrMsgs();
-
-        bgfx::frame();
-    }
-
-    void UpdateCameraMatrices(const glm::mat4& view, const glm::mat4& projection)
-    {
-        s_View = view;
-        s_Projection = projection;
+        s_HAPI->Present();
     }
 
     void DebugCamera(glm::mat4& outView, glm::mat4& outProjection)

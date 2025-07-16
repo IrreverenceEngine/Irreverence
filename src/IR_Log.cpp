@@ -1,8 +1,6 @@
 #include <IR_Log.hpp>
 #include <IR_Common.hpp>
 
-#include <bgfx/bgfx.h>
-
 #include <cstdarg>
 #include <cstdio>
 
@@ -101,7 +99,7 @@ namespace IR::Log {
                 tmpStr += " (" + std::to_string(textData.count) + "x)";
             }
 
-            bgfx::dbgTextPrintf(0, y, textData.attr, tmpStr.c_str());
+            
             y++;
         }
     }

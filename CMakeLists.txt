@@ -7,11 +7,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/game/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/game/bin)
 
-add_subdirectory(vendor/glm)
+find_package(GLEW REQUIRED)
+find_package(OpenGL REQUIRED)
 
-set(BGFX_BUILD_EXAMPLES OFF)
-set(BGFX_BUILD_TOOLS OFF)
-add_subdirectory(vendor/bgfx.cmake)
+add_subdirectory(vendor/glm)
 
 set(SDL_EXAMPLES OFF)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
@@ -21,13 +20,11 @@ file(GLOB_RECURSE IRREVERENCE_SRC CONFIGURE_DEPENDS src/*.cpp)
 add_executable(irreverence ${IRREVERENCE_SRC})
 
 target_link_libraries(irreverence PRIVATE
-	SDL3-shared glm bgfx
+    glm::glm SDL3-static GLEW::GLEW OpenGL::GL
 )
 
 target_include_directories(irreverence PUBLIC
     src/
-    src/Thirdparty
     vendor/glm/glm
-    vendor/bgfx.cmake/bgfx/include
     vendor/SDL/include
 )
