@@ -10,5 +10,3 @@ cmake --build . -j8
 echo "[IRREVERENCE] - FINISHED BUILDING"
 
 cd ..
-
-./scripts/clear_shaders.sh

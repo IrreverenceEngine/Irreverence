@@ -5,15 +5,18 @@
 
 namespace IR::Renderer {
     struct GLMesh {
-        bool Init(const VertexStandard* vertices, UInt32 vertex_count, const UInt32* indices, UInt32 index_count);
-        bool Init(const VertexAnimated* vertices, UInt32 vertex_count, const UInt32* indices, UInt32 index_count);
+        bool Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
+        bool Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
         void Destroy();
 
-        UInt32 id;
-        UInt32 vbo;
-        UInt32 ibo;
-        UInt32 ebo;
-        UInt32 vertCount;
-        UInt32 indexCount;
+        void Draw(const void* instance_data);
+
+        UInt32 id = 0;
+        UInt32 vbo = 0;
+        UInt32 ibo = 0;
+        UInt32 ebo = 0;
+        UInt32 vertCount = 0;
+        UInt32 indexCount = 0;
+        UInt32 instStride = 0;
     };
 }

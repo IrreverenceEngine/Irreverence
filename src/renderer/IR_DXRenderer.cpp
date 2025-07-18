@@ -7,4 +7,6 @@ namespace IR::Renderer {
     bool DX::Init() IR_UNIMPLEMENTED
     void DX::Shutdown() IR_UNIMPLEMENTED
     void DX::Present() IR_UNIMPLEMENTED
+    Model* DX::MakeModel() IR_UNIMPLEMENTED
+    Material* DX::MakeMaterial() IR_UNIMPLEMENTED
 }

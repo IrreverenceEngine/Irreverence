@@ -6,7 +6,7 @@
 
 namespace IR::Renderer {
 
-    bool GLMesh::Init(const VertexStandard* vertices, UInt32 vertex_count, const UInt32* indices, UInt32 index_count)
+    bool GLMesh::Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum)
     {
         enum {
             MODELMESH_POSITION,
@@ -16,11 +16,13 @@ namespace IR::Renderer {
             MODELMESH_MODELMATRIX
         };
 
-        vertCount = vertex_count;
-        indexCount = index_count;
+        vertCount = vertexnum;
+        indexCount = indexnum;
 
-        size_t vertexSize = vertex_count * sizeof(VertexStandard);
-        size_t indexSize = index_count * sizeof(UInt32);
+        instStride = sizeof(InstanceStandard);
+
+        size_t vertexSize = vertexnum * sizeof(VertexStandard);
+        size_t indexSize = indexnum * sizeof(UInt32);
 
         // Create OpenGL Objects
         glCreateBuffers(1, &vbo);
@@ -64,7 +66,7 @@ namespace IR::Renderer {
         return true;
     }
 
-    bool GLMesh::Init(const VertexAnimated* vertices, UInt32 vertex_count, const UInt32* indices, UInt32 index_count)
+    bool GLMesh::Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum)
     {
         enum {
             MODELMESH_POSITION,
@@ -76,11 +78,13 @@ namespace IR::Renderer {
             MODELMESH_MODELMATRIX
         };
 
-        vertCount = vertex_count;
-        indexCount = index_count;
+        vertCount = vertexnum;
+        indexCount = indexnum;
 
-        size_t vertexSize = vertex_count * sizeof(VertexAnimated);
-        size_t indexSize = index_count * sizeof(UInt32);
+        instStride = sizeof(InstanceStandard);
+
+        size_t vertexSize = vertexnum * sizeof(VertexAnimated);
+        size_t indexSize = indexnum * sizeof(UInt32);
 
         // Create OpenGL Objects
         glCreateBuffers(1, &vbo);
@@ -128,6 +132,8 @@ namespace IR::Renderer {
         glVertexArrayAttribBinding(id, MODELMESH_COLOR, 1);
 
         SetMatrixLayout(id, MODELMESH_MODELMATRIX, offsetof(InstanceStandard, model));
+
+        return true;
     }
 
     void GLMesh::Destroy()
@@ -139,6 +145,18 @@ namespace IR::Renderer {
         glDeleteBuffers(1, &ibo);
 
         id = 0;
+    }
+
+    void GLMesh::Draw(const void* instance_data)
+    {
+        glNamedBufferData(ibo, instStride, instance_data, GL_DYNAMIC_DRAW);
+
+        glBindVertexArray(id);
+        if (ebo > 0) {
+            glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+        } else {
+            glDrawArrays(GL_TRIANGLES, 0, vertCount);
+        }
     }
 
 }

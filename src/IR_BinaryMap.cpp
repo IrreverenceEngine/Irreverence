@@ -1,12 +1,12 @@
-#include <IR_AssetBMap.hpp>
+#include <IR_BinaryMap.hpp>
 
 #include <fstream>
 
-namespace IR::Asset::BMap {
+namespace IR {
 
     constexpr UInt32 MAGIC = 0x6D627269; // irbm
 
-    enum LumpInfoType {
+    enum BMLumpInfoType {
         LUMPTYPE_ENTITIES,
         LUMPTYPE_BRUSHES,
         LUMPTYPE_FACES,
@@ -14,54 +14,54 @@ namespace IR::Asset::BMap {
         LUMPTYPE__COUNT
     };
 
-    struct LumpInfo {
+    struct BMLumpInfo {
         UInt32 offset;
         UInt32 length;
     };
 
-    struct Header {
+    struct BMHeader {
         UInt32 magic;
         UInt32 version;
 
-        LumpInfo lumps[LUMPTYPE__COUNT];
+        BMLumpInfo lumps[LUMPTYPE__COUNT];
     };
 
-    struct Entity {
+    struct BMEntity {
         UInt32 kvNum; // Number of KV pairs, used to know when to stop reading
         std::vector<char> kv; // Just a big focking null terminated strings of kv pairs
         UInt32 brushNum; // number of brushes to read after first
         UInt32 brushBegin; // first brush
     };
 
-    struct Brush {
+    struct BMBrush {
         UInt32 faceNum;
         UInt32 faceBegin;
         std::vector<glm::vec3> convexPoints;
     };
 
-    struct Face {
+    struct BMFace {
         glm::vec4 plane;
         UInt32 flags;
         UInt32 vertNum;
         UInt32 vertBegin;
     };
 
-    struct Vertex {
+    struct BMVertex {
         glm::vec3 position;
         glm::vec3 normal;
         glm::vec2 texcoord;
     };
 
-    static void ReadEntities(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<Entity>& ents)
+    static void ReadEntities(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMEntity>& ents)
     {
         stream.seekg(pos);
 
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
-            Entity tmpEnt;
+            BMEntity tmpEnt;
             stream.read((char*)&tmpEnt.kvNum, sizeof(tmpEnt.kvNum));
 
-            tmpEnt.kv.reserve(tmpEnt.kvNum * 2 + 16);
+            tmpEnt.kv.reserve(tmpEnt.kvNum * 2 + 16); // Minor optimization and assumption
 
             char ch;
             UInt32 kvCounter = 0;
@@ -73,6 +73,9 @@ namespace IR::Asset::BMap {
                 tmpEnt.kv.push_back(ch);
             }
 
+            UInt64 p = stream.tellg(); // TODO: Fix this :(
+            stream.seekg(p - 1);
+
             stream.read((char*)&tmpEnt.brushNum, sizeof(tmpEnt.brushNum));
             stream.read((char*)&tmpEnt.brushBegin, sizeof(tmpEnt.brushBegin));
 
@@ -80,11 +83,11 @@ namespace IR::Asset::BMap {
         }
     }
 
-    static void ReadBrushes(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<Brush>& brushes)
+    static void ReadBrushes(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMBrush>& brushes)
     {
         stream.seekg(pos);
 
-        Brush brush;
+        BMBrush brush;
         glm::vec3 tmpVec;
         UInt32 convexVecCount;
 
@@ -94,7 +97,6 @@ namespace IR::Asset::BMap {
 
             stream.read((char*)&brush.faceNum, sizeof(brush.faceNum));
             stream.read((char*)&brush.faceBegin, sizeof(brush.faceBegin));
-
             stream.read((char*)&convexVecCount, sizeof(convexVecCount));
 
             for (UInt32 i = 0; i < convexVecCount; i++) {
@@ -109,11 +111,11 @@ namespace IR::Asset::BMap {
         }
     }
 
-    static void ReadFaces(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<Face>& faces)
+    static void ReadFaces(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMFace>& faces)
     {
         stream.seekg(pos);
 
-        Face face;
+        BMFace face;
 
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
@@ -131,11 +133,11 @@ namespace IR::Asset::BMap {
         }
     }
 
-    static void ReadVertices(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<Vertex>& vertices)
+    static void ReadVertices(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMVertex>& vertices)
     {
         stream.seekg(pos);
 
-        Vertex vert;
+        BMVertex vert;
 
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
@@ -154,40 +156,87 @@ namespace IR::Asset::BMap {
         }
     }
 
-    IR::BMap Load(const char* path)
+    bool BinaryMap::Load(const char* path)
     {
-        IR::BMap bmap;
-
         std::ifstream stream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
         if (!stream.is_open()) {
-            IR_MSG(FATAL, "Couldn't load Binary Map: couldn't open the file %s", path);
+            IR_MSG(ERROR, "Couldn't load Binary Map: couldn't open the file %s", path);
+            return false;
         }
 
-        Header hdr;
+        BMHeader hdr;
         stream.read((char*)&hdr, sizeof(hdr));
 
         if (hdr.magic != MAGIC) {
-            IR_MSG(FATAL, "Couldn't load Binary Map: this could have happened because, the file may not be a \"irbm\" file. Or you have ARM CPU, we gotta fix that.");
+            IR_MSG(ERROR, "Couldn't load Binary Map: this could have happened because, the file may not be a \"irbm\" file. Or you have ARM CPU, we gotta fix that.");
+            return false;
         }
 
-        IR_MSG(INFO, "Entities: %d, %d", hdr.lumps[LUMPTYPE_ENTITIES].offset, hdr.lumps[LUMPTYPE_ENTITIES].length);
-        IR_MSG(INFO, "Brushes: %d, %d", hdr.lumps[LUMPTYPE_BRUSHES].offset, hdr.lumps[LUMPTYPE_BRUSHES].length);
-        IR_MSG(INFO, "Faces: %d, %d", hdr.lumps[LUMPTYPE_FACES].offset, hdr.lumps[LUMPTYPE_FACES].length);
-        IR_MSG(INFO, "Vertices: %d, %d", hdr.lumps[LUMPTYPE_VERTICES].offset, hdr.lumps[LUMPTYPE_VERTICES].length);
-
-        std::vector<Entity> ents;
+        std::vector<BMEntity> ents;
         ReadEntities(stream, hdr.lumps[LUMPTYPE_ENTITIES].offset, hdr.lumps[LUMPTYPE_ENTITIES].length, ents);
 
-        std::vector<Brush> brushes;
+        std::vector<BMBrush> brushes;
         ReadBrushes(stream, hdr.lumps[LUMPTYPE_BRUSHES].offset, hdr.lumps[LUMPTYPE_BRUSHES].length, brushes);
 
-        std::vector<Face> faces;
+        std::vector<BMFace> faces;
         ReadFaces(stream, hdr.lumps[LUMPTYPE_FACES].offset, hdr.lumps[LUMPTYPE_FACES].length, faces);
 
-        std::vector<Vertex> vertices;
+        std::vector<BMVertex> vertices;
         ReadVertices(stream, hdr.lumps[LUMPTYPE_VERTICES].offset, hdr.lumps[LUMPTYPE_VERTICES].length, vertices);
 
-        return bmap;
+        for (const auto& ent : ents) {
+            EntityData entdata;
+            entdata.brushes.reserve(ent.brushNum);
+            for (UInt32 brushIndex = ent.brushBegin; brushIndex < ent.brushBegin + ent.brushNum; brushIndex++) {
+                const BMBrush& brush = brushes[brushIndex];
+                BrushData brushdata;
+
+                brushdata.faces.reserve(brush.faceNum);
+                for (UInt32 faceIndex = brush.faceBegin; faceIndex < brush.faceBegin + brush.faceNum; faceIndex++) {
+                    const BMFace& face = faces[faceIndex];
+                    FaceData facedata;
+
+                    facedata.plane = face.plane;
+                    facedata.flags = face.flags;
+
+                    facedata.vertices.reserve(face.vertNum);
+
+                    for (UInt32 vertIndex = face.vertBegin; vertIndex < face.vertBegin + face.vertNum; vertIndex++) {
+                        const BMVertex& vert = vertices[vertIndex];
+
+                        facedata.vertices.push_back({ vert.position, vert.normal, vert.texcoord });
+                    }
+
+                    brushdata.faces.push_back(facedata);
+                }
+
+                brushdata.convexPoints.reserve(brush.convexPoints.size());
+                brushdata.convexPoints.insert(brushdata.convexPoints.end(), brush.convexPoints.begin(), brush.convexPoints.end());
+
+                glm::vec3 origin = {};
+                for (const auto& p : brushdata.convexPoints) {
+                    origin += p;
+                }
+
+                origin /= (Float32)brushdata.convexPoints.size();
+
+                entdata.brushes.push_back(brushdata);
+            }
+
+            char* kvPtr = (char*)ent.kv.data();
+            for (UInt32 i = 0; i < ent.kvNum; i++) {
+                std::string key = kvPtr;
+                kvPtr += key.size() + 1;
+                std::string value = kvPtr;
+                kvPtr += value.size() + 1;
+
+                entdata.keyvalues[key] = value;
+            }
+
+            m_EntityDatas.push_back(entdata);
+        }
+
+        return true;
     }
 
 }

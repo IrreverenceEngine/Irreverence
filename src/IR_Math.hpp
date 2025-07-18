@@ -1,6 +1,6 @@
 #pragma once
 
-#include <IR_Common.hpp>
+#include <IR_Macro.hpp>
 
 namespace IR {
     

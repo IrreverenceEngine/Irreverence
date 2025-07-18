@@ -24,7 +24,6 @@ namespace IR::Input {
     glm::ivec2 MouseDelta();
 
     // Enums
-
     enum class Key {
         RETURN = 0x0000000du,
         ESCAPE = 0x0000001bu,
