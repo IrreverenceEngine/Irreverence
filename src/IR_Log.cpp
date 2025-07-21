@@ -36,13 +36,13 @@ namespace IR::Log {
 
     void Msg(MsgType type, const char* fmt, ...)
     {
-        printf("\033[%sm[IRREVERENCE %s]\033[0m - ", s_MsgTypeInfos[(int)type].colorcode, s_MsgTypeInfos[(int)type].prefix);
+        printf("\033[%sm[IR %s]\033[0m - ", s_MsgTypeInfos[(UInt32)type].colorcode, s_MsgTypeInfos[(UInt32)type].prefix);
 
         va_list args;
         va_start(args, fmt);
         vprintf(fmt, args);
         va_end(args);
-        
+
         fwrite("\n", 1, 1, stdout);
 
         if (type == MsgType::FATAL) {
@@ -65,7 +65,7 @@ namespace IR::Log {
         va_end(args);
 
         Float64 startTime = Globals.curtime;
-        Float64 stayTime = s_MsgTypeInfos[(int)type].stayTime;
+        Float64 stayTime = s_MsgTypeInfos[(UInt32)type].stayTime;
         std::string str = buffer;
         if (s_BGFXTexts.size() > 0) {
             BGFXTextData* lastText = &s_BGFXTexts[s_BGFXTexts.size() - 1];
@@ -81,12 +81,12 @@ namespace IR::Log {
             s_BGFXTexts.erase(s_BGFXTexts.begin());
         }
 
-        s_BGFXTexts.push_back({ str, s_MsgTypeInfos[(int)type].vgacode, startTime + stayTime, 1, type });
+        s_BGFXTexts.push_back({ str, s_MsgTypeInfos[(UInt32)type].vgacode, startTime + stayTime, 1, type });
     }
 
     void DrawScrMsgs()
     {
-        int y = 0;
+        UInt32 y = 0;
         for (UInt32 i = 0; i < s_BGFXTexts.size(); i++) {
             const BGFXTextData& textData = s_BGFXTexts[i];
             if (Globals.curtime > textData.removeTime) {
@@ -99,7 +99,7 @@ namespace IR::Log {
                 tmpStr += " (" + std::to_string(textData.count) + "x)";
             }
 
-            
+
             y++;
         }
     }

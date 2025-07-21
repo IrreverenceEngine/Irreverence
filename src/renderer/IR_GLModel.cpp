@@ -1,5 +1,6 @@
 #include <renderer/IR_GLModel.hpp>
 #include <renderer/IR_GLMesh.hpp>
+#include <renderer/IR_GLRenderer.hpp>
 
 namespace IR::Renderer {
 
@@ -36,15 +37,15 @@ namespace IR::Renderer {
     void GLModel::MakeMesh(const VertexStandard* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum)
     {
         GLMesh mesh;
-        mesh.Init(vertices, vertnum, indices, indnum);
-    
+        mesh.Init(s_GL->m_LayoutStandard, vertices, vertnum, indices, indnum);
+
         m_Meshes.push_back(mesh);
     }
 
     void GLModel::MakeMesh(const VertexAnimated* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum)
     {
         GLMesh mesh;
-        mesh.Init(vertices, vertnum, indices, indnum);
+        mesh.Init(s_GL->m_LayoutAnimated, vertices, vertnum, indices, indnum);
 
         m_Meshes.push_back(mesh);
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <IR_Common.hpp>
-#include <IR_MeshType.hpp>
+#include <IR_LayoutType.hpp>
 
 namespace IR::Renderer {
     struct Model {

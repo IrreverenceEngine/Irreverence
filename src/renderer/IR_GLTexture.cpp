@@ -9,7 +9,7 @@
 
 namespace IR::Renderer {
 
-    bool GLTexture::InitPath(const char* path, bool linearize, bool gen_mipmaps)
+    bool GLTexture::InitPath(const char* path, bool linearize, bool mipmaps, bool handle)
     {
         stbi_set_flip_vertically_on_load(true);
 
@@ -17,18 +17,17 @@ namespace IR::Renderer {
         UInt8* data = stbi_load(("assets/textures/" + std::string(path)).c_str(), &width, &height, &channels, 0);
 
         if (!data) {
-            IR_MSG(ERROR, "GL Renderer failed to open image \"%s\", reason: %s", path, stbi_failure_reason());
+            IR_MSG(ERROR, "GLTexture failed to open image \"%s\", reason: %s", path, stbi_failure_reason());
             return false;
         }
 
-        bool success = InitMemory(data, width, height, channels, linearize, gen_mipmaps);
-
+        bool success = InitMemory(data, width, height, channels, linearize, mipmaps);
         stbi_image_free(data);
 
         return success;
     }
 
-    bool GLTexture::InitMemory(const UInt8* data, UInt32 width, UInt32 height, UInt8 channel_count, bool linearize, bool gen_mipmaps)
+    bool GLTexture::InitMemory(const UInt8* data, UInt32 width, UInt32 height, UInt8 channel_count, bool linearize, bool mipmaps, bool handle)
     {
         width = width;
         height = height;
@@ -56,7 +55,7 @@ namespace IR::Renderer {
             glFormatAlt = GL_RED;
         }
 
-        if (gen_mipmaps && data) {
+        if (mipmaps && data) {
             GLenum minFilEnum = linearize ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
             GLenum minFilEnumMag = linearize ? GL_LINEAR : GL_NEAREST;
 
@@ -84,11 +83,24 @@ namespace IR::Renderer {
             }
         }
 
+        if (handle) {
+            bthandle = glGetTextureHandleARB(id);
+            if (bthandle == 0) {
+                IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
+            }
+
+            glMakeTextureHandleResidentARB(bthandle);
+        }
+
         return true;
     }
 
     void GLTexture::Destroy()
     {
+        if (bthandle) {
+            glMakeTextureHandleNonResidentARB(bthandle);
+        }
+
         glDeleteTextures(1, &id);
         id = 0;
     }

@@ -9,4 +9,4 @@ cd game
 echo
 echo [_______________GAME_______________]
 
-./bin/irreverence
+./irreverence

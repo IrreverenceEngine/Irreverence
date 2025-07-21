@@ -10,13 +10,13 @@ namespace IR::Renderer {
     {
         std::ifstream vsfile(("assets/shaders/gl/" + std::string(vspath)).c_str());
         if (!vsfile.is_open()) {
-            IR_MSG(ERROR, "GL Renderer failed to open Vertex Shader File");
+            IR_MSG(ERROR, "GLShader failed to open Vertex Shader File \"%s\"", vspath);
             return false;
         }
 
         std::ifstream fsfile(("assets/shaders/gl/" + std::string(fspath)).c_str());
         if (!fsfile.is_open()) {
-            IR_MSG(ERROR, "GL Renderer failed to open Fragment Shader File");
+            IR_MSG(ERROR, "GLShader failed to open Fragment Shader File \"%s\"", fspath);
             return false;
         }
 

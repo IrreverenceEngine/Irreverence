@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     IR_MSG(INFO, "Successfully initialized Irreverence");
 
 	BinaryMap mapfile;
-	if (!mapfile.Load("goodtest.irbm")) {
+	if (!mapfile.Load("simple.irbm")) {
 		return 1;
 	}
 

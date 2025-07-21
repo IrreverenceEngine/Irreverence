@@ -2,7 +2,7 @@
 
 #include <IR_Common.hpp>
 #include <IR_AABB.hpp>
-#include <IR_MeshType.hpp>
+#include <IR_LayoutType.hpp>
 
 #include <unordered_map>
 #include <string>

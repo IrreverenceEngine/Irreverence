@@ -42,8 +42,8 @@ namespace IR::Random {
         Seed(((UInt64)rd() << 32) | rd());
     }
 
-    Int64 RandomInt64(Int64 min, Int64 max) IR_RETURN(min + (RandomUInt64() % (max - min + 1)))
-    Float64 RandomFloat64(Float64 min, Float64 max) IR_RETURN(
+    Int64 Int(Int64 min, Int64 max) IR_RETURN(min + (RandomUInt64() % (max - min + 1)))
+    Float64 Float(Float64 min, Float64 max) IR_RETURN(
         min + (RandomUInt64() >> 11) * (1.0 / (1ULL << 53)) * (max - min);
     )
 
