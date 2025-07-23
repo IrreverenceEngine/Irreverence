@@ -1,4 +1,4 @@
-#version 450
+#version 460
 #extension GL_ARB_bindless_texture : require
 
 out vec4 FRAG_COLOR;
@@ -32,6 +32,5 @@ sampler2D GetMaterialSampler(uint matIndex, uint mapIndex)
 
 void main()
 {
-    MaterialInfo mat = uMaterial[0];
-    FRAG_COLOR = pInstanceColor * vec4(texture(GetMaterialSampler(0, 0), pUV).rgb, 1.0);
+    FRAG_COLOR = pInstanceColor;
 }

@@ -19,9 +19,4 @@ namespace IR::Renderer {
         UInt8 bones[4];
         Float32 weights[4];
     };
-
-    struct InstanceStandard {
-        glm::vec4 color;
-        glm::mat4 model;
-    };
 }

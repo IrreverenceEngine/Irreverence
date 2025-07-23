@@ -1,6 +1,6 @@
 #include <IR_Renderer.hpp>
-#include <renderer/IR_GLRenderer.hpp>
-#include <renderer/IR_DXRenderer.hpp>
+#include <Renderer/IR_GLRenderer.hpp>
+#include <Renderer/IR_DXRenderer.hpp>
 #include <IR_Common.hpp>
 #include <IR_Window.hpp>
 #include <IR_Input.hpp>
@@ -29,7 +29,7 @@ namespace IR::Renderer {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
             flags |= SDL_WINDOW_OPENGL;
         }
