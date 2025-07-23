@@ -3,19 +3,23 @@
 #include <IR_Common.hpp>
 
 namespace IR::Renderer {
-    struct GLBuffer {
+    class GLBuffer {
+    public:
         bool Init(Int32 type, const void* data, UInt64 size, UInt8 loc = UINT8_MAX, bool realloc = false);
         void Destroy();
 
-        void Bind();
+        void Bind() const;
         bool Update(const void* data, UInt64 size, UInt64 offset);
 
-        UInt32 id = 0;
-        UInt8 location = 0;
-        UInt64 currentSize = 0;
-        void* map = nullptr;
-        bool reallocate = false;
-        Int32 btype = 0;
+        UInt32 GetID() const IR_RETURN(m_ID)
+
+    private:
+        UInt32 m_ID = 0;
+        UInt8 m_Location = 0;
+        UInt64 m_CurrentSize = 0;
+        void* m_Map = nullptr;
+        bool m_Realloc = false;
+        Int32 m_Type = 0;
     };
 
 }

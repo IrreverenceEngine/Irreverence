@@ -74,25 +74,25 @@ namespace IR::Renderer {
         if (!bSuccess) {
             glGetProgramInfoLog(p_id, 1024, NULL, failureLog);
             IR_MSG(ERROR, "GLShader Linking failed:\n %s", failureLog);
-            glDeleteProgram(id);
+            glDeleteProgram(m_ID);
             return false;
         }
 
-        id = p_id;
+        m_ID = p_id;
 
         return true;
     }
 
     void GLShader::Destroy()
     {
-        glDeleteProgram(id);
+        glDeleteProgram(m_ID);
 
-        id = 0;
+        m_ID = 0;
     }
 
     void GLShader::Bind()
     {
-        glUseProgram(id);
+        glUseProgram(m_ID);
     }
 
 }

@@ -16,22 +16,16 @@ namespace IR::Renderer {
             return;
         }
 
-        GL::MaterialInfo info;
-
+        GLMaterial::Info info;
         for (UInt8 i = 0; i < MAP__COUNT; i++) {
             GLTexture* texture = m_Textures[i];
-
-            if (texture->btlocation == UINT32_MAX) {
-                texture->btlocation = s_GL->m_TextureHandles.size();
-                s_GL->m_TextureHandles.push_back(texture->bthandle);
-            }
+            texture->Use();
 
             // TODO: Use Error Texture if not existing.
-            info.handleIndexes[i] = texture->btlocation;
+            info.handleIndexes[i] = texture->GetBTIndex();
         }
 
-        m_BTIndex = s_GL->m_MaterialInfos.size();
-        s_GL->m_MaterialInfos.push_back(info);
+        m_BTIndex = s_GL->UseMaterialInfo(info);
     }
 
     void GLMaterial::Reset()
@@ -45,7 +39,7 @@ namespace IR::Renderer {
         texture->InitPath(path, linearize, mipmaps);
 
         m_Textures[map] = texture;
-        m_TextureIDs[map] = texture->id;
+        m_TextureIDs[map] = texture->GetID();
     }
 
     void GLMaterial::MakeTexture(Map map, const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps)
@@ -54,7 +48,7 @@ namespace IR::Renderer {
         texture->InitMemory(data, width, height, channelnum, linearize, mipmaps);
 
         m_Textures[map] = texture;
-        m_TextureIDs[map] = texture->id;
+        m_TextureIDs[map] = texture->GetID();
     }
 
     void GLMaterial::AddTexture(Map map, void* texture)
@@ -62,7 +56,7 @@ namespace IR::Renderer {
         GLTexture* gltexture = (GLTexture*)texture;
 
         m_Textures[map] = gltexture;
-        m_TextureIDs[map] = gltexture->id;
+        m_TextureIDs[map] = gltexture->GetID();
     }
 
 }

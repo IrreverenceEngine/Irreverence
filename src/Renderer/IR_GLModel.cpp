@@ -27,7 +27,7 @@ namespace IR::Renderer {
 
     void GLModel::Draw(const void* data)
     {
-        
+
     }
 
     void GLModel::MakeMesh(const VertexStandard* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum)

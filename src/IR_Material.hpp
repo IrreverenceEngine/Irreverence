@@ -3,7 +3,8 @@
 #include <IR_Common.hpp>
 
 namespace IR::Renderer {
-    struct Material {
+    class Material {
+    public:
         enum Map {
             MAP_DIFFUSE,
             MAP__COUNT

@@ -5,26 +5,24 @@
 #include <Renderer/IR_GLMesh.hpp>
 #include <Renderer/IR_GLShader.hpp>
 
-#include <vector>
-
 namespace IR::Renderer {
 
-    struct GLMeshPool { // Mesh Buffer
+    class GLMeshPool { // Mesh Buffer
+    public:
         bool Init(UInt32 layoutId, UInt64 stride);
         void Destroy();
 
-        std::pair<UInt32, UInt32> Add(const UInt8* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indexnum, bool immediate = true);
-        void Upload();
-        void Bind();
+        std::pair<UInt32, UInt32> Add(const void* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indexnum);
+        void Bind() const;
 
-        GLBuffer vertexBuffer;
-        GLBuffer indexBuffer;
+    private:
+        GLBuffer m_VertexBuffer;
+        GLBuffer m_IndexBuffer;
 
-        std::vector<UInt8> vertexData;
-        std::vector<UInt32> indexData;
-        std::vector<GLShader*> shaders;
+        UInt64 m_VertexOffset = 0;
+        UInt64 m_IndexOffset = 0;
 
-        UInt32 layout = 0;
-        UInt64 vstride = 0;
+        UInt32 m_Layout = 0;
+        UInt64 m_Stride = 0;
     };
 }

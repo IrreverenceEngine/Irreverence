@@ -8,28 +8,28 @@ namespace IR::Renderer {
 
     bool GLMesh::Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum)
     {
-        const auto [vId, iId] = s_GL->m_LayoutStandard.meshpool.Add((const UInt8*)vertices, vertexnum, indices, indexnum, true);
+        const auto [vId, iId] = s_GL->GetLayout(GLLayout::Type::TYPE_STANDARD)->GetMeshPool().Add(vertices, vertexnum, indices, indexnum);
 
-        vertCount = vertexnum;
-        indexCount = indexnum;
-        vertOffset = vId;
-        indexOffset = iId;
+        m_VertNum = vertexnum;
+        m_IndexNum = indexnum;
+        m_VertOffset = vId;
+        m_IndexOffset = iId;
 
-        layoutType = GLLayout::TYPE_STANDARD;
+        m_LayoutType = GLLayout::TYPE_STANDARD;
 
         return true;
     }
 
     bool GLMesh::Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum)
     {
-        const auto [vId, iId] = s_GL->m_LayoutAnimated.meshpool.Add((const UInt8*)vertices, vertexnum, indices, indexnum, true);
+        const auto [vId, iId] = s_GL->GetLayout(GLLayout::Type::TYPE_ANIMATED)->GetMeshPool().Add(vertices, vertexnum, indices, indexnum);
 
-        vertCount = vertexnum;
-        indexCount = indexnum;
-        vertOffset = vId;
-        indexOffset = iId;
+        m_VertNum = vertexnum;
+        m_IndexNum = indexnum;
+        m_VertOffset = vId;
+        m_IndexOffset = iId;
 
-        layoutType = GLLayout::TYPE_ANIMATED;
+        m_LayoutType = GLLayout::TYPE_ANIMATED;
 
         return true;
     }

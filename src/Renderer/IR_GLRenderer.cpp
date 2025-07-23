@@ -106,8 +106,8 @@ namespace IR::Renderer {
         m_UniformCommon.Init(nullptr, sizeof(m_CommonData), UNIFORMLOC_COMMON);
 
         // --- [BUFFERS] ---
-        m_SBMaterialInfos.Init(GL_SHADER_STORAGE_BUFFER, nullptr, sizeof(MaterialInfo), SSLOC_MATERIALINFO);
-        m_SBTextureHandles.Init(GL_SHADER_STORAGE_BUFFER, nullptr, sizeof(UInt64), SSLOC_TEXTUREHANDLE);
+        m_SBMaterialInfos.Init(GL_SHADER_STORAGE_BUFFER, nullptr, sizeof(GLMaterial::Info), SSLOC_MATERIALINFO, true);
+        m_SBTextureHandles.Init(GL_SHADER_STORAGE_BUFFER, nullptr, sizeof(UInt64), SSLOC_TEXTUREHANDLE, true);
 
         // --- [INSTANCE LISTS] ---
         m_ILStandard.Init(sizeof(InstanceStandard), SSLOC_ILSTANDARD);
@@ -148,9 +148,10 @@ namespace IR::Renderer {
 
         // --- [MATERIALS] ---
         m_MaterialError.AddTexture(Material::MAP_DIFFUSE, &m_TextureError);
+        m_MaterialWhite.AddTexture(Material::MAP_DIFFUSE, &m_TextureWhite);
 
         // testing
-        shader.InitRasterPath("test.vs", "test.fs");
+        shader.InitRasterPath("test.vert", "test.frag");
 
         return true;
     }
@@ -188,18 +189,15 @@ namespace IR::Renderer {
 
     void GL::Present()
     {
-        InstanceStandard istandard;
-        istandard.color = { 1.0f, 0.0f, 0.0f, 1.0f };
-        InstanceStandard istandard2;
-        istandard2.color = { 0.0f, 0.0f, 1.0f, 1.0f };
+        m_MaterialError.Use();
+        m_MaterialWhite.Use();
 
         static std::vector<InstanceStandard> mapInstances;
 
         if (mapInstances.size() == 0) {
             for (const auto& model : m_Models) {
-                for (const auto& mesh : model.m_Meshes) {
-                    mapInstances.push_back(
-                        {
+                for (const auto& mesh : model.GetMeshes()) {
+                    mapInstances.push_back({
                             {
                                 Random::Float(0.2f, 1.0f),
                                 Random::Float(0.2f, 1.0f),
@@ -207,7 +205,7 @@ namespace IR::Renderer {
                                 1.0f
                             },
                             glm::mat4(1.0f),
-                            0
+                            Random::Int(0, 1) == 0 ? m_MaterialError.GetBTIndex() : m_MaterialWhite.GetBTIndex()
                         }
                     );
                 }
@@ -215,13 +213,10 @@ namespace IR::Renderer {
         }
 
         for (const auto& model : m_Models) {
-            for (UInt32 i = 0; i < model.m_Meshes.size(); i++) {
-                m_CmdListDynamic.Submit(model.m_Meshes[i], shader, m_ILStandard.Add(&mapInstances[i]));
+            for (UInt32 i = 0; i < model.GetMeshes().size(); i++) {
+                m_CmdListDynamic.Submit(model.GetMeshes()[i], shader, m_ILStandard.Add(&mapInstances[i]));
             }
         }
-
-        m_CmdListDynamic.Submit(m_MeshCube, shader, m_ILStandard.Add(&istandard));
-        m_CmdListDynamic.Submit(m_MeshPlane, shader, m_ILStandard.Add(&istandard2));
 
         m_CommonData.curtime = Globals.curtime;
         m_CommonData.frametime = Globals.frametime;
@@ -231,12 +226,12 @@ namespace IR::Renderer {
 
         m_UniformCommon.Update(&m_CommonData, sizeof(m_CommonData), 0);
 
-        m_SBMaterialInfos.Update(m_MaterialInfos.data(), m_MaterialInfos.size() * sizeof(MaterialInfo), 0);
+        m_SBMaterialInfos.Update(m_MaterialInfos.data(), m_MaterialInfos.size() * sizeof(GLMaterial::Info), 0);
         m_SBTextureHandles.Update(m_TextureHandles.data(), m_TextureHandles.size() * sizeof(UInt64), 0);
 
         m_ILStandard.Upload();
 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(100.0f / 255.0f, 200.0f / 255.0f, 225.0f / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_CmdListStatic.Draw();
@@ -252,7 +247,7 @@ namespace IR::Renderer {
         }
 
         for (GLTexture& tex : m_Textures) {
-            tex.btlocation = UINT32_MAX;
+            tex.Reset();
         }
 
         m_MaterialInfos.clear();
@@ -275,6 +270,22 @@ namespace IR::Renderer {
     {
         m_Textures.push_front({});
         return &m_Textures.front();
+    }
+
+    UInt32 GL::UseTexture(const GLTexture& texture)
+    {
+        UInt32 btindex = s_GL->m_TextureHandles.size();
+        s_GL->m_TextureHandles.push_back(texture.GetBTHandle());
+
+        return btindex;
+    }
+
+    UInt32 GL::UseMaterialInfo(const GLMaterial::Info& info)
+    {
+        UInt32 btindex = s_GL->m_MaterialInfos.size();
+        s_GL->m_MaterialInfos.push_back(info);
+
+        return btindex;
     }
 
     GLLayout* GL::GetLayout(GLLayout::Type type)

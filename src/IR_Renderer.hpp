@@ -17,7 +17,8 @@
     _x Material* MakeMaterial() _y; \
 
 namespace IR::Renderer {
-    struct APIHandle {
+    class APIHandle {
+    public:
         IR_RENDERER_FUNCS(virtual, IR_UNIMPLEMENTED)
     };
 

@@ -6,8 +6,8 @@
 #include <glm.hpp>
 
 namespace IR::Renderer {
-
-    struct GLInstanceList {
+    class GLInstanceList {
+    public:
         void Init(UInt64 stride, UInt8 location);
         void Destroy();
 
@@ -15,12 +15,13 @@ namespace IR::Renderer {
         void Upload();
         void Flush();
 
-        GLBuffer ibuffer;
-        std::vector<UInt8> ilist;
-        UInt64 istride = 0;
+    private:
+        GLBuffer m_Buffer;
+        std::vector<UInt8> m_List;
+        UInt64 m_Stride = 0;
     };
 
-     struct InstanceStandard {
+    struct InstanceStandard {
         glm::vec4 color;
         glm::mat4 model;
         UInt32 matLocation;

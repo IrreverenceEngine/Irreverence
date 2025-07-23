@@ -15,7 +15,8 @@ namespace IR::Renderer {
         UInt32 baseInstance;
     };
 
-    struct GLCmdList {
+    class GLCmdList {
+    public:
         void Init();
         void Destroy();
 
@@ -23,7 +24,8 @@ namespace IR::Renderer {
         void Flush();
         void Draw();
 
-        GLBuffer cmdbuffer;
-        std::unordered_map<UInt32, std::vector<GLCmdElements>> cmdlist[GLLayout::TYPE__COUNT];
+    private:
+        GLBuffer m_Buffer;
+        std::unordered_map<UInt32, std::vector<GLCmdElements>> m_List[GLLayout::TYPE__COUNT];
     };
 }

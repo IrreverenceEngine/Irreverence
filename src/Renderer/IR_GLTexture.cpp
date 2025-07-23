@@ -1,4 +1,5 @@
 #include <Renderer/IR_GLTexture.hpp>
+#include <Renderer/IR_GLRenderer.hpp>
 
 #include <Thirdparty/stb_image.h>
 #include <GL/glew.h>
@@ -15,7 +16,7 @@ namespace IR::Renderer {
 
         Int32 width = 0, height = 0, channels = 0;
         UInt8* data = stbi_load(("assets/textures/" + std::string(path)).c_str(), &width, &height, &channels, 0);
-        
+
         if (!data) {
             IR_MSG(ERROR, "GLTexture failed to open image \"%s\", reason: %s", path, stbi_failure_reason());
             return false;
@@ -31,13 +32,13 @@ namespace IR::Renderer {
     {
         width = width;
         height = height;
-        channelCount = channel_count;
-        mipCount = 0;
+        m_ChannelCount = channel_count;
+        m_MipCount = 0;
 
-        glCreateTextures(GL_TEXTURE_2D, 1, &id);
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 
-        glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         GLenum glFormat = GL_RGBA8;
         GLenum glFormatAlt = GL_RGBA;
@@ -59,37 +60,37 @@ namespace IR::Renderer {
             GLenum minFilEnum = linearize ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
             GLenum minFilEnumMag = linearize ? GL_LINEAR : GL_NEAREST;
 
-            glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, minFilEnum);
-            glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, minFilEnumMag);
+            glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, minFilEnum);
+            glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, minFilEnumMag);
 
             Float32 maxAllowAniso = 0.0f;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAllowAniso);
-            glTextureParameterf(id, GL_TEXTURE_MAX_ANISOTROPY, Clamp(maxAllowAniso, 0.0f, 16.0f));
+            glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, Clamp(maxAllowAniso, 0.0f, 16.0f));
 
-            mipCount = (UInt32)(1 + floorf(log2f(Max(width, height))));
-            glTextureStorage2D(id, mipCount, glFormat, width, height);
-            glTextureSubImage2D(id, 0, 0, 0, width, height, glFormatAlt, GL_UNSIGNED_BYTE, data);
+            m_MipCount = (UInt32)(1 + floorf(log2f(Max(width, height))));
+            glTextureStorage2D(m_ID, m_MipCount, glFormat, width, height);
+            glTextureSubImage2D(m_ID, 0, 0, 0, width, height, glFormatAlt, GL_UNSIGNED_BYTE, data);
 
-            glGenerateTextureMipmap(id);
+            glGenerateTextureMipmap(m_ID);
         } else {
             GLenum minFilEnum = linearize ? GL_LINEAR : GL_NEAREST;
-            glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, minFilEnum);
-            glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, minFilEnum);
+            glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, minFilEnum);
+            glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, minFilEnum);
 
-            glTextureStorage2D(id, 1, glFormat, width, height);
+            glTextureStorage2D(m_ID, 1, glFormat, width, height);
 
             if (data) {
-                glTextureSubImage2D(id, 0, 0, 0, width, height, glFormatAlt, GL_UNSIGNED_BYTE, data);
+                glTextureSubImage2D(m_ID, 0, 0, 0, width, height, glFormatAlt, GL_UNSIGNED_BYTE, data);
             }
         }
 
         if (handle) {
-            bthandle = glGetTextureHandleARB(id);
-            if (bthandle == 0) {
+            m_BTHandle = glGetTextureHandleARB(m_ID);
+            if (m_BTHandle == 0) {
                 IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
             }
 
-            glMakeTextureHandleResidentARB(bthandle);
+            glMakeTextureHandleResidentARB(m_BTHandle);
         }
 
         return true;
@@ -97,17 +98,31 @@ namespace IR::Renderer {
 
     void GLTexture::Destroy()
     {
-        if (bthandle) {
-            glMakeTextureHandleNonResidentARB(bthandle);
+        if (m_BTHandle) {
+            glMakeTextureHandleNonResidentARB(m_BTHandle);
         }
 
-        glDeleteTextures(1, &id);
-        id = 0;
+        glDeleteTextures(1, &m_ID);
+        m_ID = 0;
     }
 
     void GLTexture::Bind(UInt8 loc)
     {
-        glBindTextureUnit(loc, id);
+        glBindTextureUnit(loc, m_ID);
+    }
+
+    void GLTexture::Use()
+    {
+        if (m_BTIndex != UINT32_MAX) {
+            return;
+        }
+
+        m_BTIndex = s_GL->UseTexture(*this);
+    }
+
+    void GLTexture::Reset()
+    {
+        m_BTIndex = UINT32_MAX;
     }
 
 }

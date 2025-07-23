@@ -11,6 +11,7 @@ in VP_Shared {
     vec3 pNormal;
     vec2 pUV;
 	vec4 pInstanceColor;
+	flat uint pMaterialIndex;
 };
 
 struct MaterialInfo {
@@ -32,5 +33,5 @@ sampler2D GetMaterialSampler(uint matIndex, uint mapIndex)
 
 void main()
 {
-    FRAG_COLOR = pInstanceColor;
+    FRAG_COLOR = pInstanceColor * texture(GetMaterialSampler(pMaterialIndex, 0), pUV);
 }

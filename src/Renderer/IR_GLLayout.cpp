@@ -1,5 +1,7 @@
 #include <Renderer/IR_GLLayout.hpp>
 
+#include <GL/glew.h>
+
 namespace IR::Renderer {
 
     bool GLLayout::InitStandard()
@@ -10,23 +12,23 @@ namespace IR::Renderer {
             UV
         };
 
-        type = TYPE_STANDARD;
+        m_Type = TYPE_STANDARD;
 
-        glCreateVertexArrays(1, &id);
+        glCreateVertexArrays(1, &m_ID);
 
-        glEnableVertexArrayAttrib(id, POSITION);
-        glVertexArrayAttribFormat(id, POSITION, 3, GL_FLOAT, GL_FALSE, 0);
-        glVertexArrayAttribBinding(id, POSITION, 0);
+        glEnableVertexArrayAttrib(m_ID, POSITION);
+        glVertexArrayAttribFormat(m_ID, POSITION, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayAttribBinding(m_ID, POSITION, 0);
 
-        glEnableVertexArrayAttrib(id, NORMAL);
-        glVertexArrayAttribFormat(id, NORMAL, 3, GL_FLOAT, GL_FALSE, offsetof(VertexStandard, normal));
-        glVertexArrayAttribBinding(id, NORMAL, 0);
+        glEnableVertexArrayAttrib(m_ID, NORMAL);
+        glVertexArrayAttribFormat(m_ID, NORMAL, 3, GL_FLOAT, GL_FALSE, offsetof(VertexStandard, normal));
+        glVertexArrayAttribBinding(m_ID, NORMAL, 0);
 
-        glEnableVertexArrayAttrib(id, UV);
-        glVertexArrayAttribFormat(id, UV, 2, GL_FLOAT, GL_FALSE, offsetof(VertexStandard, texcoord));
-        glVertexArrayAttribBinding(id, UV, 0);
+        glEnableVertexArrayAttrib(m_ID, UV);
+        glVertexArrayAttribFormat(m_ID, UV, 2, GL_FLOAT, GL_FALSE, offsetof(VertexStandard, texcoord));
+        glVertexArrayAttribBinding(m_ID, UV, 0);
 
-        meshpool.Init(id, sizeof(VertexStandard));
+        m_MeshPool.Init(m_ID, sizeof(VertexStandard));
 
         return true;
     }
@@ -41,42 +43,42 @@ namespace IR::Renderer {
             WEIGHTS
         };
 
-        type = TYPE_ANIMATED;
+        m_Type = TYPE_ANIMATED;
 
-        glCreateVertexArrays(1, &id);
+        glCreateVertexArrays(1, &m_ID);
 
-        glEnableVertexArrayAttrib(id, POSITION);
-        glVertexArrayAttribFormat(id, POSITION, 3, GL_FLOAT, GL_FALSE, 0);
-        glVertexArrayAttribBinding(id, POSITION, 0);
+        glEnableVertexArrayAttrib(m_ID, POSITION);
+        glVertexArrayAttribFormat(m_ID, POSITION, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayAttribBinding(m_ID, POSITION, 0);
 
-        glEnableVertexArrayAttrib(id, NORMAL);
-        glVertexArrayAttribFormat(id, NORMAL, 3, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, normal));
-        glVertexArrayAttribBinding(id, NORMAL, 0);
+        glEnableVertexArrayAttrib(m_ID, NORMAL);
+        glVertexArrayAttribFormat(m_ID, NORMAL, 3, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, normal));
+        glVertexArrayAttribBinding(m_ID, NORMAL, 0);
 
-        glEnableVertexArrayAttrib(id, UV);
-        glVertexArrayAttribFormat(id, UV, 2, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, texcoord));
-        glVertexArrayAttribBinding(id, UV, 0);
+        glEnableVertexArrayAttrib(m_ID, UV);
+        glVertexArrayAttribFormat(m_ID, UV, 2, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, texcoord));
+        glVertexArrayAttribBinding(m_ID, UV, 0);
 
-        glEnableVertexArrayAttrib(id, BONES);
-        glVertexArrayAttribIFormat(id, BONES, 1, GL_UNSIGNED_INT, offsetof(VertexAnimated, bones));
-        glVertexArrayAttribBinding(id, BONES, 0);
+        glEnableVertexArrayAttrib(m_ID, BONES);
+        glVertexArrayAttribIFormat(m_ID, BONES, 1, GL_UNSIGNED_INT, offsetof(VertexAnimated, bones));
+        glVertexArrayAttribBinding(m_ID, BONES, 0);
 
-        glEnableVertexArrayAttrib(id, WEIGHTS);
-        glVertexArrayAttribFormat(id, WEIGHTS, 4, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, weights));
-        glVertexArrayAttribBinding(id, WEIGHTS, 0);
+        glEnableVertexArrayAttrib(m_ID, WEIGHTS);
+        glVertexArrayAttribFormat(m_ID, WEIGHTS, 4, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, weights));
+        glVertexArrayAttribBinding(m_ID, WEIGHTS, 0);
 
-        meshpool.Init(id, sizeof(VertexAnimated));
+        m_MeshPool.Init(m_ID, sizeof(VertexAnimated));
 
         return true;
     }
 
     void GLLayout::Destroy()
     {
-        glDeleteVertexArrays(1, &id);
+        glDeleteVertexArrays(1, &m_ID);
 
-        meshpool.Destroy();
+        m_MeshPool.Destroy();
 
-        id = 0;
+        m_ID = 0;
     }
 
 }

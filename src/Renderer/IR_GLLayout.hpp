@@ -6,11 +6,10 @@
 
 #include <glm.hpp>
 
-#include <GL/glew.h>
-
 namespace IR::Renderer {
 
-    struct GLLayout {
+    class GLLayout {
+    public:
         enum Type : UInt8 {
             TYPE_STANDARD,
             TYPE_ANIMATED,
@@ -22,10 +21,13 @@ namespace IR::Renderer {
 
         void Destroy();
 
-        UInt32 id = 0;
-        GLMeshPool meshpool;
-        Type type = TYPE__COUNT;
-    };
+        GLMeshPool& GetMeshPool() IR_RETURN(m_MeshPool)
+        Type GetType() IR_RETURN(m_Type)
 
+    private:
+        UInt32 m_ID = 0;
+        GLMeshPool m_MeshPool;
+        Type m_Type = TYPE__COUNT;
+    };
 
 }

@@ -1,5 +1,4 @@
 #version 460
-#extension GL_ARB_shader_draw_parameters : require
 
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal;
@@ -23,6 +22,7 @@ out VP_Shared {
     vec3 pNormal;
     vec2 pUV;
 	vec4 pInstanceColor;
+	flat uint pMaterialIndex;
 };
 
 struct InstanceStandard {
@@ -38,6 +38,8 @@ layout(std430, binding = 2) readonly buffer InstanceStandards {
 
 void main()
 {
+	InstanceStandard instData = uInstanceStandards[gl_BaseInstance];
+
 	pFragPos = aPos;
 
 	vec4 viewPos = uCommon.View * vec4(pFragPos, 1.0);
@@ -48,5 +50,6 @@ void main()
 	pNormal = aNormal;
 	pUV = aUV;
 
-	pInstanceColor = uInstanceStandards[gl_BaseInstance].color;
+	pInstanceColor = instData.color;
+	pMaterialIndex = instData.matIndex;
 }

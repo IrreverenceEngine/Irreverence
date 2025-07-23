@@ -7,34 +7,34 @@ namespace IR::Renderer {
 
     void GLInstanceList::Init(UInt64 stride, UInt8 location)
     {
-        ibuffer.Init(GL_SHADER_STORAGE_BUFFER, nullptr, stride, location, true);
-        istride = stride;
+        m_Buffer.Init(GL_SHADER_STORAGE_BUFFER, nullptr, stride, location, true);
+        m_Stride = stride;
     }
 
     void GLInstanceList::Destroy()
     {
-        ibuffer.Destroy();
+        m_Buffer.Destroy();
     }
 
     UInt32 GLInstanceList::Add(const void* data)
     {
         const UInt8* cdata = (const UInt8*)data;
 
-        UInt32 iId = ilist.size();
-        ilist.reserve(ilist.size() + istride);
-        ilist.insert(ilist.end(), cdata, cdata + istride);
+        UInt32 iId = m_List.size();
+        m_List.reserve(m_List.size() + m_Stride);
+        m_List.insert(m_List.end(), cdata, cdata + m_Stride);
 
-        return iId / istride;
+        return iId / m_Stride;
     }
 
     void GLInstanceList::Upload()
     {
-        ibuffer.Update(ilist.data(), ilist.size(), 0);
+        m_Buffer.Update(m_List.data(), m_List.size(), 0);
     }
 
     void GLInstanceList::Flush()
     {
-        ilist.clear();
+        m_List.clear();
     }
 
 }

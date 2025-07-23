@@ -4,7 +4,8 @@
 #include <IR_LayoutType.hpp>
 
 namespace IR::Renderer {
-    struct Model {
+    class Model {
+    public:
         virtual ~Model() {}
 
         bool Init(const char* path);

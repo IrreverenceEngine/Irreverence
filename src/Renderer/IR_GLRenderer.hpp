@@ -18,7 +18,8 @@
 #include <forward_list>
 
 namespace IR::Renderer {
-    struct GL : public APIHandle {
+    class GL : public APIHandle {
+    public:
         IR_RENDERER_FUNCS(, override)
 
         enum UniformLocation {
@@ -32,20 +33,19 @@ namespace IR::Renderer {
             SSLOC_ILSTANDARD,
         };
 
-        struct MaterialInfo {
-            UInt32 handleIndexes[Material::MAP__COUNT];
-        };
-
         GLTexture* MakeTexture();
+        UInt32 UseTexture(const GLTexture& texture);
+        UInt32 UseMaterialInfo(const GLMaterial::Info& info);
 
         GLLayout* GetLayout(GLLayout::Type type);
 
+    private:
         // Vars
         std::forward_list<GLModel> m_Models;
         std::forward_list<GLMaterial> m_Materials;
         std::forward_list<GLTexture> m_Textures;
 
-        std::vector<MaterialInfo> m_MaterialInfos;
+        std::vector<GLMaterial::Info> m_MaterialInfos;
         std::vector<UInt64> m_TextureHandles;
 
         // --- [VERTEX LAYOUTS] ---
@@ -53,7 +53,6 @@ namespace IR::Renderer {
         GLLayout m_LayoutAnimated;
 
         // --- [COMMAND LISTS] ---
-
         GLCmdList m_CmdListStatic;
         GLCmdList m_CmdListDynamic;
 
@@ -88,6 +87,7 @@ namespace IR::Renderer {
 
         // --- [MATERIALS] ---
         GLMaterial m_MaterialError;
+        GLMaterial m_MaterialWhite;
 
         SDL_GLContext m_GLContext;
     };
