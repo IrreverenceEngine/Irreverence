@@ -1,13 +1,13 @@
 #pragma once
 
+#include <IR_Texture.hpp>
 #include <IR_Common.hpp>
 
 namespace IR::Renderer {
-    class GLTexture {
+    class GLTexture : public Texture {
     public:
-        bool InitPath(const char* path, bool linearize, bool mipmaps, bool handle = false);
-        bool InitMemory(const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps, bool handle = false);
-        void Destroy();
+        bool InitMemory(const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps, bool handle = false) override;
+        void Destroy() override;
 
         void Bind(UInt8 loc);
         void Use();
@@ -26,5 +26,4 @@ namespace IR::Renderer {
         UInt8 m_ChannelCount = 0;
         UInt8 m_MipCount = 0;
     };
-
 }

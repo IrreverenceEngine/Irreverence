@@ -2,6 +2,8 @@
 
 #include <IR_Common.hpp>
 #include <IR_Model.hpp>
+#include <IR_Texture.hpp>
+#include <IR_Shader.hpp>
 #include <IR_Material.hpp>
 
 #include <glm.hpp>
@@ -15,6 +17,8 @@
     _x void Present() _y; \
     _x Model* MakeModel() _y; \
     _x Material* MakeMaterial() _y; \
+    _x Texture* MakeTexture() _y; \
+    _x Shader* MakeShader() _y; \
 
 namespace IR::Renderer {
     class APIHandle {
@@ -23,8 +27,8 @@ namespace IR::Renderer {
     };
 
     enum class API {
-        OpenGL,
-        DirectX
+        OPENGL,
+        DIRECTX
     };
 
     UInt64 PreInit(API api);
@@ -32,6 +36,8 @@ namespace IR::Renderer {
     void Shutdown();
     void Present();
 
-    Model* MakeModel(); // Cleaned up by the Renderer
-    Material* MakeMaterial(); // Cleaned up by the Renderer
+    Model* MakeModel();
+    Material* MakeMaterial();
+    Texture* MakeTexture();
+    Shader* MakeShader();
 }

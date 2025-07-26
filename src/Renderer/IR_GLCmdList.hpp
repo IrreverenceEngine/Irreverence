@@ -26,6 +26,6 @@ namespace IR::Renderer {
 
     private:
         GLBuffer m_Buffer;
-        std::unordered_map<UInt32, std::vector<GLCmdElements>> m_List[GLLayout::TYPE__COUNT];
+        std::unordered_map<UInt32, std::vector<GLCmdElements>> m_List[(UInt8)GLLayout::Type::_COUNT];
     };
 }

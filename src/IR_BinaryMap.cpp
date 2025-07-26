@@ -52,6 +52,10 @@ namespace IR {
         glm::vec2 texcoord;
     };
 
+    struct BMMaterials {
+        // TODO: put shet?
+    };
+
     static void ReadEntities(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMEntity>& ents)
     {
         stream.seekg(pos);
@@ -65,21 +69,19 @@ namespace IR {
 
             char ch;
             UInt32 kvCounter = 0;
-            while (stream.get(ch) && kvCounter < tmpEnt.kvNum * 2) {
+            while (kvCounter < tmpEnt.kvNum * 2 && stream.get(ch)) {
                 if (ch == '\0') {
                     kvCounter++;
                 }
 
-                tmpEnt.kv.push_back(ch);
+                // Emplacing these 1 by 1 maybe slower than getting length then reserve and emplace.
+                tmpEnt.kv.emplace_back(ch);
             }
-
-            UInt64 p = stream.tellg(); // TODO: Fix this :(
-            stream.seekg(p - 1);
 
             stream.read((char*)&tmpEnt.brushNum, sizeof(tmpEnt.brushNum));
             stream.read((char*)&tmpEnt.brushBegin, sizeof(tmpEnt.brushBegin));
 
-            ents.push_back(tmpEnt);
+            ents.emplace_back(tmpEnt);
         }
     }
 
@@ -104,10 +106,10 @@ namespace IR {
                 stream.read((char*)&tmpVec.y, sizeof(tmpVec.y));
                 stream.read((char*)&tmpVec.z, sizeof(tmpVec.z));
 
-                brush.convexPoints.push_back(tmpVec);
+                brush.convexPoints.emplace_back(tmpVec);
             }
 
-            brushes.push_back(brush);
+            brushes.emplace_back(brush);
         }
     }
 
@@ -129,7 +131,7 @@ namespace IR {
             stream.read((char*)&face.vertNum, sizeof(face.vertNum));
             stream.read((char*)&face.vertBegin, sizeof(face.vertBegin));
 
-            faces.push_back(face);
+            faces.emplace_back(face);
         }
     }
 
@@ -152,7 +154,7 @@ namespace IR {
             stream.read((char*)&vert.texcoord.x, sizeof(vert.texcoord.x));
             stream.read((char*)&vert.texcoord.y, sizeof(vert.texcoord.y));
 
-            vertices.push_back(vert);
+            vertices.emplace_back(vert);
         }
     }
 
@@ -203,11 +205,12 @@ namespace IR {
 
                     for (UInt32 vertIndex = face.vertBegin; vertIndex < face.vertBegin + face.vertNum; vertIndex++) {
                         const BMVertex& vert = vertices[vertIndex];
+                        const Renderer::VertexStandard standardVert = { vert.position, vert.normal, vert.texcoord };
 
-                        facedata.vertices.push_back({ vert.position, vert.normal, vert.texcoord });
+                        facedata.vertices.emplace_back(standardVert);
                     }
 
-                    brushdata.faces.push_back(facedata);
+                    brushdata.faces.emplace_back(facedata);
                 }
 
                 brushdata.convexPoints.reserve(brush.convexPoints.size());
@@ -220,20 +223,20 @@ namespace IR {
 
                 origin /= (Float32)brushdata.convexPoints.size();
 
-                entdata.brushes.push_back(brushdata);
+                entdata.brushes.emplace_back(brushdata);
             }
 
             char* kvPtr = (char*)ent.kv.data();
             for (UInt32 i = 0; i < ent.kvNum; i++) {
-                std::string key = kvPtr;
+                const std::string key = kvPtr;
                 kvPtr += key.size() + 1;
-                std::string value = kvPtr;
+                const std::string value = kvPtr;
                 kvPtr += value.size() + 1;
 
                 entdata.keyvalues[key] = value;
             }
 
-            m_EntityDatas.push_back(entdata);
+            m_EntityDatas.emplace_back(entdata);
         }
 
         return true;

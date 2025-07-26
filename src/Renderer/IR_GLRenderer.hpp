@@ -33,7 +33,6 @@ namespace IR::Renderer {
             SSLOC_ILSTANDARD,
         };
 
-        GLTexture* MakeTexture();
         UInt32 UseTexture(const GLTexture& texture);
         UInt32 UseMaterialInfo(const GLMaterial::Info& info);
 
@@ -44,6 +43,7 @@ namespace IR::Renderer {
         std::forward_list<GLModel> m_Models;
         std::forward_list<GLMaterial> m_Materials;
         std::forward_list<GLTexture> m_Textures;
+        std::forward_list<GLShader> m_Shaders;
 
         std::vector<GLMaterial::Info> m_MaterialInfos;
         std::vector<UInt64> m_TextureHandles;
@@ -86,8 +86,9 @@ namespace IR::Renderer {
         GLMesh m_MeshPlane;
 
         // --- [MATERIALS] ---
-        GLMaterial m_MaterialError;
         GLMaterial m_MaterialWhite;
+        GLMaterial m_MaterialBlack;
+        GLMaterial m_MaterialError;
 
         SDL_GLContext m_GLContext;
     };

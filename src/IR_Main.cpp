@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
 	Random::SeedRandom();
 
-	if (!Window::Init(Renderer::API::OpenGL)) {
+	if (!Window::Init(Renderer::API::OPENGL)) {
 		IR_MSG(FATAL, "Failed to init Window, shutting down!");
 		return 1;
 	}
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 		Renderer::Present();
 
 		if (Input::IsKeyPressed(Input::Key::X)) {
-			IR_SCRMSG(INFO, "yippe");
+			IR_MSG(INFO, "yippe");
 		}
 
 		if (Input::IsKeyPressed(Input::Key::ESCAPE)) {

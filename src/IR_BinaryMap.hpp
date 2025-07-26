@@ -9,7 +9,6 @@
 #include <vector>
 
 namespace IR {
-
     class BinaryMap {
     public:
         struct EntityData;
@@ -41,5 +40,4 @@ namespace IR {
     private:
         std::vector<EntityData> m_EntityDatas;
     };
-
 }

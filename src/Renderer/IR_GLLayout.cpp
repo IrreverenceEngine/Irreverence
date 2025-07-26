@@ -12,7 +12,7 @@ namespace IR::Renderer {
             UV
         };
 
-        m_Type = TYPE_STANDARD;
+        m_Type = Type::STANDARD;
 
         glCreateVertexArrays(1, &m_ID);
 
@@ -43,7 +43,7 @@ namespace IR::Renderer {
             WEIGHTS
         };
 
-        m_Type = TYPE_ANIMATED;
+        m_Type = Type::ANIMATED;
 
         glCreateVertexArrays(1, &m_ID);
 

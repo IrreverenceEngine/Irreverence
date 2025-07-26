@@ -6,26 +6,6 @@
 
 namespace IR::Renderer {
 
-    bool GLShader::InitRasterPath(const char* vspath, const char* fspath)
-    {
-        std::ifstream vsfile(("assets/shaders/gl/" + std::string(vspath)).c_str());
-        if (!vsfile.is_open()) {
-            IR_MSG(ERROR, "GLShader failed to open Vertex Shader File \"%s\"", vspath);
-            return false;
-        }
-
-        std::ifstream fsfile(("assets/shaders/gl/" + std::string(fspath)).c_str());
-        if (!fsfile.is_open()) {
-            IR_MSG(ERROR, "GLShader failed to open Fragment Shader File \"%s\"", fspath);
-            return false;
-        }
-
-		std::string vscode((std::istreambuf_iterator<char>(vsfile)), std::istreambuf_iterator<char>());
-		std::string fscode((std::istreambuf_iterator<char>(fsfile)), std::istreambuf_iterator<char>());
-
-        return InitRasterMemory(vscode.c_str(), fscode.c_str());
-    }
-
     bool GLShader::InitRasterMemory(const char* vscode, const char* fscode)
     {
         if (!vscode || !fscode) return false;
@@ -82,6 +62,8 @@ namespace IR::Renderer {
 
         return true;
     }
+
+    bool GLShader::InitComputeMemory(const char* cscode) IR_UNIMPLEMENTED
 
     void GLShader::Destroy()
     {

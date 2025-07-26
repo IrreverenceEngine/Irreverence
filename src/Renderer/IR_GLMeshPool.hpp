@@ -6,7 +6,6 @@
 #include <Renderer/IR_GLShader.hpp>
 
 namespace IR::Renderer {
-
     class GLMeshPool { // Mesh Buffer
     public:
         bool Init(UInt32 layoutId, UInt64 stride);

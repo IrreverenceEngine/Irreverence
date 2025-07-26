@@ -51,6 +51,8 @@ namespace IR::Renderer {
     {
         s_GL = this; // Maybe not the best way to do this but it works perfectly fine.
 
+        stbi_set_flip_vertically_on_load(true);
+
         m_GLContext = SDL_GL_CreateContext((SDL_Window*)Window::GetHandle());
         SDL_GL_MakeCurrent((SDL_Window*)Window::GetHandle(), m_GLContext);
         if (!SDL_GL_SetSwapInterval(-1)) {
@@ -118,16 +120,16 @@ namespace IR::Renderer {
         const struct glm::vec<3, UInt8> whiteColor = { 255, 255, 255 };
 
         std::vector<glm::vec<3, UInt8>> missingPixels;
-        missingPixels.reserve(32 * 32);
+        missingPixels.reserve(64 * 64);
 
-        for (UInt32 y = 0; y < 32; y++) {
-            for (UInt32 x = 0; x < 32; x++) {
-                if ((x / 8 + y / 8) % 2) missingPixels.push_back(missingColor1);
+        for (UInt32 y = 0; y < 64; y++) {
+            for (UInt32 x = 0; x < 64; x++) {
+                if ((x / 16 + y / 16) % 2) missingPixels.push_back(missingColor1);
                 else missingPixels.push_back(missingColor2);
             }
         }
 
-        m_TextureError.InitMemory((const UInt8*)missingPixels.data(), 32, 32, 3, false, false, true);
+        m_TextureError.InitMemory((const UInt8*)missingPixels.data(), 64, 64, 3, false, true, true);
         m_TextureBlack.InitMemory((const UInt8*)&missingColor1, 1, 1, 3, false, false, true);
         m_TextureWhite.InitMemory((const UInt8*)&whiteColor, 1, 1, 3, false, false, true);
 
@@ -147,11 +149,12 @@ namespace IR::Renderer {
         m_MeshPlane.Init(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
 
         // --- [MATERIALS] ---
-        m_MaterialError.AddTexture(Material::MAP_DIFFUSE, &m_TextureError);
         m_MaterialWhite.AddTexture(Material::MAP_DIFFUSE, &m_TextureWhite);
+        m_MaterialBlack.AddTexture(Material::MAP_DIFFUSE, &m_TextureBlack);
+        m_MaterialError.AddTexture(Material::MAP_DIFFUSE, &m_TextureError);
 
         // testing
-        shader.InitRasterPath("test.vert", "test.frag");
+        shader.InitRaster("test.vert", "test.frag");
 
         return true;
     }
@@ -173,14 +176,20 @@ namespace IR::Renderer {
 
         m_ILStandard.Destroy();
 
+        for (auto& shader : m_Shaders) {
+            shader.Destroy();
+        }
+        m_Shaders.clear();
+
         m_TextureWhite.Destroy();
         m_TextureBlack.Destroy();
         m_TextureError.Destroy();
-        for (auto& tex : m_Textures) {
-            tex.Destroy();
+        for (auto& texture : m_Textures) {
+            texture.Destroy();
         }
         m_Textures.clear();
 
+        // These two don't actually have a destroy func
         m_Models.clear();
         m_Materials.clear();
 
@@ -189,19 +198,21 @@ namespace IR::Renderer {
 
     void GL::Present()
     {
-        m_MaterialError.Use();
         m_MaterialWhite.Use();
+        m_MaterialBlack.Use();
+        m_MaterialError.Use();
 
         static std::vector<InstanceStandard> mapInstances;
 
         if (mapInstances.size() == 0) {
             for (const auto& model : m_Models) {
                 for (const auto& mesh : model.GetMeshes()) {
+
                     mapInstances.push_back({
                             {
-                                Random::Float(0.2f, 1.0f),
-                                Random::Float(0.2f, 1.0f),
-                                Random::Float(0.2f, 1.0f),
+                                Random::Float(0.05f, 1.0f),
+                                Random::Float(0.05f, 1.0f),
+                                Random::Float(0.05f, 1.0f),
                                 1.0f
                             },
                             glm::mat4(1.0f),
@@ -231,7 +242,7 @@ namespace IR::Renderer {
 
         m_ILStandard.Upload();
 
-        glClearColor(100.0f / 255.0f, 200.0f / 255.0f, 225.0f / 255.0f, 1.0f);
+        glClearColor(0.0f / 255.0f, 0.0f / 255.0f, 0.0f / 255.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_CmdListStatic.Draw();
@@ -266,10 +277,16 @@ namespace IR::Renderer {
         return &m_Materials.front();
     }
 
-    GLTexture* GL::MakeTexture()
+    Texture* GL::MakeTexture()
     {
         m_Textures.push_front({});
         return &m_Textures.front();
+    }
+
+    Shader* GL::MakeShader()
+    {
+        m_Shaders.push_front({});
+        return &m_Shaders.front();
     }
 
     UInt32 GL::UseTexture(const GLTexture& texture)
@@ -291,8 +308,8 @@ namespace IR::Renderer {
     GLLayout* GL::GetLayout(GLLayout::Type type)
     {
         switch (type) {
-        case GLLayout::TYPE_STANDARD: return &m_LayoutStandard;
-        case GLLayout::TYPE_ANIMATED: return &m_LayoutAnimated;
+        case GLLayout::Type::STANDARD: return &m_LayoutStandard;
+        case GLLayout::Type::ANIMATED: return &m_LayoutAnimated;
         default: return nullptr;
         }
     }

@@ -8,10 +8,10 @@ namespace IR {
     class CVar {
     public:
         enum class Type {
-            Bool,
-            Int64,
-            Float64,
-            String
+            BOOL,
+            INT64,
+            FLOAT64,
+            STRING
         };
 
         CVar(const char* name, UInt32 flags, const bool& v);

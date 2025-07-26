@@ -6,8 +6,6 @@
 namespace IR::Renderer {
     class GLModel : public Model {
     public:
-        ~GLModel();
-
         bool Init(const void* meshes, UInt32 count) override;
 
         void Draw(const void* data) override;

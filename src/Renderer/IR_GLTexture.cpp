@@ -1,32 +1,11 @@
 #include <Renderer/IR_GLTexture.hpp>
 #include <Renderer/IR_GLRenderer.hpp>
 
-#include <Thirdparty/stb_image.h>
 #include <GL/glew.h>
 
 #include <cmath>
 
-#include <string>
-
 namespace IR::Renderer {
-
-    bool GLTexture::InitPath(const char* path, bool linearize, bool mipmaps, bool handle)
-    {
-        stbi_set_flip_vertically_on_load(true);
-
-        Int32 width = 0, height = 0, channels = 0;
-        UInt8* data = stbi_load(("assets/textures/" + std::string(path)).c_str(), &width, &height, &channels, 0);
-
-        if (!data) {
-            IR_MSG(ERROR, "GLTexture failed to open image \"%s\", reason: %s", path, stbi_failure_reason());
-            return false;
-        }
-
-        bool success = InitMemory(data, width, height, channels, linearize, mipmaps);
-        stbi_image_free(data);
-
-        return success;
-    }
 
     bool GLTexture::InitMemory(const UInt8* data, UInt32 width, UInt32 height, UInt8 channel_count, bool linearize, bool mipmaps, bool handle)
     {

@@ -6,7 +6,6 @@
 #include <vector>
 
 namespace IR {
-
     class KeyValue {
     public:
         enum class Type {
@@ -49,5 +48,4 @@ namespace IR {
         Type m_Type;
         Data m_Value;
     };
-
 }

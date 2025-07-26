@@ -35,7 +35,7 @@ namespace IR::Renderer {
 
     void GLMaterial::MakeTexture(Map map, const char* path, bool linearize, bool mipmaps)
     {
-        GLTexture* texture = s_GL->MakeTexture();
+        GLTexture* texture = (GLTexture*)s_GL->MakeTexture();
         texture->InitPath(path, linearize, mipmaps);
 
         m_Textures[map] = texture;
@@ -44,19 +44,24 @@ namespace IR::Renderer {
 
     void GLMaterial::MakeTexture(Map map, const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps)
     {
-        GLTexture* texture = s_GL->MakeTexture();
+        GLTexture* texture = (GLTexture*)s_GL->MakeTexture();
         texture->InitMemory(data, width, height, channelnum, linearize, mipmaps);
 
         m_Textures[map] = texture;
         m_TextureIDs[map] = texture->GetID();
     }
 
-    void GLMaterial::AddTexture(Map map, void* texture)
+    void GLMaterial::AddTexture(Map map, Texture* texture)
     {
         GLTexture* gltexture = (GLTexture*)texture;
 
         m_Textures[map] = gltexture;
         m_TextureIDs[map] = gltexture->GetID();
+    }
+
+    void GLMaterial::SetShader(Shader* shader)
+    {
+        m_Shader = shader;
     }
 
 }

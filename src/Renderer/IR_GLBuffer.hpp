@@ -21,5 +21,4 @@ namespace IR::Renderer {
         bool m_Realloc = false;
         Int32 m_Type = 0;
     };
-
 }

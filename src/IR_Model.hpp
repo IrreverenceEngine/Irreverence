@@ -6,10 +6,9 @@
 namespace IR::Renderer {
     class Model {
     public:
-        virtual ~Model() {}
-
         bool Init(const char* path);
         virtual bool Init(const void* meshes, UInt32 count) = 0;
+        virtual void Destroy() {}
 
         virtual void Draw(const void* data) = 0;
 

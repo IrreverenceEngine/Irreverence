@@ -27,7 +27,7 @@ out VP_Shared {
 
 struct InstanceStandard {
 	vec4 color;
-	mat4 model;
+	mat4 modelMatrix;
 	uint matIndex;
 	uint padding[3];
 };
@@ -40,14 +40,14 @@ void main()
 {
 	InstanceStandard instData = uInstanceStandards[gl_BaseInstance];
 
-	pFragPos = aPos;
+	pFragPos = vec3(instData.modelMatrix * vec4(aPos, 1.0));
 
 	vec4 viewPos = uCommon.View * vec4(pFragPos, 1.0);
 	gl_Position = uCommon.Projection * viewPos;
 
     pDepth = 1.0 - (-viewPos.z - uCommon.Near) / (uCommon.Far - uCommon.Near);
 
-	pNormal = aNormal;
+	pNormal = transpose(mat3(inverse(instData.modelMatrix))) * aNormal;
 	pUV = aUV;
 
 	pInstanceColor = instData.color;

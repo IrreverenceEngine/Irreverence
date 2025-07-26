@@ -16,14 +16,14 @@ namespace IR::Renderer {
     static glm::mat4 s_View;
     static glm::mat4 s_Projection;
 
-    static API s_API = API::OpenGL;
+    static API s_API = API::OPENGL;
     static APIHandle* s_HAPI = nullptr;
 
     UInt64 PreInit(API api)
     {
         UInt64 flags = 0;
 
-        if (s_API == API::DirectX) {
+        if (s_API == API::DIRECTX) {
 
         } else {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -44,7 +44,7 @@ namespace IR::Renderer {
         s_View = glm::mat4(1.0f);
         s_Projection = glm::mat4(1.0f);
 
-        if (s_API == API::DirectX) {
+        if (s_API == API::DIRECTX) {
             s_HAPI = new DX;
         } else {
             s_HAPI = new GL;
@@ -53,7 +53,7 @@ namespace IR::Renderer {
         bool success = s_HAPI->Init();
 
         if (success) {
-            IR_MSG(INFO, "Successfully initialized %s Renderer", s_HAPI->GetName());
+            IR_MSG(INFO, "Successfully initialized Renderer (%s)", s_HAPI->GetName());
         }
 
         return success;
@@ -71,5 +71,7 @@ namespace IR::Renderer {
 
     Model* MakeModel() IR_RETURN(s_HAPI->MakeModel())
     Material* MakeMaterial() IR_RETURN(s_HAPI->MakeMaterial())
+    Texture* MakeTexture() IR_RETURN(s_HAPI->MakeTexture())
+    Shader* MakeShader() IR_RETURN(s_HAPI->MakeShader())
 
 }

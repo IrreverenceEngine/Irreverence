@@ -3,7 +3,17 @@
 
 out vec4 FRAG_COLOR;
 
-layout(binding = 0) uniform sampler2D uTexture;
+layout(std140, binding = 0) uniform CommonUniform
+{
+	uint Width;
+	uint Height;
+	float CurTime;
+	float FrameTime;
+	mat4 View;
+	mat4 Projection;
+	float Near;
+	float Far;
+} uCommon;
 
 in VP_Shared {
 	vec3 pFragPos;

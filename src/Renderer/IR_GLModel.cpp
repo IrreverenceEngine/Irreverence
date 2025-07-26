@@ -14,15 +14,10 @@ namespace IR::Renderer {
 
         GLMesh* glmeshes = (GLMesh*)meshes;
         for (UInt32 i = 0; i < count; i++) {
-            m_Meshes.push_back(glmeshes[i]);
+            m_Meshes.emplace_back(glmeshes[i]);
         }
 
         return true;
-    }
-
-    GLModel::~GLModel()
-    {
-
     }
 
     void GLModel::Draw(const void* data)
@@ -35,7 +30,7 @@ namespace IR::Renderer {
         GLMesh mesh;
         mesh.Init(vertices, vertnum, indices, indnum);
 
-        m_Meshes.push_back(mesh);
+        m_Meshes.emplace_back(mesh);
     }
 
     void GLModel::MakeMesh(const VertexAnimated* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum)
@@ -43,7 +38,7 @@ namespace IR::Renderer {
         GLMesh mesh;
         mesh.Init(vertices, vertnum, indices, indnum);
 
-        m_Meshes.push_back(mesh);
+        m_Meshes.emplace_back(mesh);
     }
 
     void GLModel::ReserveMesh(UInt32 count)
