@@ -44,9 +44,9 @@ namespace IR::Renderer {
 
             Float32 maxAllowAniso = 0.0f;
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAllowAniso);
-            glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, Clamp(maxAllowAniso, 0.0f, 16.0f));
+            glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, Math::Clamp(maxAllowAniso, 0.0f, 16.0f));
 
-            m_MipCount = (UInt32)(1 + floorf(log2f(Max(width, height))));
+            m_MipCount = (UInt32)(1 + floorf(log2f(Math::Max(width, height))));
             glTextureStorage2D(m_ID, m_MipCount, glFormat, width, height);
             glTextureSubImage2D(m_ID, 0, 0, 0, width, height, glFormatAlt, GL_UNSIGNED_BYTE, data);
 

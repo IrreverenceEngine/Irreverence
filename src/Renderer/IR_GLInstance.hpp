@@ -8,7 +8,7 @@
 namespace IR::Renderer {
     class GLInstanceList {
     public:
-        void Init(UInt64 stride, UInt8 location);
+        void Init(UInt32 stride, UInt8 location);
         void Destroy();
 
         UInt32 Add(const void* data);
@@ -18,13 +18,17 @@ namespace IR::Renderer {
     private:
         GLBuffer m_Buffer;
         std::vector<UInt8> m_List;
-        UInt64 m_Stride = 0;
+        UInt32 m_Stride = 0;
     };
 
-    struct InstanceStandard {
+    struct GLInstanceStandard {
         glm::vec4 color;
         glm::mat4 model;
-        UInt32 matLocation;
+        UInt32 matIndex;
         UInt32 padding[3];
+    };
+
+    struct GLInstanceMap {
+        UInt32 matIndex;
     };
 }

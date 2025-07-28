@@ -20,9 +20,10 @@ namespace IR::Renderer {
         void Init();
         void Destroy();
 
-        void Submit(const GLMesh& mesh, const GLShader& shader, UInt32 instanceId);
+        void Submit(const GLMesh* mesh, const GLShader* shader, UInt32 instanceId);
         void Flush();
         void Draw();
+        void DrawShaderless();
 
     private:
         GLBuffer m_Buffer;

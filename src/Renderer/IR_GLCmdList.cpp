@@ -15,16 +15,16 @@ namespace IR::Renderer {
         m_Buffer.Destroy();
     }
 
-    void GLCmdList::Submit(const GLMesh& mesh, const GLShader& shader, UInt32 instanceId)
+    void GLCmdList::Submit(const GLMesh* mesh, const GLShader* shader, UInt32 instanceId)
     {
         GLCmdElements cmd;
         cmd.instanceCount = 1;
-        cmd.count = mesh.GetIndexNum();
-        cmd.firstIndex = mesh.GetIndexOffset();
-        cmd.baseVertex = mesh.GetVertexOffset();
+        cmd.count = mesh->GetIndexNum();
+        cmd.firstIndex = mesh->GetIndexOffset();
+        cmd.baseVertex = mesh->GetVertexOffset();
         cmd.baseInstance = instanceId;
 
-        m_List[mesh.GetLayoutType()][shader.GetID()].push_back(cmd);
+        m_List[mesh->GetLayoutType()][shader->GetID()].push_back(cmd);
     }
 
     void GLCmdList::Flush()
@@ -52,7 +52,30 @@ namespace IR::Renderer {
                 }
 
                 // TODO: Bind Shader in a better way
+
                 glUseProgram(shaderId);
+                glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, list.size(), 0);
+            }
+        }
+    }
+
+    void GLCmdList::DrawShaderless()
+    {
+        m_Buffer.Bind();
+
+        for (UInt8 i = 0; i < IR_ARRLEN(m_List); i++) {
+            GLLayout* layout = s_GL->GetLayout((GLLayout::Type)i);
+            layout->GetMeshPool().Bind();
+
+            for (const auto& [shaderId, list] : m_List[i]) {
+                if (list.size() == 0) {
+                    continue;
+                }
+
+                if (m_Buffer.Update(list.data(), list.size() * sizeof(GLCmdElements), 0)) { // Rebind the buffer if resized.
+                    m_Buffer.Bind();
+                }
+
                 glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, list.size(), 0);
             }
         }

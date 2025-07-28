@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 
 namespace IR::Renderer {
-    bool GLMeshPool::Init(UInt32 layoutId, UInt64 stride)
+    bool GLMeshPool::Init(UInt32 layoutId, UInt32 stride)
     {
         m_VertexBuffer.Init(GL_ARRAY_BUFFER, nullptr, stride, UINT8_MAX, true);
         glVertexArrayVertexBuffer(layoutId, 0, m_VertexBuffer.GetID(), 0, stride);

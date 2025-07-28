@@ -8,7 +8,7 @@
 namespace IR::Renderer {
     class GLMeshPool { // Mesh Buffer
     public:
-        bool Init(UInt32 layoutId, UInt64 stride);
+        bool Init(UInt32 layoutId, UInt32 stride);
         void Destroy();
 
         std::pair<UInt32, UInt32> Add(const void* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indexnum);
@@ -22,6 +22,6 @@ namespace IR::Renderer {
         UInt64 m_IndexOffset = 0;
 
         UInt32 m_Layout = 0;
-        UInt64 m_Stride = 0;
+        UInt32 m_Stride = 0;
     };
 }

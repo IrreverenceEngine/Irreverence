@@ -1,13 +1,13 @@
 #pragma once
 
-#include <IR_LayoutType.hpp>
+#include <IR_Mesh.hpp>
 #include <IR_Common.hpp>
 
 namespace IR::Renderer {
-    class GLMesh {
+    class GLMesh : public Mesh {
     public:
-        bool Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
-        bool Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
+        bool Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;
+        bool Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;
 
         UInt32 GetVertexOffset() const IR_RETURN(m_VertOffset)
         UInt32 GetIndexOffset() const IR_RETURN(m_IndexOffset)

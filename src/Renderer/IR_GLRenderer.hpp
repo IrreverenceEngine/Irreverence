@@ -31,6 +31,7 @@ namespace IR::Renderer {
             SSLOC_MATERIALINFO,
             SSLOC_TEXTUREHANDLE,
             SSLOC_ILSTANDARD,
+            SSLOC_ILMAP,
         };
 
         UInt32 UseTexture(const GLTexture& texture);
@@ -39,11 +40,14 @@ namespace IR::Renderer {
         GLLayout* GetLayout(GLLayout::Type type);
 
     private:
+        bool m_InitialPrepare = false;
+
         // Vars
         std::forward_list<GLModel> m_Models;
         std::forward_list<GLMaterial> m_Materials;
         std::forward_list<GLTexture> m_Textures;
         std::forward_list<GLShader> m_Shaders;
+        std::forward_list<GLMesh> m_Meshes;
 
         std::vector<GLMaterial::Info> m_MaterialInfos;
         std::vector<UInt64> m_TextureHandles;
@@ -74,7 +78,11 @@ namespace IR::Renderer {
         GLBuffer m_SBTextureHandles;
 
         // --- [INSTANCE LISTS] ---
-        GLInstanceList m_ILStandard;
+        // - Dynamics
+        GLInstanceList m_ILDStandard;
+
+        // - Statics
+        GLInstanceList m_ILSMap;
 
         // --- [TEXTURES] ---
         GLTexture m_TextureWhite;

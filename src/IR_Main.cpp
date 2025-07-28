@@ -4,6 +4,8 @@
 #include <IR_Input.hpp>
 #include <IR_BinaryMap.hpp>
 
+#include <glm/gtc/quaternion.hpp>
+
 using namespace IR;
 
 int main(int argc, char** argv)
@@ -27,7 +29,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	Renderer::Model* mdl = Renderer::MakeModel();
+	std::vector<Renderer::Mesh*> meshes;
 	for (BinaryMap::EntityData& ent : mapfile.GetEntityDatas()) {
 		if (ent.keyvalues["classname"] == "worldspawn") {
 			for (const auto& brush : ent.brushes) {
@@ -41,13 +43,29 @@ int main(int argc, char** argv)
 						tempIndices.push_back(i);
 					}
 
-					mdl->MakeMesh(face.vertices.data(), face.vertices.size(), tempIndices.data(), tempIndices.size());
+					Renderer::Mesh* mesh = Renderer::MakeMesh();
+					mesh->Init(face.vertices.data(), face.vertices.size(), tempIndices.data(), tempIndices.size());
+					meshes.emplace_back(mesh);
 				}
 			}
 		}
 	}
 
+
+	static std::vector<Renderer::Material*> mapMats;
+
+	for (UInt32 i = 0; i < meshes.size(); i++) {
+		mapMats.push_back(Random::Int(0, 1) == 0 ? Renderer::GetMaterialError() : Renderer::GetMaterialWhite());
+	}
+
+	for (UInt32 i = 0; i < meshes.size(); i++) {
+		Renderer::Mesh* mesh = meshes[i];
+
+		Renderer::SubmitMapMesh(mesh, mapMats[i]);
+	}
+
 	while(!Window::ShouldClose()) {
+
 		Renderer::Present();
 
 		if (Input::IsKeyPressed(Input::Key::X)) {

@@ -17,6 +17,7 @@ namespace IR::Renderer {
         void Reset();
 
         UInt32 GetBTIndex() const IR_RETURN(m_BTIndex)
+        GLShader* GetShader() const IR_RETURN(m_Shader)
 
         void MakeTexture(Map map, const char* path, bool linearize, bool mipmaps) override;
         void MakeTexture(Map map, const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps) override;
@@ -24,9 +25,8 @@ namespace IR::Renderer {
         void SetShader(Shader* shader) override;
 
     private:
-        Shader* m_Shader = nullptr;
+        GLShader* m_Shader = nullptr;
         UInt32 m_BTIndex = UINT32_MAX;
         GLTexture* m_Textures[Map::MAP__COUNT] = {};
-        UInt32 m_TextureIDs[Map::MAP__COUNT] = {}; // TODO: Remove this, don't need it anymore (cuz MDI & BT)
     };
 }

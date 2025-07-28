@@ -5,7 +5,7 @@
 
 namespace IR::Renderer {
 
-    void GLInstanceList::Init(UInt64 stride, UInt8 location)
+    void GLInstanceList::Init(UInt32 stride, UInt8 location)
     {
         m_Buffer.Init(GL_SHADER_STORAGE_BUFFER, nullptr, stride, location, true);
         m_Stride = stride;

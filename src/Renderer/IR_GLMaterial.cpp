@@ -7,7 +7,9 @@ namespace IR::Renderer {
 
     void GLMaterial::Bind()
     {
-        glBindTextures(0, MAP__COUNT, m_TextureIDs);
+        for (UInt32 i = 0; i < MAP__COUNT; i++) {
+            m_Textures[i]->Bind(i);
+        }
     }
 
     void GLMaterial::Use()
@@ -39,7 +41,6 @@ namespace IR::Renderer {
         texture->InitPath(path, linearize, mipmaps);
 
         m_Textures[map] = texture;
-        m_TextureIDs[map] = texture->GetID();
     }
 
     void GLMaterial::MakeTexture(Map map, const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps)
@@ -48,7 +49,6 @@ namespace IR::Renderer {
         texture->InitMemory(data, width, height, channelnum, linearize, mipmaps);
 
         m_Textures[map] = texture;
-        m_TextureIDs[map] = texture->GetID();
     }
 
     void GLMaterial::AddTexture(Map map, Texture* texture)
@@ -56,12 +56,11 @@ namespace IR::Renderer {
         GLTexture* gltexture = (GLTexture*)texture;
 
         m_Textures[map] = gltexture;
-        m_TextureIDs[map] = gltexture->GetID();
     }
 
     void GLMaterial::SetShader(Shader* shader)
     {
-        m_Shader = shader;
+        m_Shader = (GLShader*)shader;
     }
 
 }

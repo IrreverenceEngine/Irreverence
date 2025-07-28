@@ -69,9 +69,28 @@ namespace IR::Renderer {
         s_HAPI->Present();
     }
 
+    void SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const glm::vec4& col, UInt8 skin)
+    {
+        s_HAPI->SubmitModel(model, pos, rot, size, col, skin);
+    }
+
+    void SubmitMesh(const Mesh* mesh, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const glm::vec4& col, const Material* material)
+    {
+        s_HAPI->SubmitMesh(mesh, pos, rot, size, col, material);
+    }
+
+    void SubmitMapMesh(const Mesh *mesh, const Material *material)
+    {
+        s_HAPI->SubmitMapMesh(mesh, material);
+    }
+
     Model* MakeModel() IR_RETURN(s_HAPI->MakeModel())
     Material* MakeMaterial() IR_RETURN(s_HAPI->MakeMaterial())
     Texture* MakeTexture() IR_RETURN(s_HAPI->MakeTexture())
     Shader* MakeShader() IR_RETURN(s_HAPI->MakeShader())
+    Mesh* MakeMesh() IR_RETURN(s_HAPI->MakeMesh())
 
+    Material* GetMaterialWhite() IR_RETURN(s_HAPI->GetMaterialWhite())
+    Material* GetMaterialBlack() IR_RETURN(s_HAPI->GetMaterialBlack())
+    Material* GetMaterialError() IR_RETURN(s_HAPI->GetMaterialError())
 }

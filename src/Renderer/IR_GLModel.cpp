@@ -14,31 +14,60 @@ namespace IR::Renderer {
 
         GLMesh* glmeshes = (GLMesh*)meshes;
         for (UInt32 i = 0; i < count; i++) {
-            m_Meshes.emplace_back(glmeshes[i]);
+            m_Meshes.push_back({ glmeshes[i] });
         }
 
         return true;
     }
 
-    void GLModel::Draw(const void* data)
+    void GLModel::MakeMesh(const VertexStandard* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum, const Material** skins, UInt8 skinnum)
     {
+        UInt8 safeSkinNum = Math::Min(Model::MAX_SKINS, skinnum);
 
-    }
+        MeshInfo info;
 
-    void GLModel::MakeMesh(const VertexStandard* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum)
-    {
         GLMesh mesh;
         mesh.Init(vertices, vertnum, indices, indnum);
+        info.mesh = mesh;
 
-        m_Meshes.emplace_back(mesh);
+        for (UInt8 i = 0; i < Model::MAX_SKINS; i++) {
+            if (i < safeSkinNum) {
+                const Material* mat = skins[i];
+                if (mat) {
+                    info.skins[i] = (GLMaterial*)mat;
+                    continue;
+                }
+            }
+
+            info.skins[i] = (GLMaterial*)s_GL->GetMaterialError();
+        }
+
+        m_Meshes.emplace_back(info);
     }
 
-    void GLModel::MakeMesh(const VertexAnimated* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum)
+    void GLModel::MakeMesh(const VertexAnimated* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum, const Material** skins, UInt8 skinnum)
     {
+        UInt8 safeSkinNum = Math::Min(Model::MAX_SKINS, skinnum);
+
+        MeshInfo info;
+
         GLMesh mesh;
         mesh.Init(vertices, vertnum, indices, indnum);
+        info.mesh = mesh;
 
-        m_Meshes.emplace_back(mesh);
+        for (UInt8 i = 0; i < Model::MAX_SKINS; i++) {
+            if (i < safeSkinNum) {
+                const Material* mat = skins[i];
+                if (mat) {
+                    info.skins[i] = (GLMaterial*)mat;
+                    continue;
+                }
+            }
+
+            info.skins[i] = (GLMaterial*)s_GL->GetMaterialError();
+        }
+
+        m_Meshes.emplace_back(info);
     }
 
     void GLModel::ReserveMesh(UInt32 count)

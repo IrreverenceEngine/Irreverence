@@ -2,7 +2,7 @@
 
 #include <IR_Macro.hpp>
 
-namespace IR {
+namespace IR::Math {
     
     template <typename T>
     inline T Min(T a, T b) IR_RETURN(a < b ? a : b)
