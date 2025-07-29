@@ -1,7 +1,7 @@
 ## TODO
 
 * SPECIFIC:
-    - [ ] Read Texture Info from Binary Maps.
+    - [x] Read Material Table from Binary Maps.
     - [ ] Proper Material System.
     - [ ] Better Renderer Interface.
     - [ ] Key Values.

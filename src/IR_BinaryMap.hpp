@@ -31,6 +31,7 @@ namespace IR {
             glm::vec4 plane = {};
             UInt32 flags = 0;
             std::vector<Renderer::VertexStandard> vertices;
+            std::string materialName;
         };
 
         bool Load(const char* path);

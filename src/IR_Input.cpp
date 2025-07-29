@@ -3,8 +3,6 @@
 #include <unordered_map>
 
 namespace IR::Input {
-
-    // The naming may need to be reversed (dont have time to fix that :DDDDD)
     constexpr UInt8 PRESSED_BIT = 0x1;
     constexpr UInt8 HOLD_BIT = 0x2;
 

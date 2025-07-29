@@ -11,6 +11,7 @@ namespace IR {
         LUMPTYPE_BRUSHES,
         LUMPTYPE_FACES,
         LUMPTYPE_VERTICES,
+        LUMPTYPE_MATERIALTABLE,
         LUMPTYPE__COUNT
     };
 
@@ -44,16 +45,13 @@ namespace IR {
         UInt32 flags;
         UInt32 vertNum;
         UInt32 vertBegin;
+        UInt32 matNameOffset;
     };
 
     struct BMVertex {
         glm::vec3 position;
         glm::vec3 normal;
         glm::vec2 texcoord;
-    };
-
-    struct BMMaterials {
-        // TODO: put shet?
     };
 
     static void ReadEntities(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMEntity>& ents)
@@ -131,6 +129,8 @@ namespace IR {
             stream.read((char*)&face.vertNum, sizeof(face.vertNum));
             stream.read((char*)&face.vertBegin, sizeof(face.vertBegin));
 
+            stream.read((char*)&face.matNameOffset, sizeof(face.matNameOffset));
+
             faces.emplace_back(face);
         }
     }
@@ -156,6 +156,13 @@ namespace IR {
 
             vertices.emplace_back(vert);
         }
+    }
+
+    static void ReadMaterialTable(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<char>& materialtable)
+    {
+        materialtable.resize(len);
+        stream.seekg(pos);
+        stream.read(materialtable.data(), len);
     }
 
     bool BinaryMap::Load(const char* path)
@@ -186,6 +193,9 @@ namespace IR {
         std::vector<BMVertex> vertices;
         ReadVertices(stream, hdr.lumps[LUMPTYPE_VERTICES].offset, hdr.lumps[LUMPTYPE_VERTICES].length, vertices);
 
+        std::vector<char> materialtable;
+        ReadMaterialTable(stream, hdr.lumps[LUMPTYPE_MATERIALTABLE].offset, hdr.lumps[LUMPTYPE_MATERIALTABLE].length, materialtable);
+
         for (const auto& ent : ents) {
             EntityData entdata;
             entdata.brushes.reserve(ent.brushNum);
@@ -200,6 +210,9 @@ namespace IR {
 
                     facedata.plane = face.plane;
                     facedata.flags = face.flags;
+
+                    char* matNamePtr = materialtable.data() + face.matNameOffset;
+                    facedata.materialName = std::string(matNamePtr + 1, *(UInt8*)matNamePtr);
 
                     facedata.vertices.reserve(face.vertNum);
 
