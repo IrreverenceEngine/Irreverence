@@ -1,38 +1,43 @@
 #include <IR_Shader.hpp>
+#include <IR_File.hpp>
 
-#include <fstream>
+#include <string>
 
 namespace IR::Renderer {
     bool Shader::InitRaster(const char* vspath, const char* fspath)
     {
-        std::ifstream vsfile(("assets/shaders/gl/" + std::string(vspath)).c_str());
-        if (!vsfile.is_open()) {
+        File vsfile(("assets/shaders/gl/" + std::string(vspath)).c_str(), "r");
+        if (!vsfile.IsOpen()) {
             IR_MSG(ERROR, "Shader failed to open Vertex Shader File \"%s\"", vspath);
             return false;
         }
 
-        std::ifstream fsfile(("assets/shaders/gl/" + std::string(fspath)).c_str());
-        if (!fsfile.is_open()) {
+        char* vscode = vsfile.ReadAll();
+        IR_DEFER({ if (vscode) delete[] vscode; });
+
+        File fsfile(("assets/shaders/gl/" + std::string(fspath)).c_str(), "r");
+        if (!fsfile.IsOpen()) {
             IR_MSG(ERROR, "Shader failed to open Fragment Shader File \"%s\"", fspath);
             return false;
         }
 
-		std::string vscode((std::istreambuf_iterator<char>(vsfile)), std::istreambuf_iterator<char>());
-		std::string fscode((std::istreambuf_iterator<char>(fsfile)), std::istreambuf_iterator<char>());
+        char* fscode = fsfile.ReadAll();
+        IR_DEFER({ if (fscode) delete[] fscode; });
 
-        return InitRasterMemory(vscode.c_str(), fscode.c_str());
+        return InitRasterMemory(vscode, fscode);
     }
 
     bool Shader::InitCompute(const char* cspath)
     {
-        std::ifstream csfile(("assets/shaders/gl/" + std::string(cspath)).c_str());
-        if (!csfile.is_open()) {
+        File csfile(("assets/shaders/gl/" + std::string(cspath)).c_str(), "r");
+        if (!csfile.IsOpen()) {
             IR_MSG(ERROR, "Shader failed to open Compute Shader File \"%s\"", cspath);
             return false;
         }
 
-		std::string cscode((std::istreambuf_iterator<char>(csfile)), std::istreambuf_iterator<char>());
+        char* cscode = csfile.ReadAll();
+        IR_DEFER({ if (cscode) delete[] cscode; });
 
-        return InitComputeMemory(cscode.c_str());
+        return InitComputeMemory(cscode);
     }
 }

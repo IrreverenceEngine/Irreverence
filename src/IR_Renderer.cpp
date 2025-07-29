@@ -1,6 +1,6 @@
 #include <IR_Renderer.hpp>
-#include <Renderer/IR_GLRenderer.hpp>
-#include <Renderer/IR_DXRenderer.hpp>
+#include <Renderer/GL/IR_GLRenderer.hpp>
+#include <Renderer/DX/IR_DXRenderer.hpp>
 #include <IR_Common.hpp>
 #include <IR_Window.hpp>
 #include <IR_Input.hpp>

@@ -51,17 +51,10 @@ int main(int argc, char** argv)
 		}
 	}
 
-
-	static std::vector<Renderer::Material*> mapMats;
-
-	for (UInt32 i = 0; i < meshes.size(); i++) {
-		mapMats.push_back(Random::Int(0, 1) == 0 ? Renderer::GetMaterialError() : Renderer::GetMaterialWhite());
-	}
-
 	for (UInt32 i = 0; i < meshes.size(); i++) {
 		Renderer::Mesh* mesh = meshes[i];
 
-		Renderer::SubmitMapMesh(mesh, mapMats[i]);
+		Renderer::SubmitMapMesh(mesh, Renderer::GetMaterialError());
 	}
 
 	while(!Window::ShouldClose()) {
