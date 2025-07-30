@@ -7,7 +7,7 @@ namespace IR {
     class Defer {
     public:
         Defer() = default;
-        
+
         Defer(T func) : m_Func(func) {}
 
         ~Defer() { m_Func(); }

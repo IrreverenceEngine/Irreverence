@@ -6,9 +6,9 @@ namespace IR {
     class File {
     public:
         enum SeekMode {
-            SEEK_SET,
-            SEEK_CUR,
-            SEEK_END
+            FILE_SEEK_SET,
+            FILE_SEEK_CUR,
+            FILE_SEEK_END
         };
 
         File() = delete;
@@ -23,7 +23,7 @@ namespace IR {
         char* ReadAll(UInt64* size = nullptr, bool nt = true);
         void Write(const void* data, UInt64 size);
 
-        bool IsOpen() const IR_RETURN(m_File)
+        bool IsOpen() const IR_RETURN(m_File != nullptr);
 
     private:
         void* m_File = nullptr;

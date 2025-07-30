@@ -56,6 +56,8 @@ namespace IR::Renderer {
         m_GLContext = SDL_GL_CreateContext((SDL_Window*)Window::GetHandle());
         SDL_GL_MakeCurrent((SDL_Window*)Window::GetHandle(), m_GLContext);
 
+		SDL_GL_SetSwapInterval(0);
+
         GLenum gcode = glewInit();
         if (gcode != GLEW_OK) {
             IR_MSG(ERROR, "Failed to init GL Renderer: failed to load OpenGL \"%s\"", glewGetErrorString(gcode));
