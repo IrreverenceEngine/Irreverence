@@ -61,10 +61,10 @@ namespace IR::Input {
         }
     }
 
-    void MMotionEvent(glm::ivec2 pos)
+    void MMotionEvent(glm::ivec2 pos, bool bRelative)
     {
         s_MOldPos = s_MPos;
-        s_MPos = pos;
+        s_MPos = (bRelative) ? s_MPos + pos : pos;
     }
 
     bool IsMButtonPressed(MButton button) IR_RETURN(s_MButtonStates[(UInt8)button] & 0x1)

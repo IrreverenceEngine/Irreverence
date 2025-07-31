@@ -90,6 +90,10 @@ int main(int argc, char** argv)
 			IR_MSG(INFO, "yippe");
 		}
 
+		if (Input::IsKeyPressed(Input::Key::F1)) {
+			Window::ToggleMouseLock();
+		}
+
 		if (Input::IsKeyPressed(Input::Key::ESCAPE)) {
 			Window::Close();
 		}

@@ -7,6 +7,8 @@
 namespace IR::Renderer {
     class Material {
     public:
+		virtual ~Material() = default;
+
         enum Map {
             MAP_DIFFUSE,
             MAP__COUNT

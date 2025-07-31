@@ -1,5 +1,6 @@
 #include <IR_Debug.hpp>
 #include <IR_Input.hpp>
+#include <IR_Window.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -15,10 +16,11 @@ namespace IR::Debug
         static float nearz = 10.0f;
         static float farz = 8192.0f;
 
-        // glm::ivec2 mdelta = Input::MouseDelta();
-
-        // angles.y += mdelta.x;
-        // angles.x -= mdelta.y;
+		if (Window::IsMouseLocked()) {
+			glm::ivec2 mdelta = Input::MouseDelta();
+			angles.y += mdelta.x;
+			angles.x -= mdelta.y;
+		}
 
 		if (Input::IsKeyDown(Input::Key::LEFT)) {
 			angles.y -= 200.0f * Globals.frametime;

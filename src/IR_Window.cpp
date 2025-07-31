@@ -6,7 +6,7 @@
 #include <SDL3/SDL.h>
 
 namespace IR::Window {
-    
+
     static SDL_Window* s_Window = nullptr;
     static UInt64 s_StartTime = 0;
     static UInt64 s_FTNowTime = 0;
@@ -34,7 +34,7 @@ namespace IR::Window {
 
         s_FTNowTime = SDL_GetPerformanceCounter();
         s_FTLastTime = 0;
-        
+
         IR_MSG(INFO, "Successfully initialized Window");
 
         return true;
@@ -59,7 +59,7 @@ namespace IR::Window {
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
             case SDL_EVENT_QUIT:
-            case SDL_EVENT_WINDOW_CLOSE_REQUESTED: 
+            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
                 return true;
             case SDL_EVENT_WINDOW_RESIZED:
                 SDL_GetWindowSize(s_Window, &Globals.width, &Globals.height);
@@ -77,10 +77,19 @@ namespace IR::Window {
                 Input::MButtonEvent((Input::MButton)event.button.button, false);
                 break;
             case SDL_EVENT_MOUSE_MOTION:
-                Input::MMotionEvent({ event.motion.x, event.motion.y });
                 break;
             }
         }
+
+		float x, y;
+
+		if (IsMouseLocked()) {
+			SDL_GetRelativeMouseState(&x, &y);
+		} else {
+			SDL_GetMouseState(&x, &y);
+		}
+
+		Input::MMotionEvent({ x, y }, IsMouseLocked());
 
         Globals.curtime = (SDL_GetPerformanceCounter() - s_StartTime) / (Float64)SDL_GetPerformanceFrequency();
 
@@ -95,4 +104,19 @@ namespace IR::Window {
     {
         return s_Window;
     }
+
+	bool IsMouseLocked()
+	{
+		return SDL_GetWindowRelativeMouseMode(s_Window) ? true : false;
+	}
+
+	void LockMouse(bool lock)
+	{
+		SDL_SetWindowRelativeMouseMode(s_Window, lock ? true : false);
+	}
+
+	void ToggleMouseLock()
+	{
+		LockMouse(!IsMouseLocked());
+	}
 }

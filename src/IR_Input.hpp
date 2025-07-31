@@ -15,7 +15,7 @@ namespace IR::Input {
     bool IsKeyDown(Key key);
 
     void MButtonEvent(MButton key, bool pressed);
-    void MMotionEvent(glm::ivec2 pos);
+    void MMotionEvent(glm::ivec2 pos, bool bRelative);
 
     bool IsMButtonPressed(MButton button);
     bool IsMButtonDown(MButton button);

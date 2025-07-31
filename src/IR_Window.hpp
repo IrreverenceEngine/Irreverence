@@ -10,4 +10,8 @@ namespace IR::Window {
 
     bool ShouldClose();
     void* GetHandle();
+
+	bool IsMouseLocked();
+	void LockMouse(bool lock);
+	void ToggleMouseLock();
 }
