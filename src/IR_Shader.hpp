@@ -7,6 +7,7 @@ namespace IR::Renderer {
     public:
 		virtual ~Shader() = default;
 
+        bool Init(const char* path);
         bool InitRaster(const char* vspath, const char* fspath);
         bool InitCompute(const char* cspath);
         virtual bool InitComputeMemory(const char* cscode) = 0;

@@ -17,6 +17,10 @@ namespace IR::Renderer {
 
     void GLCmdList::Submit(const GLMesh* mesh, const GLShader* shader, UInt32 instanceId)
     {
+        if (!shader) {
+            IR_MSG(FATAL, "Trying to submit null shader to CmdList, probably due to Material missing shader, pls fix.");
+        }
+
         GLCmdElements cmd;
         cmd.instanceCount = 1;
         cmd.count = mesh->GetIndexNum();

@@ -38,7 +38,7 @@ namespace IR::Renderer {
     void GLMaterial::MakeTexture(Map map, const char* path, bool linearize, bool mipmaps)
     {
         GLTexture* texture = (GLTexture*)s_GL->MakeTexture();
-        texture->InitPath(path, linearize, mipmaps);
+        texture->Init(path, linearize, mipmaps);
 
         m_Textures[map] = texture;
     }

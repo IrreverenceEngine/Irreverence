@@ -224,7 +224,7 @@ namespace IR {
                     facedata.flags = face.flags;
 
                     char* matNamePtr = materialtable.data() + face.matNameOffset;
-                    facedata.materialName = std::string(matNamePtr + 1, *(UInt8*)matNamePtr);
+                    facedata.materialName = std::string(matNamePtr + 1, *(UInt8*)matNamePtr) + ".shader";
 
                     facedata.vertices.reserve(face.vertNum);
 

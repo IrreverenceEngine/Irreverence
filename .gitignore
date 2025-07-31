@@ -2,4 +2,5 @@
 .cache/
 build/
 game/bin/
+game/irreverence
 compile_commands.json

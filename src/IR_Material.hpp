@@ -4,6 +4,8 @@
 #include <IR_Shader.hpp>
 #include <IR_Common.hpp>
 
+#include <IR_KeyValue.hpp>
+
 namespace IR::Renderer {
     class Material {
     public:
@@ -21,5 +23,8 @@ namespace IR::Renderer {
         virtual void MakeTexture(Map map, const UInt8* data, UInt32 width, UInt32 height, UInt8 channel_count, bool linearize, bool gen_mipmaps) = 0;
         virtual void AddTexture(Map map, Texture* texture) = 0;
         virtual void SetShader(Shader* shader) = 0;
+
+    protected:
+        KeyValue* m_KeyValues = nullptr;
     };
 }

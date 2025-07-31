@@ -19,6 +19,8 @@ namespace IR::Renderer {
     static API s_API = API::OPENGL;
     static APIHandle* s_HAPI = nullptr;
 
+    API GetAPI() IR_RETURN(s_API)
+
     UInt64 PreInit(API api)
     {
         UInt64 flags = 0;
@@ -38,6 +40,9 @@ namespace IR::Renderer {
 
         return flags;
     }
+
+    const char* GetName() IR_RETURN(s_HAPI->GetName())
+    const char* GetDirectory() IR_RETURN(s_HAPI->GetDirectory())
 
     bool Init()
     {

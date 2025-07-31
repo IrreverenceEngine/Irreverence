@@ -1,0 +1,6 @@
+Test
+{
+    "Type" "Raster"
+    "Vertex" "test.vert"
+    "Fragment" "test.frag"
+}

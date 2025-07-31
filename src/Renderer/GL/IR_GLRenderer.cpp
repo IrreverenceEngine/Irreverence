@@ -43,9 +43,8 @@ namespace IR::Renderer {
 
     constexpr UInt32 CUBE_INDICES[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 18, 1, 3, 19, 4, 6, 20, 7, 9, 21, 10, 12, 22, 13, 15, 23, 16 };
 
-    GLShader shader;
-
     const char* GL::GetName() IR_RETURN("OpenGL")
+    const char* GL::GetDirectory() IR_RETURN("gl/")
 
     bool GL::Init()
     {
@@ -154,20 +153,11 @@ namespace IR::Renderer {
         m_MaterialBlack.AddTexture(Material::MAP_DIFFUSE, &m_TextureBlack);
         m_MaterialError.AddTexture(Material::MAP_DIFFUSE, &m_TextureError);
 
-        m_MaterialWhite.SetShader(&shader);
-        m_MaterialBlack.SetShader(&shader);
-        m_MaterialError.SetShader(&shader);
-
-        // testing
-        shader.InitRaster("test.vert", "test.frag");
-
         return true;
     }
 
     void GL::Shutdown()
     {
-        shader.Destroy();
-
         m_LayoutStandard.Destroy();
         m_LayoutAnimated.Destroy();
 

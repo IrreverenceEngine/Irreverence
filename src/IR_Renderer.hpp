@@ -11,6 +11,7 @@
 
 #define IR_RENDERER_FUNCS(_x, _y) \
     _x const char* GetName() _y; \
+    _x const char* GetDirectory() _y; \
     _x bool Init() _y; \
     _x void Shutdown() _y; \
     _x void Present() _y; \
@@ -37,6 +38,7 @@ namespace IR::Renderer {
         DIRECTX
     };
 
+    API GetAPI();
     UInt64 PreInit(API api);
 
     IR_RENDERER_FUNCS(,)
