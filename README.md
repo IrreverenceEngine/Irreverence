@@ -4,9 +4,9 @@
     - [x] Read Material Table from Binary Maps.
     - [ ] Proper Material System.
     - [ ] Better Renderer Interface.
-    - [ ] Key Values.
+    - [X] Key Values.
     - [ ] Model File Loading.
-    - [ ] Determine a standard model file format for the game.
+    - [X] Determine a standard model file format for the game (GLTF).
 
 * GENERAL:
     - [ ] Renderer.

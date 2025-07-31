@@ -30,8 +30,9 @@ namespace IR {
         struct FaceData {
             glm::vec4 plane = {};
             UInt32 flags = 0;
-            std::vector<Renderer::VertexStandard> vertices;
             std::string materialName;
+            std::vector<Renderer::VertexStandard> vertices;
+            std::vector<UInt32> indices;
         };
 
         bool Load(const char* path);

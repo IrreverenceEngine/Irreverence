@@ -68,13 +68,8 @@ int main(int argc, char** argv)
 						continue;
 					}
 
-					std::vector<UInt32> tempIndices;
-					for (UInt32 i = 0; i < face.vertices.size(); i++) {
-						tempIndices.push_back(i);
-					}
-
 					Renderer::Mesh* mesh = Renderer::MakeMesh();
-					mesh->Init(face.vertices.data(), face.vertices.size(), tempIndices.data(), tempIndices.size());
+					mesh->Init(face.vertices.data(), face.vertices.size(), face.indices.data(), face.indices.size());
 					meshes.emplace_back(mesh);
 				}
 			}

@@ -8,12 +8,12 @@ namespace IR::Debug
 
     void FlyCam(glm::mat4& outView, glm::mat4& outProjection)
     {
-        static glm::vec3 pos = glm::vec3(0, 2, 0);
+        static glm::vec3 pos = glm::vec3(0, 64, 0);
         static glm::vec3 dir = glm::vec3(0, 0, 1);
         static glm::vec3 angles = glm::vec3(0, 0, 0);
         static float fov = 70.0f;
-        static float nearz = 0.2f;
-        static float farz = 1024.0f;
+        static float nearz = 10.0f;
+        static float farz = 8192.0f;
 
         // glm::ivec2 mdelta = Input::MouseDelta();
 
@@ -42,27 +42,27 @@ namespace IR::Debug
 
 		glm::vec3 side = glm::normalize(glm::cross(dir, { 0.0f, 1.0f, 0.0f }));
 		if (Input::IsKeyDown(Input::Key::W)) {
-			pos += dir * 7.5f * (Float32)Globals.frametime;
+			pos += dir * 100.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::S)) {
-			pos -= dir * 7.5f * (Float32)Globals.frametime;
+			pos -= dir * 100.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::A)) {
-			pos -= side * 7.5f * (Float32)Globals.frametime;
+			pos -= side * 100.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::D)) {
-			pos += side * 7.5f * (Float32)Globals.frametime;
+			pos += side * 100.0f * (Float32)Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::SPACE)) {
-			pos.y += 7.5f * Globals.frametime;
+			pos.y += 100.0f * Globals.frametime;
 		}
 
 		if (Input::IsKeyDown(Input::Key::LCTRL)) {
-			pos.y -= 7.5f * Globals.frametime;
+			pos.y -= 100.0f * Globals.frametime;
 		}
 
         outView = glm::lookAt(pos, pos + dir, glm::vec3(0, 1, 0));

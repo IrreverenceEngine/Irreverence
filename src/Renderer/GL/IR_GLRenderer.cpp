@@ -95,6 +95,7 @@ namespace IR::Renderer {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
 
+
         // --- [VERTEX LAYOUTS] ---
         m_LayoutStandard.InitStandard();
         m_LayoutAnimated.InitAnimated();

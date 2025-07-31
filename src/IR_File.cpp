@@ -48,9 +48,9 @@ namespace IR {
     {
         UInt64 fsize = 0;
 
-        fseeko64((FILE*)m_File, 0, SEEK_END);
+        fseeko64((FILE*)m_File, 0, SEEKMODE_END);
         fsize = ftello64((FILE*)m_File);
-        fseeko64((FILE*)m_File, 0, SEEK_SET);
+        fseeko64((FILE*)m_File, 0, SEEKMODE_SET);
 
         UInt64 allocSize = fsize + (nt ? 1 : 0);
         char* data = new char[allocSize];

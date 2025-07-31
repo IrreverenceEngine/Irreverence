@@ -43,9 +43,10 @@ namespace IR {
     struct BMFace {
         glm::vec4 plane;
         UInt32 flags;
+        UInt32 matNameOffset;
         UInt32 vertNum;
         UInt32 vertBegin;
-        UInt32 matNameOffset;
+        std::vector<UInt32> indices;
     };
 
     struct BMVertex {
@@ -99,6 +100,7 @@ namespace IR {
             stream.read((char*)&brush.faceBegin, sizeof(brush.faceBegin));
             stream.read((char*)&convexVecCount, sizeof(convexVecCount));
 
+            brush.convexPoints.reserve(convexVecCount);
             for (UInt32 i = 0; i < convexVecCount; i++) {
                 stream.read((char*)&tmpVec.x, sizeof(tmpVec.x));
                 stream.read((char*)&tmpVec.y, sizeof(tmpVec.y));
@@ -116,20 +118,30 @@ namespace IR {
         stream.seekg(pos);
 
         BMFace face;
+        UInt32 indexCount;
 
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
+            face.indices.clear();
+
             stream.read((char*)&face.plane.x, sizeof(face.plane.x));
             stream.read((char*)&face.plane.y, sizeof(face.plane.y));
             stream.read((char*)&face.plane.z, sizeof(face.plane.z));
             stream.read((char*)&face.plane.w, sizeof(face.plane.w));
 
             stream.read((char*)&face.flags, sizeof(face.flags));
+            stream.read((char*)&face.matNameOffset, sizeof(face.matNameOffset));
 
             stream.read((char*)&face.vertNum, sizeof(face.vertNum));
             stream.read((char*)&face.vertBegin, sizeof(face.vertBegin));
+            stream.read((char*)&indexCount, sizeof(indexCount));
 
-            stream.read((char*)&face.matNameOffset, sizeof(face.matNameOffset));
+            face.indices.reserve(indexCount);
+            for (UInt32 i = 0; i < indexCount; i++) {
+                UInt32 index = 0;
+                stream.read((char*)&index, sizeof(index));
+                face.indices.emplace_back(index);
+            }
 
             faces.emplace_back(face);
         }
@@ -222,6 +234,8 @@ namespace IR {
 
                         facedata.vertices.emplace_back(standardVert);
                     }
+
+                    facedata.indices = face.indices;
 
                     brushdata.faces.emplace_back(facedata);
                 }

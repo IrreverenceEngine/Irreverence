@@ -6,9 +6,9 @@ namespace IR {
     class File {
     public:
         enum SeekMode {
-            FILE_SEEK_SET,
-            FILE_SEEK_CUR,
-            FILE_SEEK_END
+            SEEKMODE_SET,
+            SEEKMODE_CUR,
+            SEEKMODE_END
         };
 
         File() = delete;

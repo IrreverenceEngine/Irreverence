@@ -1,8 +1,7 @@
 #include <IR_Common.hpp>
 #include <IR_KeyValue.hpp>
-
 #include <IR_File.hpp>
-#include <IR_Log.hpp>
+
 #include <cstring>
 
 namespace IR {
