@@ -1,5 +1,6 @@
 #include <IR_Material.hpp>
 #include <IR_Assets.hpp>
+#include <IR_Renderer.hpp>
 
 namespace IR::Renderer {
 
@@ -24,28 +25,46 @@ namespace IR::Renderer {
             return false;
         }
 
-	    const std::string& diffuse = params->FindChildString("map");
-        if (diffuse.empty()) {
-            IR_MSG(ERROR, "Material is missing \"map\" parameter in file \"%s\"", path);
-            return false;
-        }
-
-        if (diffuse.substr(0, 9) != "textures/") {
-            IR_MSG(ERROR, "Material map parameter is missing \"textures/\" prefix in file \"%s\"", path);
-            return false;
-        }
-
         std::string shaderName = params->FindChildString("Shader");
         if (shaderName.empty()) {
             IR_MSG(ERROR, "Material is missing \"Shader\" parameter in file\"%s\"", path);
             return false;
         }
 
-        bool linearize = (bool)params->FindChildNumber("Linearize", 1);
-        bool mipmaps = (bool)params->FindChildNumber("Mipmap", 1);
-        AddTexture(MAP_DIFFUSE, Assets::Texture(diffuse.substr(9).c_str(), linearize, mipmaps));
+        Shader* shader = Assets::Shader(shaderName.c_str());
+        if (!shader) {
+            IR_MSG(ERROR, "Material failed to load a shader file \"%s\"", shaderName.c_str());
+            return false;
+        }
 
         SetShader(Assets::Shader(shaderName.c_str()));
+
+        bool linearize = (bool)params->FindChildNumber("Linearize", 1);
+        bool mipmaps = (bool)params->FindChildNumber("Mipmap", 1);
+
+        Texture* albedoTex = Renderer::GetTextureError();
+	    const std::string& albedoPath = params->FindChildString("Albedo");
+        if (!albedoPath.empty()) {
+            albedoTex = Assets::Texture(albedoPath.substr(9).c_str(), linearize, mipmaps);
+        } else {
+            IR_MSG(WARN, "Material is missing \"Albedo\" parameter in file \"%s\"", path);
+        }
+
+        Texture* normalTex = Renderer::GetTextureError();
+        const std::string& normalPath = params->FindChildString("Normal");
+        if (!normalPath.empty()) {
+            normalTex = Assets::Texture(normalPath.substr(9).c_str(), linearize, mipmaps);
+        }
+
+        Texture* amreTex = Renderer::GetTextureBlack();
+        const std::string& amrePath = params->FindChildString("AMRE");
+        if (!amrePath.empty()) {
+            amreTex = Assets::Texture(amrePath.substr(9).c_str(), linearize, mipmaps);
+        }
+
+        AddTexture(MAP_ALBEDO, albedoTex);
+        AddTexture(MAP_NORMAL, normalTex);
+        AddTexture(MAP_AMRE, amreTex);
 
         return true;
     }

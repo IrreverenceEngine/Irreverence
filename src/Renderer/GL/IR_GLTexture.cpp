@@ -77,8 +77,13 @@ namespace IR::Renderer {
 
     void GLTexture::Destroy()
     {
-        if (m_BTHandle) {
+        if (m_ID == 0) {
+            return;
+        }
+
+        if (m_BTHandle != UINT64_MAX) {
             glMakeTextureHandleNonResidentARB(m_BTHandle);
+            s_GL->RemoveTextureHandle(m_BTIndex);
         }
 
         glDeleteTextures(1, &m_ID);
@@ -101,7 +106,12 @@ namespace IR::Renderer {
 
     void GLTexture::Reset()
     {
-        m_BTIndex = UINT32_MAX;
+        if (m_BTIndex != UINT32_MAX) {
+            s_GL->RemoveTextureHandle(m_BTIndex);
+            m_BTIndex = UINT32_MAX;
+        }
+
+        m_BTIndex = s_GL->UseTexture(*this);
     }
 
 }

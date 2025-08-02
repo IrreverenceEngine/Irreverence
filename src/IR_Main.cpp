@@ -60,7 +60,13 @@ int main(int argc, char** argv)
 		Renderer::Present();
 
 		if (Input::IsKeyPressed(Input::Key::X)) {
-			IR_MSG(INFO, "yippe");
+			IR_MSG(INFO, "Destroyed door1");
+			Renderer::Texture* tex = Assets::Texture("door1.png", false, false);
+			tex->Destroy();
+
+			Renderer::Material* mat = Assets::Material("door1.shader");
+			mat->AddTexture(Renderer::Material::MAP_ALBEDO, Assets::Texture("gem.png", true, true));
+			mat->Reset();
 		}
 
 		if (Input::IsKeyPressed(Input::Key::F1)) {

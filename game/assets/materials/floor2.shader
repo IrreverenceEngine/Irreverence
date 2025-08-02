@@ -2,8 +2,10 @@ materials/floor2
 {
     {
         map textures/floor2.png
-        Shader Test.irs
+
+        Albedo textures/floor2.png
+        Shader MapFaceLit.irs
         Linearize 1
-        Mipmap 1
+        Mipdap 1
     }
 }

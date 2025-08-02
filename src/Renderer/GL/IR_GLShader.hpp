@@ -5,8 +5,6 @@
 #include <IR_Shader.hpp>
 #include <IR_Common.hpp>
 
-#include <string>
-
 namespace IR::Renderer {
     class GLShader : public Shader {
     public:
@@ -20,6 +18,5 @@ namespace IR::Renderer {
 
     private:
         UInt32 m_ID = 0;
-        std::string m_Name;
     };
 }

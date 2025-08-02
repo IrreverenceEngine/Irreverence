@@ -2,6 +2,8 @@ materials/CLIP
 {
     {
         map textures/CLIP.png
-        Shader Test.irs
+
+        Albedo textures/CLIP.png
+        Shader MapFaceLit.irs
     }
 }

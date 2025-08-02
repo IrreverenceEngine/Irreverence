@@ -2,6 +2,8 @@ materials/AREA
 {
     {
         map textures/AREA.png
-        Shader Test.irs
+
+        Albedo textures/AREA.png
+        Shader MapFaceLit.irs
     }
 }

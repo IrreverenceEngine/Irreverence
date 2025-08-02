@@ -36,11 +36,16 @@ namespace IR::Renderer {
 
         UInt32 UseTexture(const GLTexture& texture);
         UInt32 UseMaterialInfo(const GLMaterial::Info& info);
+        void RemoveTextureHandle(UInt32 index);
+        void RemoveMaterialInfo(UInt32 index);
 
+        const std::vector<std::string>& GetPatchIncludes() const IR_RETURN(m_PatchIncludes)
         GLLayout* GetLayout(GLLayout::Type type);
 
     private:
         bool m_InitialPrepare = false;
+
+        std::vector<std::string> m_PatchIncludes;
 
         // Vars
         std::forward_list<GLModel> m_Models;
@@ -88,6 +93,9 @@ namespace IR::Renderer {
         GLTexture m_TextureWhite;
         GLTexture m_TextureBlack;
         GLTexture m_TextureError;
+
+        // --- [SHADERS] ---
+        GLShader* m_ShaderMapFaceLit = nullptr;
 
         // --- [MESHES] ---
         GLMesh m_MeshCube;

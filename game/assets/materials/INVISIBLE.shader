@@ -2,6 +2,8 @@ materials/INVISIBLE
 {
     {
         map textures/INVISIBLE.png
-        Shader Test.irs
+
+        Albedo textures/INVISIBLE.png
+        Shader MapFaceLit.irs
     }
 }

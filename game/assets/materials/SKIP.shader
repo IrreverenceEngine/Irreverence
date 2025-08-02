@@ -2,6 +2,8 @@ materials/SKIP
 {
     {
         map textures/SKIP.png
-        Shader Test.irs
+
+        Albedo textures/SKIP.png
+        Shader MapFaceLit.irs
     }
 }

@@ -1,20 +1,11 @@
 #version 460
+#extension GL_ARB_shading_language_include : require
+
+#include "common.glsl"
 
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aUV;
-
-layout(std140, binding = 0) uniform CommonUniform
-{
-	uint Width;
-	uint Height;
-	float CurTime;
-	float FrameTime;
-	mat4 View;
-	mat4 Projection;
-	float Near;
-	float Far;
-} uCommon;
 
 out VP_Shared {
 	vec3 pFragPos;
@@ -23,21 +14,6 @@ out VP_Shared {
     vec2 pUV;
 	vec4 pInstanceColor;
 	flat uint pMaterialIndex;
-};
-
-struct InstanceStandard {
-	vec4 color;
-	mat4 modelMatrix;
-	uint matIndex;
-	uint padding[3];
-};
-
-struct InstanceMap {
-	uint matIndex;
-};
-
-layout(std430, binding = 3) readonly buffer InstanceStandards {
-    InstanceMap uInstanceMap[];
 };
 
 void main()

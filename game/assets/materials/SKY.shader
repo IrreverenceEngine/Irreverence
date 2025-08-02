@@ -2,6 +2,8 @@ materials/SKY
 {
     {
         map textures/SKY.png
-        Shader Test.irs
+
+        Albedo textures/SKY.png
+        Shader MapFaceLit.irs
     }
 }

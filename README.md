@@ -2,11 +2,11 @@
 
 * SPECIFIC:
     - [x] Read Material Table from Binary Maps.
-    - [ ] Proper Material System.
+    - [x] Proper Material System.
     - [ ] Better Renderer Interface.
-    - [X] Key Values.
+    - [x] Key Values.
     - [ ] Model File Loading.
-    - [X] Determine a standard model file format for the game (GLTF).
+    - [x] Determine a standard model file format for the game (GLTF).
 
 * GENERAL:
     - [ ] Renderer.

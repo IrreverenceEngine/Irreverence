@@ -2,8 +2,10 @@ materials/GRID_BLACK0
 {
     {
         map textures/GRID_BLACK0.png
-        Shader Test.irs
+
+        Albedo textures/GRID_BLACK0.png
+        Shader MapFaceLit.irs
         Linearize 1
-        Mipmap 1
+        Mipdap 1
     }
 }

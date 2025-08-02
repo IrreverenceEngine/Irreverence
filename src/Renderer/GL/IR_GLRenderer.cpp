@@ -3,6 +3,8 @@
 #include <IR_Random.hpp>
 #include <IR_Window.hpp>
 #include <IR_Debug.hpp>
+#include <IR_Assets.hpp>
+#include <IR_File.hpp>
 
 #include <GL/glew.h>
 #include <Thirdparty/stb_image.h>
@@ -11,6 +13,15 @@
 #include <glm/gtc/type_ptr.hpp>
 
 void glMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
+
+/*
+TODO: Fix possible problems mentioned below
+Should Renderer be able to use the Asset Manager? If yes then use it to load required Assets, on fail, return false.
+    - Solution: Just fuckin use em who cares
+
+If we delete an Texture, how does the other objects know whether it doesnt exist anymore?
+    - Solution: ?
+*/
 
 namespace IR::Renderer {
 
@@ -65,8 +76,8 @@ namespace IR::Renderer {
 
         bool hasBT = GLEW_ARB_bindless_texture;
         bool hasMDI = GLEW_ARB_multi_draw_indirect;
-        bool hasMB = GLEW_ARB_multi_bind;
-        if (!hasBT || !hasMDI || !hasMB ) {
+        bool hasSLI = GLEW_ARB_shading_language_include;
+        if (!hasBT || !hasMDI || !hasSLI ) {
             std::string errMsg = "Failed to init GL Renderer: user's hardware doesn't support ";
             if (!hasBT) {
                 errMsg += "\"Bindless Textures\" ";
@@ -76,8 +87,8 @@ namespace IR::Renderer {
                 errMsg += "\"Multi-Draw Indirect\" ";
             }
 
-            if (!hasMB) {
-                errMsg += "\"Multi-Bind\"";
+            if (!hasSLI) {
+                errMsg += "\"Shading Language Include\"";
             }
 
             IR_MSG(ERROR, "%s\n"
@@ -94,6 +105,17 @@ namespace IR::Renderer {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
 
+        File CommonIncl("assets/shaders/gl/include/common.glsl", "r");
+        if (!CommonIncl.IsOpen()) {
+            IR_MSG(INFO, "Failed to init GL Renderer: couldn't open include common.glsl");
+            return false;
+        }
+
+        UInt64 CommonInclSize;
+        char* CommonInclData = CommonIncl.ReadAll(&CommonInclSize);
+        IR_DEFER({ if (CommonInclData) delete[] CommonInclData; });
+        glNamedStringARB(GL_SHADER_INCLUDE_ARB, -1, "/common.glsl", CommonInclSize, CommonInclData);
+        m_PatchIncludes.push_back("common.glsl");
 
         // --- [VERTEX LAYOUTS] ---
         m_LayoutStandard.InitStandard();
@@ -116,7 +138,7 @@ namespace IR::Renderer {
 
         // --- [TEXTURES] ---
         const struct glm::vec<3, UInt8> missingColor1 = { 0, 0, 0 };
-        const struct glm::vec<3, UInt8> missingColor2 = { 255, 255, 255 }; // { 251, 62, 249 };
+        const struct glm::vec<3, UInt8> missingColor2 = { 251, 62, 249 };
         const struct glm::vec<3, UInt8> whiteColor = { 255, 255, 255 };
 
         std::vector<glm::vec<3, UInt8>> missingPixels;
@@ -132,6 +154,14 @@ namespace IR::Renderer {
         m_TextureError.InitMemory((const UInt8*)missingPixels.data(), 64, 64, 3, false, false, true);
         m_TextureBlack.InitMemory((const UInt8*)&missingColor1, 1, 1, 3, false, false, true);
         m_TextureWhite.InitMemory((const UInt8*)&whiteColor, 1, 1, 3, false, false, true);
+
+        // --- [SHADERS] ---
+        m_ShaderMapFaceLit = (GLShader*)Assets::Shader("MapFaceLit.irs");
+
+        if (!m_ShaderMapFaceLit) {
+            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load irs file \"MapFaceLit.irs\"");
+            return false;
+        }
 
         // --- [MESHES] ---
         const VertexStandard planeVerts[] = {
@@ -149,9 +179,13 @@ namespace IR::Renderer {
         m_MeshPlane.Init(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
 
         // --- [MATERIALS] ---
-        m_MaterialWhite.AddTexture(Material::MAP_DIFFUSE, &m_TextureWhite);
-        m_MaterialBlack.AddTexture(Material::MAP_DIFFUSE, &m_TextureBlack);
-        m_MaterialError.AddTexture(Material::MAP_DIFFUSE, &m_TextureError);
+        m_MaterialWhite.SetShader(m_ShaderMapFaceLit);
+        m_MaterialBlack.SetShader(m_ShaderMapFaceLit);
+        m_MaterialError.SetShader(m_ShaderMapFaceLit);
+
+        m_MaterialWhite.AddTexture(Material::MAP_ALBEDO, &m_TextureWhite);
+        m_MaterialBlack.AddTexture(Material::MAP_ALBEDO, &m_TextureBlack);
+        m_MaterialError.AddTexture(Material::MAP_ALBEDO, &m_TextureError);
 
         return true;
     }
@@ -185,7 +219,7 @@ namespace IR::Renderer {
         }
         m_Textures.clear();
 
-        // These two don't actually have a destroy func
+        // These three don't actually have a destroy func
         m_Meshes.clear();
         m_Models.clear();
         m_Materials.clear();
@@ -247,7 +281,7 @@ namespace IR::Renderer {
             GLMaterial* material = glmodel->GetMeshMaterial(i, skin);
 
             material->Use();
-            standard.matIndex = material->GetBTIndex();
+            standard.matIndex = material->GetInfoIndex();
             m_CmdListDynamic.Submit(&mesh, material->GetShader(), m_ILDStandard.Add(&standard));
         }
     }
@@ -262,7 +296,7 @@ namespace IR::Renderer {
         GLInstanceStandard inst;
         inst.model = glm::translate(glm::mat4(1.0f), pos) * glm::mat4(rot) * glm::scale(glm::mat4(1.0f), size);
         inst.color = col;
-        inst.matIndex = glmaterial->GetBTIndex();
+        inst.matIndex = glmaterial->GetInfoIndex();
 
         m_CmdListDynamic.Submit(glmesh, glmaterial->GetShader(), m_ILDStandard.Add(&inst));
     }
@@ -275,7 +309,7 @@ namespace IR::Renderer {
         glmaterial->Use();
 
         GLInstanceMap inst;
-        inst.matIndex = glmaterial->GetBTIndex();
+        inst.matIndex = glmaterial->GetInfoIndex();
 
         m_CmdListStatic.Submit(glmesh, glmaterial->GetShader(), m_ILSMap.Add(&inst));
     }
@@ -310,24 +344,65 @@ namespace IR::Renderer {
         return &m_Meshes.front();
     }
 
+    Texture* GL::GetTextureWhite() IR_RETURN(&m_TextureWhite);
+    Texture* GL::GetTextureBlack() IR_RETURN(&m_TextureBlack);
+    Texture* GL::GetTextureError() IR_RETURN(&m_TextureError);
+
     Material* GL::GetMaterialWhite() IR_RETURN(&m_MaterialWhite);
     Material* GL::GetMaterialBlack() IR_RETURN(&m_MaterialBlack);
     Material* GL::GetMaterialError() IR_RETURN(&m_MaterialError);
 
+    Mesh* GL::GetMeshCube() IR_RETURN(&m_MeshCube);
+
     UInt32 GL::UseTexture(const GLTexture& texture)
     {
-        UInt32 btindex = s_GL->m_TextureHandles.size();
-        s_GL->m_TextureHandles.push_back(texture.GetBTHandle());
+        for (UInt32 i = 0; i < m_TextureHandles.size(); i++) {
+            UInt64& mhandle = m_TextureHandles[i];
+            if (mhandle == UINT64_MAX) {
+                mhandle = texture.GetBTHandle();
+                return i;
+            }
+        }
+
+        UInt32 btindex = m_TextureHandles.size();
+        m_TextureHandles.emplace_back(texture.GetBTHandle());
 
         return btindex;
     }
 
     UInt32 GL::UseMaterialInfo(const GLMaterial::Info& info)
     {
-        UInt32 btindex = s_GL->m_MaterialInfos.size();
-        s_GL->m_MaterialInfos.push_back(info);
+        for (UInt32 i = 0; i < m_MaterialInfos.size(); i++) {
+            GLMaterial::Info& minfo = m_MaterialInfos[i];
+            if (minfo.handleIndexes[0] == UINT32_MAX) {
+                minfo = info;
+                return i;
+            }
+
+        }
+
+        UInt32 btindex = m_MaterialInfos.size();
+        m_MaterialInfos.emplace_back(info);
 
         return btindex;
+    }
+
+    void GL::RemoveTextureHandle(UInt32 index)
+    {
+        if (index >= m_TextureHandles.size()) {
+            return;
+        }
+
+        m_TextureHandles[index] = UINT64_MAX;
+    }
+
+    void GL::RemoveMaterialInfo(UInt32 index)
+    {
+        if (index >= m_MaterialInfos.size()) {
+            return;
+        }
+
+        m_MaterialInfos[index].handleIndexes[0] = UINT32_MAX;
     }
 
     GLLayout* GL::GetLayout(GLLayout::Type type)

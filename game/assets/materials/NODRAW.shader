@@ -2,6 +2,8 @@ materials/NODRAW
 {
     {
         map textures/NODRAW.png
-        Shader Test.irs
+
+        Albedo textures/NODRAW.png
+        Shader MapFaceLit.irs
     }
 }

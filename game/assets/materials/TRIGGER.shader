@@ -2,6 +2,8 @@ materials/TRIGGER
 {
     {
         map textures/TRIGGER.png
-        Shader Test.irs
+
+        Albedo textures/TRIGGER.png
+        Shader MapFaceLit.irs
     }
 }

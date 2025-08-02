@@ -23,9 +23,13 @@
     _x Texture* MakeTexture() _y; \
     _x Shader* MakeShader() _y; \
     _x Mesh* MakeMesh() _y; \
+    _x Texture* GetTextureWhite() _y; \
+    _x Texture* GetTextureBlack() _y; \
+    _x Texture* GetTextureError() _y; \
     _x Material* GetMaterialWhite() _y; \
     _x Material* GetMaterialBlack() _y; \
     _x Material* GetMaterialError() _y; \
+    _x Mesh* GetMeshCube() _y; \
 
 namespace IR::Renderer {
     class APIHandle {

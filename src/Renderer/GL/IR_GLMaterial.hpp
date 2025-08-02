@@ -11,22 +11,21 @@ namespace IR::Renderer {
             UInt32 handleIndexes[Material::MAP__COUNT];
         };
 
-        void Bind();
+        void Destroy() override;
 
-        void Use();
-        void Reset();
-
-        UInt32 GetBTIndex() const IR_RETURN(m_BTIndex)
-        GLShader* GetShader() const IR_RETURN(m_Shader)
-
-        void MakeTexture(Map map, const char* path, bool linearize, bool mipmaps) override;
-        void MakeTexture(Map map, const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps) override;
         void AddTexture(Map map, Texture* texture) override;
         void SetShader(Shader* shader) override;
 
+        void Bind();
+        void Use();
+        void Reset() override;
+
+        UInt32 GetInfoIndex() const IR_RETURN(m_InfoIndex)
+        GLShader* GetShader() const IR_RETURN(m_Shader)
+
     private:
         GLShader* m_Shader = nullptr;
-        UInt32 m_BTIndex = UINT32_MAX;
+        UInt32 m_InfoIndex = UINT32_MAX;
         GLTexture* m_Textures[Map::MAP__COUNT] = {};
     };
 }

@@ -19,7 +19,7 @@ namespace IR::Renderer {
 
     private:
         UInt32 m_ID = 0;
-        UInt64 m_BTHandle = 0; // Bindless Texture handle
+        UInt64 m_BTHandle = UINT64_MAX; // Bindless Texture handle
         UInt32 m_BTIndex = UINT32_MAX; // Location in the BT Shader Storage
         UInt32 m_Width = 0;
         UInt32 m_Height = 0;

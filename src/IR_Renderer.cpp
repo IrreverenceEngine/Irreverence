@@ -95,7 +95,11 @@ namespace IR::Renderer {
     Shader* MakeShader() IR_RETURN(s_HAPI->MakeShader())
     Mesh* MakeMesh() IR_RETURN(s_HAPI->MakeMesh())
 
+    Texture* GetTextureWhite() IR_RETURN(s_HAPI->GetTextureWhite())
+    Texture* GetTextureBlack() IR_RETURN(s_HAPI->GetTextureBlack())
+    Texture* GetTextureError() IR_RETURN(s_HAPI->GetTextureError())
     Material* GetMaterialWhite() IR_RETURN(s_HAPI->GetMaterialWhite())
     Material* GetMaterialBlack() IR_RETURN(s_HAPI->GetMaterialBlack())
     Material* GetMaterialError() IR_RETURN(s_HAPI->GetMaterialError())
+    Mesh* GetMeshCube() IR_RETURN(s_HAPI->GetMeshCube())
 }

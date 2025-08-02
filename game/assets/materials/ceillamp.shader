@@ -2,8 +2,10 @@ materials/ceillamp
 {
     {
         map textures/ceillamp.png
-        Shader Test.irs
+
+        Albedo textures/ceillamp.png
+        Shader MapFaceLit.irs
         Linearize 1
-        Mipmap 1
+        Mipdap 1
     }
 }

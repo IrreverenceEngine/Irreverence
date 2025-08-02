@@ -2,6 +2,8 @@ materials/ORIGIN
 {
     {
         map textures/ORIGIN.png
-        Shader Test.irs
+
+        Albedo textures/ORIGIN.png
+        Shader MapFaceLit.irs
     }
 }
