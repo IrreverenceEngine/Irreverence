@@ -1,6 +1,7 @@
 #include <IR_Debug.hpp>
 #include <IR_Input.hpp>
 #include <IR_Window.hpp>
+#include <IR_CVar.hpp>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -16,10 +17,13 @@ namespace IR::Debug
         static float nearz = 10.0f;
         static float farz = 65356.0f;
 
+		static CVar* sensitivity = CVar::Get("in_sensitivity");
+		float sensitivityValue = sensitivity ? sensitivity->GetFloat64() : 1.0f;
+
 		if (Window::IsMouseLocked()) {
 			glm::ivec2 mdelta = Input::MouseDelta();
-			angles.y += mdelta.x * 33.0f * Globals.frametime;
-			angles.x -= mdelta.y * 33.0f * Globals.frametime;
+			angles.y += mdelta.x * sensitivityValue;
+			angles.x -= mdelta.y * sensitivityValue;
 		}
 
 		if (Input::IsKeyDown(Input::Key::LEFT)) {

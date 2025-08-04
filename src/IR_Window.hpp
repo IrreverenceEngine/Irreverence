@@ -14,4 +14,8 @@ namespace IR::Window {
 	bool IsMouseLocked();
 	void LockMouse(bool lock);
 	void ToggleMouseLock();
+
+	bool IsFullscreen();
+	void SetFullscreen(bool fullscreen);
+	void ToggleFullscreen();
 }

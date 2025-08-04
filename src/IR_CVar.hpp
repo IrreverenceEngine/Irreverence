@@ -3,6 +3,7 @@
 #include <IR_Common.hpp>
 
 #include <string>
+#include <functional>
 
 namespace IR {
     class CVar {
@@ -38,6 +39,7 @@ namespace IR {
         std::string GetString() const IR_RETURN(std::string(m_Value.as_string))
 
         static CVar* Get(const char* name);
+		static void Iterate(const std::function<void(CVar*)>& callback);
 
     private:
         UInt32 m_Flags;
@@ -52,3 +54,6 @@ namespace IR {
         } m_Value;
     };
 }
+
+#define CVAR(name, flags, value) \
+	static IR::CVar name(#name, flags, value)

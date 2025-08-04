@@ -1,3 +1,4 @@
+#include "IR_Renderer.hpp"
 #include <IR_Window.hpp>
 #include <IR_Common.hpp>
 #include <IR_CVar.hpp>
@@ -12,6 +13,8 @@ namespace IR::Window {
     static UInt64 s_FTNowTime = 0;
     static UInt64 s_FTLastTime = 0;
     static bool s_Close = false;
+
+	CVAR(max_fps, 0, (Int64)60);
 
     bool Init(Renderer::API api)
     {
@@ -63,6 +66,7 @@ namespace IR::Window {
                 return true;
             case SDL_EVENT_WINDOW_RESIZED:
                 SDL_GetWindowSize(s_Window, &Globals.width, &Globals.height);
+				Renderer::Resize(Globals.width, Globals.height);
                 break;
             case SDL_EVENT_KEY_DOWN:
                 Input::KeyEvent((Input::Key)event.key.key, true);
@@ -97,6 +101,21 @@ namespace IR::Window {
         s_FTNowTime = SDL_GetPerformanceCounter();
         Globals.frametime = (s_FTNowTime - s_FTLastTime) / (Float64)SDL_GetPerformanceFrequency();
 
+		static CVar* maxFps = CVar::Get("max_fps");
+
+		if (maxFps) {
+			Int64 maxFpsValue = maxFps->GetInt64();
+
+			if (maxFpsValue > 0) {
+				Int64 targetFrameTime = 1000000 / maxFpsValue; // Convert to microseconds
+
+				if (Globals.frametime < targetFrameTime) {
+					UInt64 sleepTime = (UInt64)(targetFrameTime - Globals.frametime);
+					SDL_Delay(sleepTime / 1000);
+				}
+			}
+		}
+
         return s_Close;
     }
 
@@ -118,5 +137,20 @@ namespace IR::Window {
 	void ToggleMouseLock()
 	{
 		LockMouse(!IsMouseLocked());
+	}
+
+	bool IsFullscreen()
+	{
+		return SDL_GetWindowFlags(s_Window) & SDL_WINDOW_FULLSCREEN;
+	}
+
+	void SetFullscreen(bool fullscreen)
+	{
+		SDL_SetWindowFullscreen(s_Window, fullscreen);
+	}
+
+	void ToggleFullscreen()
+	{
+		SetFullscreen(!IsFullscreen());
 	}
 }

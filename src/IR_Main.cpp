@@ -1,3 +1,5 @@
+#include <IR_CTypes.hpp>
+#include <IR_Log.hpp>
 #include <IR_Common.hpp>
 #include <IR_Window.hpp>
 #include <IR_Input.hpp>
@@ -5,14 +7,118 @@
 #include <IR_Random.hpp>
 #include <IR_BinaryMap.hpp>
 #include <IR_Assets.hpp>
+#include <IR_CVar.hpp>
 
 #include <glm/gtc/quaternion.hpp>
 
 using namespace IR;
 
+static void loadConvars()
+{
+	KeyValue* kv = KeyValue::Load("convars.ir");
+
+	if (!kv) {
+		IR_MSG(WARN, "Failed to load convars, using defaults");
+		return;
+	}
+
+	UInt64 children = kv->ChildCount();
+
+	for (UInt64 i = 0; i < children; i++) {
+		KeyValue* child = kv->GetChild(i);
+
+		CVar* cvar = CVar::Get(child->GetKey().c_str());
+
+		switch (child->GetType()) {
+			case KeyValue::Type::STRING: {
+				cvar->SetString(child->GetString().c_str());
+				break;
+			}
+
+			case KeyValue::Type::NUMBER: {
+				cvar->SetFloat64(child->GetNumber());
+				break;
+			}
+
+			// Works for up to 8 components, but not more
+			case KeyValue::Type::ARRAY: {
+				Int64 value = 0;
+				for (UInt64 j = 0; j < 8; j++) {
+					KeyValue* subChild = child->GetChild(j);
+
+					if (!subChild) {
+						continue;
+					}
+
+					if (subChild->GetType() != KeyValue::Type::NUMBER) {
+						IR_MSG(WARN, "CVar '%s' has non-number child, skipping", child->GetKey().c_str());
+						continue;
+					}
+
+					Int64 val = (Int64)subChild->GetNumber();
+
+					value += val << (j * 8);
+				}
+
+				cvar->SetInt64(value);
+				break;
+			}
+
+			case KeyValue::Type::OBJECT: {
+				std::string key = child->GetKey();
+
+				std::string type = child->FindChildString("type");
+
+				// TODO: Support flags.
+
+				if (type == "Int64") {
+					Int64 defaultValue = child->FindChildNumber("default", 0);
+					new CVar(key.c_str(), 0, defaultValue);
+				} else if (type == "Float64") {
+					Float64 defaultValue = child->FindChildNumber("default", 0.0);
+					new CVar(key.c_str(), 0, defaultValue);
+				} else if (type == "String") {
+					std::string defaultValue = child->FindChildString("default", "");
+					new CVar(key.c_str(), 0, defaultValue.c_str());
+				} else {
+					IR_MSG(WARN, "CVar '%s' has unknown type '%s', skipping", key.c_str(), type.c_str());
+				}
+
+				break;
+			}
+
+			case KeyValue::Type::NIL: {
+				break;
+			}
+		}
+	}
+}
+
+CVAR(tickrate, 0, (Int64)33);
+
 int main(int argc, char** argv)
 {
 	Random::SeedRandom();
+
+	loadConvars();
+
+	CVar::Iterate([](CVar* cvar) {
+		switch (cvar->GetType()) {
+			case CVar::Type::INT64:
+				IR_MSG(INFO, "CVar '%s' = %lld", cvar->GetName().c_str(), cvar->GetInt64());
+				break;
+			case CVar::Type::FLOAT64:
+				IR_MSG(INFO, "CVar '%s' = %f", cvar->GetName().c_str(), cvar->GetFloat64());
+				break;
+			case CVar::Type::STRING:
+				IR_MSG(INFO, "CVar '%s' = '%s'", cvar->GetName().c_str(), cvar->GetString().c_str());
+				break;
+			case CVar::Type::BOOL: {
+				IR_MSG(INFO, "CVar '%s' = %s", cvar->GetName().c_str(), cvar->GetBool() ? "true" : "false");
+				break;
+			}
+		}
+	});
 
 	if (!Window::Init(Renderer::API::OPENGL)) {
 		IR_MSG(FATAL, "Failed to init Window, shutting down!");
@@ -61,10 +167,17 @@ int main(int argc, char** argv)
 		Renderer::SubmitMapMesh(meshes[i].mesh, meshes[i].mat);
 	}
 
-	Physics::ObjectInfo* obj = Physics::MakeCubeObject(glm::vec3(25.0f), Physics::Type::DYNAMIC, Physics::Layer::MOVING, {186, 288, 128});
+	Physics::ObjectInfo* obj = Physics::MakeCubeObject(glm::vec3(25.0f), Physics::Type::DYNAMIC, Physics::Layer::MOVING, {186, 450, 128});
+
+	float nextTick = 0.0f;
+	const float tickTime = 1.0f / tickrate.GetInt64();
 
 	while(!Window::ShouldClose()) {
-		Physics::Update();
+		if (nextTick < Globals.curtime) {
+			Physics::Update();
+
+			nextTick = Globals.curtime + tickTime;
+		}
 
 		Renderer::SubmitMesh(Renderer::GetMeshCube(), obj->pos, obj->rot, glm::vec3(25.0f), glm::vec4(1.0f), Assets::Material("crate1_ent.shader"));
 
@@ -82,6 +195,10 @@ int main(int argc, char** argv)
 
 		if (Input::IsKeyPressed(Input::Key::F1)) {
 			Window::ToggleMouseLock();
+		}
+
+		if (Input::IsKeyPressed(Input::Key::F2)) {
+			Window::ToggleFullscreen();
 		}
 
 		if (Input::IsKeyPressed(Input::Key::ESCAPE)) {

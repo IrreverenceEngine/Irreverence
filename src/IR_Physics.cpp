@@ -1,4 +1,6 @@
+#include "IR_Globals.hpp"
 #include <IR_Physics.hpp>
+#include <IR_CVar.hpp>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -245,7 +247,15 @@ namespace IR::Physics {
 
     void Update()
     {
-        constexpr Float32 delta = 1.0f / 60.0f;
+		static CVar* tickrate = CVar::Get("tickrate");
+
+		if (!tickrate) {
+			IR_MSG(FATAL, "Failed to get tickrate CVar");
+			return;
+		}
+
+		Float32 delta = 1.0f / tickrate->GetInt64();
+
 	    constexpr Int32 steps = 2;
 
         s_PhysicsSystem.Update(delta, steps, s_TmpAlloc, &s_JobSystem);

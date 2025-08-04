@@ -5,6 +5,7 @@
 #include <IR_Debug.hpp>
 #include <IR_Assets.hpp>
 #include <IR_File.hpp>
+#include <IR_CVar.hpp>
 
 #include <GL/glew.h>
 #include <Thirdparty/stb_image.h>
@@ -227,6 +228,11 @@ namespace IR::Renderer {
         SDL_GL_DestroyContext(m_GLContext);
     }
 
+	void GL::Resize(UInt32 width, UInt32 height)
+	{
+		glViewport(0, 0, width, height);
+	}
+
     void GL::Present()
     {
         if (!m_InitialPrepare) {
@@ -253,7 +259,20 @@ namespace IR::Renderer {
             abs(sinf(Globals.curtime * 2.0f)) * 0.9 + Random::Float(0.0f, 0.1f),
             1.0f };
 
-        glClearColor(funSky.x, funSky.y, funSky.z, funSky.w);
+		static CVar* r_clear_color = CVar::Get("r_clear_color");
+		glm::vec4 clearColor = glm::vec4(0.0f);
+
+		if (r_clear_color) {
+
+			// Color is stored as a 0xBBGGRR format
+			Int64 colorValue  = r_clear_color->GetInt64();
+			clearColor.b = ((colorValue >> 16) & 0xFF) / 255.0f; // Red
+			clearColor.g = ((colorValue >> 8) & 0xFF) / 255.0f;  // Green
+			clearColor.r = (colorValue & 0xFF) / 255.0f;           // Blue
+			clearColor.a = 1.0f; // Alpha
+		}
+
+        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // - Static

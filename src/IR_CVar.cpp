@@ -1,3 +1,4 @@
+#include "IR_CTypes.hpp"
 #include <IR_CVar.hpp>
 
 #include <map>
@@ -7,21 +8,21 @@ namespace IR {
 
     static std::map<std::string, CVar*> s_CVarMap;
 
-    CVar::CVar(const char* name, UInt32 flags, const bool& v) 
-    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::BOOL) 
+    CVar::CVar(const char* name, UInt32 flags, const bool& v)
+    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::BOOL)
     { m_Value.as_bool = v; s_CVarMap[name] = this; }
 
     CVar::CVar(const char* name, UInt32 flags, const Int64& v)
-    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::INT64) 
+    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::INT64)
     { m_Value.as_int64 = v; s_CVarMap[name] = this; }
 
     CVar::CVar(const char* name, UInt32 flags, const Float64& v)
-    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::FLOAT64) 
+    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::FLOAT64)
     { m_Value.as_float64 = v; s_CVarMap[name] = this; }
 
     CVar::CVar(const char* name, UInt32 flags, const std::string& v)
-    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::STRING) 
-    { 
+    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::STRING)
+    {
         m_Value.as_string = new char[v.size() + 1];
         m_Value.as_string[v.size()] = '\0';
         memcpy(m_Value.as_string, v.data(), v.size());
@@ -30,8 +31,8 @@ namespace IR {
     }
 
     CVar::CVar(const char* name, UInt32 flags, const char* v)
-    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::STRING) 
-    { 
+    : m_Name(name), m_Flags(flags), m_Type(CVar::Type::STRING)
+    {
         UInt64 len = strlen(v);
         m_Value.as_string = new char[len + 1];
         m_Value.as_string[len] = '\0';
@@ -63,6 +64,14 @@ namespace IR {
 
     void CVar::SetInt64(const Int64& v)
     {
+		if (m_Type == CVar::Type::BOOL) {
+			return SetBool((bool)v);
+		}
+
+		if (m_Type == CVar::Type::FLOAT64) {
+			return SetFloat64((Float64)v);
+		}
+
         if (m_Type != CVar::Type::INT64) {
             return;
         }
@@ -72,6 +81,14 @@ namespace IR {
 
     void CVar::SetFloat64(const Float64& v)
     {
+		if (m_Type == CVar::Type::BOOL) {
+			return SetBool((bool)v);
+		}
+
+		if (m_Type == CVar::Type::INT64) {
+			return SetInt64((Int64)v);
+		}
+
         if (m_Type != CVar::Type::FLOAT64) {
             return;
         }
@@ -86,7 +103,7 @@ namespace IR {
 
         if (m_Value.as_string) {
             delete[] m_Value.as_string;
-            
+
             m_Value.as_string = new char[v.size() + 1];
             m_Value.as_string[v.size()] = '\0';
             memcpy(m_Value.as_string, v.data(), v.size());
@@ -101,7 +118,7 @@ namespace IR {
 
         if (m_Value.as_string) {
             delete[] m_Value.as_string;
-            
+
             UInt64 len = strlen(v);
             m_Value.as_string = new char[len + 1];
             m_Value.as_string[len] = '\0';
@@ -118,4 +135,15 @@ namespace IR {
 
         return nullptr;
     }
+
+	void CVar::Iterate(const std::function<void(CVar*)>& callback)
+	{
+		for (auto& [_, cvar] : s_CVarMap) {
+			if (!cvar) {
+				continue;
+			}
+
+			callback(cvar);
+		}
+	}
 }

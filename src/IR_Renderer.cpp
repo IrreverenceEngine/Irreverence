@@ -1,15 +1,20 @@
+#include "IR_CTypes.hpp"
 #include <IR_Renderer.hpp>
 #include <Renderer/GL/IR_GLRenderer.hpp>
 #include <Renderer/DX/IR_DXRenderer.hpp>
 #include <IR_Common.hpp>
 #include <IR_Window.hpp>
 #include <IR_Input.hpp>
+#include <IR_CVar.hpp>
 
 #include <SDL3/SDL.h>
 
 #ifdef SDL_PLATFORM_WIN32
 #include <windows.h>
 #endif
+
+// Renderer cvars
+CVAR(r_clear_color, 0, (IR::Int64)0xFFFFFF);
 
 namespace IR::Renderer {
 
@@ -37,6 +42,7 @@ namespace IR::Renderer {
         }
 
         flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
+		flags |= SDL_WINDOW_RESIZABLE;
 
         return flags;
     }
@@ -68,6 +74,11 @@ namespace IR::Renderer {
     {
         s_HAPI->Shutdown();
     }
+
+	void Resize(UInt32 width, UInt32 height)
+	{
+		s_HAPI->Resize(width, height);
+	}
 
     void Present()
     {

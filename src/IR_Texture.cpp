@@ -2,8 +2,6 @@
 
 #include <Thirdparty/stb_image.h>
 
-#include <string>
-
 namespace IR::Renderer {
 
     bool Texture::Init(const char* path, bool linearize, bool mipmaps, bool handle)

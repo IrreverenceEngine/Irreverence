@@ -14,6 +14,7 @@
     _x const char* GetDirectory() _y; \
     _x bool Init() _y; \
     _x void Shutdown() _y; \
+	_x void Resize(UInt32 width, UInt32 height) _y; \
     _x void Present() _y; \
     _x void SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const glm::vec4& col, UInt8 skin) _y; \
     _x void SubmitMesh(const Mesh* mesh, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const glm::vec4& col, const Material* material) _y; \

@@ -1,0 +1,28 @@
+r_clear_color [255 0 100]
+tickrate 66
+max_fps 120
+
+in_sensitivity
+{
+	type Float64
+	default 0.1
+}
+
+
+r_test_var
+{
+	type Int64
+	default 100
+}
+
+r_another_var
+{
+	type Float64
+	default 3.14
+}
+
+r_a_final_var
+{
+	type String
+	default "Hello, World!"
+}
