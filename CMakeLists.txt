@@ -15,16 +15,21 @@ add_subdirectory(vendor/glm)
 set(SDL_EXAMPLES OFF)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
 
+set(CROSS_PLATFORM_DETERMINISTIC ON)
+set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF)
+add_subdirectory(vendor/JoltPhysics/Build)
+
 file(GLOB_RECURSE IRREVERENCE_SRC CONFIGURE_DEPENDS src/*.cpp)
 
 add_executable(irreverence ${IRREVERENCE_SRC})
 
 target_link_libraries(irreverence PRIVATE
-    glm::glm SDL3-static GLEW::GLEW OpenGL::GL
+    glm::glm SDL3-static GLEW::GLEW OpenGL::GL Jolt
 )
 
 target_include_directories(irreverence PUBLIC
     src/
     vendor/glm/glm
     vendor/SDL/include
+    vendor/JoltPhysics/
 )

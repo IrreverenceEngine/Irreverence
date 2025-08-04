@@ -6,6 +6,6 @@ materials/wall3
         Albedo textures/wall3.png
         Shader MapFaceLit.irs
         Linearize 1
-        Mipdap 1
+        Mipmap 1
     }
 }

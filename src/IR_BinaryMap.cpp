@@ -37,6 +37,7 @@ namespace IR {
     struct BMBrush {
         UInt32 faceNum;
         UInt32 faceBegin;
+        glm::vec3 origin;
         std::vector<glm::vec3> convexPoints;
     };
 
@@ -98,8 +99,12 @@ namespace IR {
 
             stream.read((char*)&brush.faceNum, sizeof(brush.faceNum));
             stream.read((char*)&brush.faceBegin, sizeof(brush.faceBegin));
-            stream.read((char*)&convexVecCount, sizeof(convexVecCount));
 
+            stream.read((char*)&brush.origin.x, sizeof(brush.origin.x));
+            stream.read((char*)&brush.origin.y, sizeof(brush.origin.y));
+            stream.read((char*)&brush.origin.z, sizeof(brush.origin.z));
+
+            stream.read((char*)&convexVecCount, sizeof(convexVecCount));
             brush.convexPoints.reserve(convexVecCount);
             for (UInt32 i = 0; i < convexVecCount; i++) {
                 stream.read((char*)&tmpVec.x, sizeof(tmpVec.x));
@@ -243,12 +248,7 @@ namespace IR {
                 brushdata.convexPoints.reserve(brush.convexPoints.size());
                 brushdata.convexPoints.insert(brushdata.convexPoints.end(), brush.convexPoints.begin(), brush.convexPoints.end());
 
-                glm::vec3 origin = {};
-                for (const auto& p : brushdata.convexPoints) {
-                    origin += p;
-                }
-
-                origin /= (Float32)brushdata.convexPoints.size();
+                brushdata.origin = brush.origin;
 
                 entdata.brushes.emplace_back(brushdata);
             }

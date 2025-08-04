@@ -6,6 +6,6 @@ materials/stairs2
         Albedo textures/stairs2.png
         Shader MapFaceLit.irs
         Linearize 1
-        Mipdap 1
+        Mipmap 1
     }
 }

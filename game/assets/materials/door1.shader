@@ -6,6 +6,6 @@ materials/door1
         Albedo textures/door1.png
         Shader MapFaceLit.irs
         Linearize 1
-        Mipdap 1
+        Mipmap 1
     }
 }

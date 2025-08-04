@@ -6,6 +6,6 @@ materials/ceil1
         Albedo textures/ceil1.png
         Shader MapFaceLit.irs
         Linearize 1
-        Mipdap 1
+        Mipmap 1
     }
 }

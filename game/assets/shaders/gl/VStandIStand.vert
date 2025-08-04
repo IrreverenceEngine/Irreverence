@@ -11,19 +11,22 @@ out VP_Shared {
 	vec3 pFragPos;
     vec3 pNormal;
     vec2 pUV;
+	vec4 pInstanceColor;
 	flat uint pMaterialIndex;
 };
 
 void main()
 {
-	InstanceMap instData = uInstanceMap[gl_BaseInstance];
+	InstanceStandard instData = uInstanceStandard[gl_BaseInstance];
 
-	pFragPos = aPos;
+	pFragPos = vec3(instData.modelMatrix * vec4(aPos, 1.0));
 
 	vec4 viewPos = uCommon.View * vec4(pFragPos, 1.0);
 	gl_Position = uCommon.Projection * viewPos;
 
-	pNormal = aNormal;
+	pNormal = transpose(mat3(inverse(instData.modelMatrix))) * aNormal;
 	pUV = aUV;
+
+	pInstanceColor = instData.color;
 	pMaterialIndex = instData.matIndex;
 }

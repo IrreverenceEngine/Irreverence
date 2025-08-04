@@ -6,6 +6,6 @@ materials/mtlbarrel2
         Albedo textures/mtlbarrel2.png
         Shader MapFaceLit.irs
         Linearize 1
-        Mipdap 1
+        Mipmap 1
     }
 }

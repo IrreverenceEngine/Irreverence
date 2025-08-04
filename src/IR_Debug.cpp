@@ -9,9 +9,9 @@ namespace IR::Debug
 
     void FlyCam(glm::mat4& outView, glm::mat4& outProjection)
     {
-        static glm::vec3 pos = glm::vec3(0, 112, 64);
+        static glm::vec3 pos = glm::vec3(-96, 112, 96);
         static glm::vec3 dir = glm::vec3(0, 0, 1);
-        static glm::vec3 angles = glm::vec3(0, 0, 0);
+        static glm::vec3 angles = glm::vec3(15, 0, 0);
         static float fov = 70.0f;
         static float nearz = 10.0f;
         static float farz = 65356.0f;

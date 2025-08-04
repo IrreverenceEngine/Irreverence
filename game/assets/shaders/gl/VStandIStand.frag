@@ -9,10 +9,11 @@ in VP_Shared {
 	vec3 pFragPos;
     vec3 pNormal;
     vec2 pUV;
+	vec4 pInstanceColor;
 	flat uint pMaterialIndex;
 };
 
 void main()
 {
-    FRAG_COLOR = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV);
+    FRAG_COLOR = pInstanceColor * texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV);
 }

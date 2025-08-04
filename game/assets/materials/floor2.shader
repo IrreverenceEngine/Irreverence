@@ -6,6 +6,6 @@ materials/floor2
         Albedo textures/floor2.png
         Shader MapFaceLit.irs
         Linearize 1
-        Mipdap 1
+        Mipmap 1
     }
 }

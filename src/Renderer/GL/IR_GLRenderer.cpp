@@ -294,7 +294,7 @@ namespace IR::Renderer {
         glmaterial->Use();
 
         GLInstanceStandard inst;
-        inst.model = glm::translate(glm::mat4(1.0f), pos) * glm::mat4(rot) * glm::scale(glm::mat4(1.0f), size);
+        inst.model = glm::translate(glm::mat4(1.0f), pos) * glm::mat4_cast(rot) * glm::scale(glm::mat4(1.0f), size);
         inst.color = col;
         inst.matIndex = glmaterial->GetInfoIndex();
 
