@@ -15,6 +15,12 @@ r_test_var
 	default 100
 }
 
+r_goon_var
+{
+	type String
+	default "The ghost of the goon"
+}
+
 r_another_var
 {
 	type Float64
