@@ -22,10 +22,10 @@ namespace IR::Renderer {
     };
 
     struct GLInstanceStandard {
-        glm::vec4 color;
         glm::mat4 model;
+        Color color;
         UInt32 matIndex;
-        UInt32 padding[3];
+        UInt32 _p[2];
     };
 
     struct GLInstanceMap {

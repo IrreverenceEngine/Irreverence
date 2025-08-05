@@ -5,6 +5,21 @@
 
 namespace IR::Renderer {
 
+    bool GLMaterial::Init(const Texture*(&textures)[MAP__COUNT], Shader* shader)
+    {
+        if (!shader) {
+            IR_MSG(ERROR, "Material has no shader");
+            return false;
+        }
+
+        for (UInt8 i = 0; i < MAP__COUNT; i++) {
+            GLTexture* tex = (GLTexture*)textures[i];
+            m_Textures[i] = tex ? tex : s_GL->GetDefaultTexture((Material::Map)i);
+        }
+
+        return true;
+    }
+
     void GLMaterial::Destroy()
     {
         if (m_InfoIndex) {
@@ -12,11 +27,15 @@ namespace IR::Renderer {
         }
     }
 
-    void GLMaterial::AddTexture(Map map, Texture* texture)
+    void GLMaterial::SetTexture(Map map, Texture* texture)
     {
         GLTexture* gltexture = (GLTexture*)texture;
 
         m_Textures[map] = gltexture;
+
+        if (m_InfoIndex != UINT32_MAX) {
+            Reset();
+        }
     }
 
     void GLMaterial::SetShader(Shader* shader)

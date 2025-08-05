@@ -32,19 +32,21 @@ namespace IR::Physics {
         _COUNT
     };
 
-    struct ObjectInfo {
+    struct Object {
+        enum {
+            FLAG_ISACTIVE = 1 << 0,
+        };
+
         UInt32 bodyId;
         UInt16 index;
         Shape shape;
         Layer layer;
-        UInt32 flags;
+        UInt16 flags;
 
         glm::vec3 pos;
         glm::quat rot;
         glm::vec3 vel;
         glm::vec3 angularVel;
-        Float32 friction;
-        Float32 restitution;
     };
 
     bool Init();
@@ -52,63 +54,72 @@ namespace IR::Physics {
 
     void Update();
 
-    ObjectInfo* MakeCubeObject(
+    Object* MakeCubeObject(
         const glm::vec3 scale,
         Type type, Layer layer,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0);
-    ObjectInfo* MakeSphereObject(
+    Object* MakeSphereObject(
         Float32 radius,
         Type type, Layer layer,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0);
-    ObjectInfo* MakeCylinderObject(
+    Object* MakeCylinderObject(
         Float32 radius, Float32 height,
         Type type, Layer layer,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0);
-    ObjectInfo* MakeCapsuleObject(
+    Object* MakeCapsuleObject(
         Float32 radius, Float32 height,
         Type type, Layer layer,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0);
-    ObjectInfo* MakeConvexHullObject(
+    Object* MakeConvexHullObject(
         const glm::vec3* points, UInt32 count,
         Type type, Layer layer,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0);
 
-    void BeginCompoundObject(
-        Type type, Layer layer,
-        bool bStatic = false,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
-        UInt32 extra = 0);
+    void BeginCompoundObject(bool bStatic = true);
     void AddCompoundCube(
         const glm::vec3 scale,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0
     );
     void AddCompoundSphere(
         Float32 radius,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0
     );
     void AddCompoundCylinder(
         Float32 radius, Float32 height,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0
     );
     void AddCompoundCapsule(
         Float32 radius, Float32 height,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0
     );
     void AddCompoundConvexHull(
         const glm::vec3* points, UInt32 count,
-        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(),
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
         UInt32 extra = 0
     );
-    ObjectInfo* EndCompoundObject();
+    Object* EndCompoundObject(Type type, Layer layer,
+        const glm::vec3& pos = glm::vec3(0), const glm::quat& rot = glm::quat(1, 0, 0, 0),
+        UInt32 extra = 0
+    );
 
-    ObjectInfo* GetObjectInfo(UInt32 index);
+    void DestroyObject(Object* object);
+
+    void SetObjectPosition(Object* object, const glm::vec3& pos, bool activateNearby = true);
+    void SetObjectRotation(Object* object, const glm::quat& rot, bool activateNearby = true);
+    void SetObjectVelocity(Object* object, const glm::vec3& vel);
+    void SetObjectAngularVelocity(Object* object, const glm::vec3& vel);
+
+    void AddObjectVelocity(Object* object, const glm::vec3& vel);
+    void AddObjectAngularVelocity(Object* object, const glm::vec3& vel);
+
+    Object* GetObject(UInt32 index);
 }

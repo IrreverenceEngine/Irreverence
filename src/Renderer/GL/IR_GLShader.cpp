@@ -15,13 +15,13 @@ namespace IR::Renderer {
         std::string fscodeCpy = fscode;
 
         for (const std::string& incl : s_GL->GetPatchIncludes()) {
-            size_t vsPos = vscodeCpy.find(incl);
+            UInt64 vsPos = vscodeCpy.find(incl);
             while (vsPos != std::string::npos) {
                 vscodeCpy.insert(vscodeCpy.begin() + vsPos, '/');
                 vsPos = vscodeCpy.find(incl, vsPos + incl.length());
             }
 
-            size_t fsPos = fscodeCpy.find(incl);
+            UInt64 fsPos = fscodeCpy.find(incl);
             while (fsPos != std::string::npos) {
                 fscodeCpy.insert(fscodeCpy.begin() + fsPos, '/');
                 fsPos = fscodeCpy.find(incl, fsPos + incl.length());

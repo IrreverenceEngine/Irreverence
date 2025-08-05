@@ -8,7 +8,7 @@
 namespace IR::Debug
 {
 
-    void FlyCam(glm::mat4& outView, glm::mat4& outProjection)
+    void FlyCam(glm::mat4& outView, glm::mat4& outProjection, glm::vec3& outPos)
     {
         static glm::vec3 pos = glm::vec3(-96, 112, 96);
         static glm::vec3 dir = glm::vec3(0, 0, 1);
@@ -24,22 +24,6 @@ namespace IR::Debug
 			glm::ivec2 mdelta = Input::MouseDelta();
 			angles.y += mdelta.x * sensitivityValue;
 			angles.x -= mdelta.y * sensitivityValue;
-		}
-
-		if (Input::IsKeyDown(Input::Key::LEFT)) {
-			angles.y -= 250.0f * Globals.frametime;
-		}
-
-		if (Input::IsKeyDown(Input::Key::RIGHT)) {
-			angles.y += 250.0f * Globals.frametime;
-		}
-
-		if (Input::IsKeyDown(Input::Key::DOWN)) {
-			angles.x -= 250.0f * Globals.frametime;
-		}
-
-		if (Input::IsKeyDown(Input::Key::UP)) {
-			angles.x += 250.0f * Globals.frametime;
 		}
 
 		dir.x = cosf(glm::radians(angles.y)) * cosf(glm::radians(angles.x));
@@ -73,6 +57,7 @@ namespace IR::Debug
 
         outView = glm::lookAt(pos, pos + dir, glm::vec3(0, 1, 0));
         outProjection = glm::perspective(glm::radians(fov), (Float32)Globals.width / Globals.height, nearz, farz);
+		outPos = pos;
     }
 
 }

@@ -106,17 +106,15 @@ namespace IR::Renderer {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
 
-        File CommonIncl("assets/shaders/gl/include/common.glsl", "r");
-        if (!CommonIncl.IsOpen()) {
-            IR_MSG(INFO, "Failed to init GL Renderer: couldn't open include common.glsl");
+        if (!AddShaderInclude("common.glsl")) {
             return false;
         }
 
-        UInt64 CommonInclSize;
-        char* CommonInclData = CommonIncl.ReadAll(&CommonInclSize);
-        IR_DEFER({ if (CommonInclData) delete[] CommonInclData; });
-        glNamedStringARB(GL_SHADER_INCLUDE_ARB, -1, "/common.glsl", CommonInclSize, CommonInclData);
-        m_PatchIncludes.push_back("common.glsl");
+        if (!AddShaderInclude("lighting.glsl")) {
+            return false;
+        }
+
+        m_Lighting.Init(SSLOC_POINTLIGHTS, SSLOC_SPOTLIGHTS);
 
         // --- [VERTEX LAYOUTS] ---
         m_LayoutStandard.InitStandard();
@@ -141,6 +139,7 @@ namespace IR::Renderer {
         const struct glm::vec<3, UInt8> missingColor1 = { 0, 0, 0 };
         const struct glm::vec<3, UInt8> missingColor2 = { 251, 62, 249 };
         const struct glm::vec<3, UInt8> whiteColor = { 255, 255, 255 };
+        const struct glm::vec<3, UInt8> normalColor = { 127, 127, 255 };
 
         std::vector<glm::vec<3, UInt8>> missingPixels;
         missingPixels.reserve(64 * 64);
@@ -155,6 +154,7 @@ namespace IR::Renderer {
         m_TextureError.InitMemory((const UInt8*)missingPixels.data(), 64, 64, 3, false, false, true);
         m_TextureBlack.InitMemory((const UInt8*)&missingColor1, 1, 1, 3, false, false, true);
         m_TextureWhite.InitMemory((const UInt8*)&whiteColor, 1, 1, 3, false, false, true);
+        m_TextureNormal.InitMemory((const UInt8*)&normalColor, 1, 1, 3, false, false, true);
 
         // --- [SHADERS] ---
         m_ShaderMapFaceLit = (GLShader*)Assets::Shader("MapFaceLit.irs");
@@ -180,13 +180,7 @@ namespace IR::Renderer {
         m_MeshPlane.Init(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
 
         // --- [MATERIALS] ---
-        m_MaterialWhite.SetShader(m_ShaderMapFaceLit);
-        m_MaterialBlack.SetShader(m_ShaderMapFaceLit);
-        m_MaterialError.SetShader(m_ShaderMapFaceLit);
 
-        m_MaterialWhite.AddTexture(Material::MAP_ALBEDO, &m_TextureWhite);
-        m_MaterialBlack.AddTexture(Material::MAP_ALBEDO, &m_TextureBlack);
-        m_MaterialError.AddTexture(Material::MAP_ALBEDO, &m_TextureError);
 
         return true;
     }
@@ -215,6 +209,7 @@ namespace IR::Renderer {
         m_TextureWhite.Destroy();
         m_TextureBlack.Destroy();
         m_TextureError.Destroy();
+        m_TextureNormal.Destroy();
         for (auto& texture : m_Textures) {
             texture.Destroy();
         }
@@ -224,6 +219,8 @@ namespace IR::Renderer {
         m_Meshes.clear();
         m_Models.clear();
         m_Materials.clear();
+
+        m_Lighting.Destroy();
 
         SDL_GL_DestroyContext(m_GLContext);
     }
@@ -244,7 +241,7 @@ namespace IR::Renderer {
         m_CommonData.frametime = Globals.frametime;
         m_CommonData.width = Globals.width;
         m_CommonData.height = Globals.height;
-        Debug::FlyCam(m_CommonData.view, m_CommonData.projection);
+        Debug::FlyCam(m_CommonData.view, m_CommonData.projection, m_CommonData.viewPos);
 
         m_UniformCommon.Update(&m_CommonData, sizeof(m_CommonData), 0);
 
@@ -253,11 +250,7 @@ namespace IR::Renderer {
 
         m_ILDStandard.Upload();
 
-        glm::vec4 funSky = {
-            abs(sinf(Globals.curtime * 0.5f + 2.0f)) * 0.9 + Random::Float(0.0f, 0.1f),
-            abs(sinf(Globals.curtime + 5.0f * 5.0f)) * 0.9 + Random::Float(0.0f, 0.1f),
-            abs(sinf(Globals.curtime * 2.0f)) * 0.9 + Random::Float(0.0f, 0.1f),
-            1.0f };
+        m_Lighting.Upload();
 
 		static CVar* r_clear_color = CVar::Get("r_clear_color");
 		glm::vec4 clearColor = glm::vec4(0.0f);
@@ -287,25 +280,28 @@ namespace IR::Renderer {
         SDL_GL_SwapWindow((SDL_Window*)Window::GetHandle());
     }
 
-    void GL::SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const glm::vec4& col, UInt8 skin)
+    void GL::SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, UInt8 skin)
     {
         GLModel* glmodel = (GLModel*)model;
 
-        GLInstanceStandard standard;
-        standard.model = glm::translate(glm::mat4(1.0f), pos) * glm::mat4(rot) * glm::scale(glm::mat4(1.0f), size);
-        standard.color = col;
+        GLInstanceStandard inst;
+        inst.model = glm::translate(glm::mat4(1.0f), pos) * glm::mat4(rot) * glm::scale(glm::mat4(1.0f), size);
+        inst.color.r = col.r;
+        inst.color.g = col.g;
+        inst.color.b = col.b;
+        inst.color.a = col.a;
 
         for (UInt32 i = 0; i < glmodel->GetMeshNum(); i++) {
             GLMesh& mesh = glmodel->GetMesh(i);
             GLMaterial* material = glmodel->GetMeshMaterial(i, skin);
 
             material->Use();
-            standard.matIndex = material->GetInfoIndex();
-            m_CmdListDynamic.Submit(&mesh, material->GetShader(), m_ILDStandard.Add(&standard));
+            inst.matIndex = material->GetInfoIndex();
+            m_CmdListDynamic.Submit(&mesh, material->GetShader(), m_ILDStandard.Add(&inst));
         }
     }
 
-    void GL::SubmitMesh(const Mesh* mesh, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const glm::vec4& col, const Material* material)
+    void GL::SubmitMesh(const Mesh* mesh, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, const Material* material)
     {
         GLMesh* glmesh = (GLMesh*)mesh;
         GLMaterial* glmaterial = (GLMaterial*)material;
@@ -314,7 +310,10 @@ namespace IR::Renderer {
 
         GLInstanceStandard inst;
         inst.model = glm::translate(glm::mat4(1.0f), pos) * glm::mat4_cast(rot) * glm::scale(glm::mat4(1.0f), size);
-        inst.color = col;
+        inst.color.r = col.r;
+        inst.color.g = col.g;
+        inst.color.b = col.b;
+        inst.color.a = col.a;
         inst.matIndex = glmaterial->GetInfoIndex();
 
         m_CmdListDynamic.Submit(glmesh, glmaterial->GetShader(), m_ILDStandard.Add(&inst));
@@ -363,13 +362,27 @@ namespace IR::Renderer {
         return &m_Meshes.front();
     }
 
+    UInt16 GL::MakePLight() IR_RETURN(m_Lighting.MakePLight())
+    void GL::RemovePLight(UInt16 index) { m_Lighting.RemovePLight(index); }
+    void GL::SetPLightPosition(UInt16 index, const glm::vec3& pos) { m_Lighting.SetPLightPosition(index, pos); }
+    void GL::SetPLightColor(UInt16 index, const Color& col) { m_Lighting.SetPLightColor(index, col); }
+    void GL::SetPLightInnerRadius(UInt16 index, const Float32 radius) { m_Lighting.SetPLightInnerRadius(index, radius); }
+    void GL::SetPLightOuterRadius(UInt16 index, const Float32 radius) { m_Lighting.SetPLightOuterRadius(index, radius); }
+
+    UInt16 GL::MakeSLight() IR_RETURN(m_Lighting.MakeSLight())
+    void GL::RemoveSLight(UInt16 index) { m_Lighting.RemoveSLight(index); }
+    void GL::SetSLightPosition(UInt16 index, const glm::vec3& pos) { m_Lighting.SetSLightPosition(index, pos); }
+    void GL::SetSLightDirection(UInt16 index, const glm::vec3& dir) { m_Lighting.SetSLightDirection(index, dir); }
+    void GL::SetSLightColor(UInt16 index, const Color& col) { m_Lighting.SetSLightColor(index, col); }
+    void GL::SetSLightInnerRadius(UInt16 index, const Float32 radius) { m_Lighting.SetSLightInnerRadius(index, radius); }
+    void GL::SetSLightOuterRadius(UInt16 index, const Float32 radius) { m_Lighting.SetSLightOuterRadius(index, radius); }
+    void GL::SetSLightInnerCutoff(UInt16 index, const Float32 deg) { m_Lighting.SetSLightInnerCutoff(index, deg); }
+    void GL::SetSLightOuterCutoff(UInt16 index, const Float32 deg) { m_Lighting.SetSLightOuterCutoff(index, deg); }
+
     Texture* GL::GetTextureWhite() IR_RETURN(&m_TextureWhite);
     Texture* GL::GetTextureBlack() IR_RETURN(&m_TextureBlack);
     Texture* GL::GetTextureError() IR_RETURN(&m_TextureError);
-
-    Material* GL::GetMaterialWhite() IR_RETURN(&m_MaterialWhite);
-    Material* GL::GetMaterialBlack() IR_RETURN(&m_MaterialBlack);
-    Material* GL::GetMaterialError() IR_RETURN(&m_MaterialError);
+    Texture* GL::GetTextureNormal() IR_RETURN(&m_TextureNormal);
 
     Mesh* GL::GetMeshCube() IR_RETURN(&m_MeshCube);
 
@@ -424,12 +437,45 @@ namespace IR::Renderer {
         m_MaterialInfos[index].handleIndexes[0] = UINT32_MAX;
     }
 
+    bool GL::AddShaderInclude(const char* name)
+    {
+        std::string aName = name;
+
+        File inclFile(("assets/shaders/gl/include/" + aName).c_str(), "r");
+        if (!inclFile.IsOpen()) {
+            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't open include %s", name);
+            return false;
+        }
+
+        UInt64 inclSize;
+        char* inclData = inclFile.ReadAll(&inclSize);
+        IR_DEFER({ if (inclData) delete[] inclData; });
+
+        glNamedStringARB(GL_SHADER_INCLUDE_ARB, aName.size() + 1, ("/" + aName).c_str(), inclSize, inclData);
+        m_PatchIncludes.push_back(name);
+
+        return true;
+    }
+
     GLLayout* GL::GetLayout(GLLayout::Type type)
     {
         switch (type) {
         case GLLayout::Type::STANDARD: return &m_LayoutStandard;
         case GLLayout::Type::ANIMATED: return &m_LayoutAnimated;
-        default: return nullptr;
+        default: IR_UNREACHABLE;
+        }
+    }
+
+    GLTexture* GL::GetDefaultTexture(Material::Map map)
+    {
+        switch (map) {
+        case Material::Map::MAP_ALBEDO: return &m_TextureError;
+        case Material::Map::MAP_NORMAL: return &m_TextureNormal;
+        case Material::Map::MAP_METALNESS: return &m_TextureBlack;
+        case Material::Map::MAP_ROUGHNESS: return &m_TextureBlack;
+        case Material::Map::MAP_EMISSIVENESS: return &m_TextureBlack;
+        case Material::Map::MAP_AMBIENTOCCLUSION: return &m_TextureWhite;
+        default: IR_UNREACHABLE;
         }
     }
 

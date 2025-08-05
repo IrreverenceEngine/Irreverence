@@ -1,5 +1,6 @@
 #version 460
 #extension GL_ARB_shading_language_include : require
+#define STAGE_VERT
 
 #include "common.glsl"
 
@@ -27,6 +28,6 @@ void main()
 	pNormal = transpose(mat3(inverse(instData.modelMatrix))) * aNormal;
 	pUV = aUV;
 
-	pInstanceColor = instData.color;
+	pInstanceColor = GetColorRGBA8(instData.color);
 	pMaterialIndex = instData.matIndex;
 }

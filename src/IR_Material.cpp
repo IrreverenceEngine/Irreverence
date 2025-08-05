@@ -42,30 +42,27 @@ namespace IR::Renderer {
         bool linearize = (bool)params->FindChildNumber("Linearize", 1);
         bool mipmaps = (bool)params->FindChildNumber("Mipmap", 1);
 
-        Texture* albedoTex = Renderer::GetTextureError();
 	    const std::string& albedoPath = params->FindChildString("Albedo");
-        if (!albedoPath.empty()) {
-            albedoTex = Assets::Texture(albedoPath.substr(9).c_str(), linearize, mipmaps);
-        } else {
+        if (!SetTextureFromPath(Map::MAP_ALBEDO, params->FindChildString("Albedo"), linearize, mipmaps, Renderer::GetTextureError())) {
             IR_MSG(WARN, "Material is missing \"Albedo\" parameter in file \"%s\"", path);
         }
 
-        Texture* normalTex = Renderer::GetTextureError();
-        const std::string& normalPath = params->FindChildString("Normal");
-        if (!normalPath.empty()) {
-            normalTex = Assets::Texture(normalPath.substr(9).c_str(), linearize, mipmaps);
-        }
-
-        Texture* amreTex = Renderer::GetTextureBlack();
-        const std::string& amrePath = params->FindChildString("AMRE");
-        if (!amrePath.empty()) {
-            amreTex = Assets::Texture(amrePath.substr(9).c_str(), linearize, mipmaps);
-        }
-
-        AddTexture(MAP_ALBEDO, albedoTex);
-        AddTexture(MAP_NORMAL, normalTex);
-        AddTexture(MAP_AMRE, amreTex);
+        SetTextureFromPath(Map::MAP_NORMAL, params->FindChildString("Normal"), linearize, mipmaps, Renderer::GetTextureNormal());
+        SetTextureFromPath(Map::MAP_METALNESS, params->FindChildString("Metalness"), linearize, mipmaps, Renderer::GetTextureBlack());
+        SetTextureFromPath(Map::MAP_ROUGHNESS, params->FindChildString("Roughness"), linearize, mipmaps, Renderer::GetTextureBlack());
+        SetTextureFromPath(Map::MAP_EMISSIVENESS, params->FindChildString("Emissiveness"), linearize, mipmaps, Renderer::GetTextureBlack());
+        SetTextureFromPath(Map::MAP_AMBIENTOCCLUSION, params->FindChildString("AmbientOcclusion"), linearize, mipmaps, Renderer::GetTextureWhite());
 
         return true;
     }
+
+
+    bool Material::SetTextureFromPath(Map map, const std::string& path, bool linearize, bool mipmaps, Texture* def)
+    {
+        Texture* texture = !path.empty() ? Assets::Texture(path.substr(9).c_str(), linearize, mipmaps) : def;
+        SetTexture(map, texture);
+
+        return texture != def;
+    }
+
 }

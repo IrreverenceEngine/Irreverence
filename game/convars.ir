@@ -1,6 +1,6 @@
 r_clear_color [255 0 100]
-tickrate 66
-max_fps 120
+tickrate 90
+max_fps 144
 
 in_sensitivity
 {

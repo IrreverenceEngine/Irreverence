@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-namespace IR {
+namespace IR::BinaryMap {
 
     constexpr UInt32 MAGIC = 0x6D627269; // irbm
 
@@ -182,7 +182,7 @@ namespace IR {
         stream.read(materialtable.data(), len);
     }
 
-    bool BinaryMap::Load(const char* path)
+    bool Load(const char* path, std::vector<EntityData>& entDatas)
     {
         std::ifstream stream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
         if (!stream.is_open()) {
@@ -263,7 +263,7 @@ namespace IR {
                 entdata.keyvalues[key] = value;
             }
 
-            m_EntityDatas.emplace_back(entdata);
+            entDatas.emplace_back(entdata);
         }
 
         return true;

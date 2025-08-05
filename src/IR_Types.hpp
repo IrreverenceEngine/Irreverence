@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include <glm.hpp>
+
 namespace IR {
     using Int8 = int8_t;
     using UInt8 = uint8_t;
@@ -15,4 +17,5 @@ namespace IR {
     using UInt64 = uint64_t;
     using Float32 = float;
     using Float64 = double;
+    using Color = glm::vec<4, UInt8>;
 }

@@ -1,5 +1,6 @@
 #version 460
 #extension GL_ARB_shading_language_include : require
+#define STAGE_VERT
 
 #include "common.glsl"
 

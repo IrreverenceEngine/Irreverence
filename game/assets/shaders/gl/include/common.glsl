@@ -1,35 +1,63 @@
 #extension GL_ARB_bindless_texture : require
 
-#define UNIFORM_COMMON 0
-#define UNIFORM_ANIMATION 1
+// ----- [DEFINES] -----
+const uint UNIFORM_COMMON = 0;
+const uint UNIFORM_ANIMATION = 1;
 
-#define STORAGE_MATERIALINFO 0
-#define STORAGE_TEXTUREHANDLE 1
-#define STORAGE_INST_STANDARD 2
-#define STORAGE_INST_MAP 3
+const uint STORAGE_MATERIALINFO = 0;
+const uint STORAGE_TEXTUREHANDLE = 1;
+const uint STORAGE_POINTLIGHTS = 2;
+const uint STORAGE_SPOTLIGHTS = 3;
+const uint STORAGE_INST_STANDARD = 16;
+const uint STORAGE_INST_MAP = 17;
 
-#define MATERIAL_MAP_ALBEDO 0
-#define MATERIAL_MAP_NORMAL 1
-#define MATERIAL_MAP_AMRE 2
-#define MATERIAL_MAP_COUNT 3
+const uint MATERIAL_MAP_ALBEDO = 0;
+const uint MATERIAL_MAP_NORMAL = 1;
+const uint MATERIAL_MAP_METALNESS = 2;
+const uint MATERIAL_MAP_ROUGHNESS = 3;
+const uint MATERIAL_MAP_EMISSIVENESS = 4;
+const uint MATERIAL_MAP_AMBIENTOCCLUSION = 5;
+const uint MATERIAL_MAP_COUNT = 6;
 
-// Structs
+const uint MAX_POINTLIGHTS = 2048;
+const uint MAX_SPOTLIGHTS = 2048;
+
+// ----- [STRUCTS] -----
 struct MaterialInfo {
     uint handleIndex[MATERIAL_MAP_COUNT];
 };
 
+struct Pointlight {
+	vec3 position;
+	float innerRadius;
+    uint color;
+	float outerRadius;
+    uint _p[2];
+};
+
+struct Spotlight {
+	vec3 position;
+	float innerCutoff;
+    vec3 direction;
+	float outerCutoff;
+	uint color;
+	float innerRadius;
+	float outerRadius;
+    uint _p;
+};
+
 struct InstanceStandard {
-    vec4 color;
     mat4 modelMatrix;
+    uint color;
     uint matIndex;
-    uint padding[3];
+    uint _p[2];
 };
 
 struct InstanceMap {
     uint matIndex;
 };
 
-// Uniforms
+// ----- [UNIFORMS] -----
 layout(std140, binding = UNIFORM_COMMON) uniform UniformCommon {
     uint Width;
     uint Height;
@@ -39,19 +67,31 @@ layout(std140, binding = UNIFORM_COMMON) uniform UniformCommon {
     mat4 Projection;
     float Near;
     float Far;
+    float _p[2];
+    vec3 ViewPosition;
 } uCommon;
 
 layout(std140, binding = UNIFORM_ANIMATION) uniform UniformAnimation {
     uint Dummy;
 } uAnimation;
 
-// Storages
+// ----- [STORAGES] -----
 layout(std430, binding = STORAGE_MATERIALINFO) readonly buffer MaterialInfos {
     MaterialInfo uMaterial[];
 };
 
 layout(std430, binding = STORAGE_TEXTUREHANDLE) readonly buffer TextureHandles {
     uvec2 uTexHandles[];
+};
+
+layout(std430, binding = STORAGE_POINTLIGHTS) readonly buffer Pointlights {
+    Pointlight uPointlights[MAX_POINTLIGHTS];
+    uint uPointlightNum;
+};
+
+layout(std430, binding = STORAGE_SPOTLIGHTS) readonly buffer Spotlights {
+    Spotlight uSpotlights[MAX_SPOTLIGHTS];
+    uint uSpotlightNum;
 };
 
 layout(std430, binding = STORAGE_INST_STANDARD) readonly buffer InstanceStandards {
@@ -62,8 +102,37 @@ layout(std430, binding = STORAGE_INST_MAP) readonly buffer InstanceMaps {
     InstanceMap uInstanceMap[];
 };
 
-// Functions
+// ----- [FUNCTIONS] -----
 sampler2D GetMaterialSampler(uint matIndex, uint mapIndex)
 {
     return sampler2D(uTexHandles[uMaterial[matIndex].handleIndex[mapIndex]]);
 }
+
+vec4 GetColorRGBA8(uint rgba8)
+{
+    return vec4(
+        float((rgba8 & 0xFFu)) / 255.0,
+        float((rgba8 >> 8) & 0xFFu) / 255.0,
+        float((rgba8 >> 16) & 0xFFu) / 255.0,
+        float((rgba8 >> 24) & 0xFFu) / 255.0
+    );
+}
+
+#ifdef STAGE_FRAG
+vec3 GetNormalFromMap(vec3 fragPos, vec3 normal, vec2 uv, sampler2D sampler)
+{
+	vec3 tangentNormal = texture(sampler, uv).xyz * 2.0 - 1.0;
+
+	vec3 Q1  = dFdx(fragPos);
+	vec3 Q2  = dFdy(fragPos);
+	vec2 st1 = dFdx(uv);
+	vec2 st2 = dFdy(uv);
+
+	vec3 N = normalize(normal);
+	vec3 T = normalize(Q1 * st2.t - Q2 * st1.t);
+	vec3 B = -normalize(cross(N, T));
+	mat3 TBN = mat3(T, B, N);
+
+	return normalize(TBN * tangentNormal);
+}
+#endif

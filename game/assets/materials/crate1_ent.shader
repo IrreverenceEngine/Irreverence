@@ -1,9 +1,8 @@
-materials/crate1
+materials/crate1_ent
 {
     {
-        map textures/crate1.png
-
         Albedo textures/crate1.png
+        Normal textures/crate1_norm.png
         Shader EntityLit.irs
         Linearize 1
         Mipmap 1

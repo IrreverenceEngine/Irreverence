@@ -99,7 +99,7 @@ namespace IR::Physics {
     static ContactListener s_ContactListener;
 
     static JPH::JobSystemThreadPool s_JobSystem;
-    static JPH::TempAllocatorImpl* s_TmpAlloc;
+    static JPH::TempAllocatorImpl* s_TmpAlloc; // NOTE: If we run out of temp memory, we can change this to the fallback version.
 
     static JPH::PhysicsSystem s_PhysicsSystem;
     static JPH::BodyInterface* s_BodyInterface = nullptr;
@@ -107,15 +107,15 @@ namespace IR::Physics {
     static const JPH::BodyLockInterface* s_BodyLockInterface = nullptr;
     static const JPH::BroadPhaseQuery* s_BPQuery = nullptr;
 
-    static ObjectInfo s_ObjectInfos[MAX_OBJECTS];
+    static Object s_Objects[MAX_OBJECTS];
     static UInt16 s_ObjectCount = 0;
     static UInt16 s_ObjectReach = 0;
 
-    static UInt16 GetFreeObjectInfoId()
+    static UInt16 GetFreeObjectId()
     {
         UInt16 index = MAX_OBJECTS;
         for (UInt16 i = 0; i < MAX_OBJECTS; i++) {
-            ObjectInfo* obj = &s_ObjectInfos[i];
+            Object* obj = &s_Objects[i];
 
             if (obj->bodyId != INVALID_BODYID) continue;
 
@@ -130,14 +130,14 @@ namespace IR::Physics {
         return index;
     }
 
-    static ObjectInfo* AddObjectInfo(const ObjectInfo& data)
+    static Object* AddObject(const Object& data)
     {
         UInt32 count = data.index + 1;
         if (count > s_ObjectReach) {
             s_ObjectReach = count;
         }
 
-        ObjectInfo& obj = s_ObjectInfos[data.index];
+        Object& obj = s_Objects[data.index];
 
         obj = data;
         s_ObjectCount++;
@@ -145,19 +145,19 @@ namespace IR::Physics {
         return &obj;
     }
 
-    static ObjectInfo* MakeObjectInfo(
+    static Object* MakeObject(
         const JPH::Shape* joltShape, Shape shape,
         Type type, Layer layer,
         const glm::vec3& pos, const glm::quat& rot,
         const UInt32 extra
     )
     {
-        UInt16 index = GetFreeObjectInfoId();
+        UInt16 index = GetFreeObjectId();
 
         JPH::BodyCreationSettings settings(
             joltShape,
             { pos.x, pos.y, pos.z },
-            JPH::Quat::sIdentity(),
+            { rot.x, rot.y, rot.z, rot.w },
             (JPH::EMotionType)type,
             (JPH::ObjectLayer)layer
         );
@@ -169,7 +169,7 @@ namespace IR::Physics {
             return nullptr;
         }
 
-        ObjectInfo obj;
+        Object obj;
         obj.bodyId = *(UInt32*)&bodyId;
         obj.index = index;
         obj.layer = layer;
@@ -180,10 +180,8 @@ namespace IR::Physics {
         obj.rot = rot;
         obj.vel = glm::vec3(0.0f);
         obj.angularVel = glm::vec3(0.0f);
-        obj.friction = 0.0f;
-        obj.restitution = 0.0f;
 
-        return AddObjectInfo(obj);
+        return AddObject(obj);
     }
 
     bool Init()
@@ -210,7 +208,7 @@ namespace IR::Physics {
             s_ObjectLayerPairFilter
         );
 
-        s_PhysicsSystem.SetGravity({0, -9.81 * 16.0f, 0});
+        s_PhysicsSystem.SetGravity({0, -9.81 * 128.0f, 0});
 
         s_BodyInterface = &s_PhysicsSystem.GetBodyInterface();
         s_BodyNoLockInterface = &s_PhysicsSystem.GetBodyLockInterfaceNoLock();
@@ -218,7 +216,7 @@ namespace IR::Physics {
         s_BPQuery = &s_PhysicsSystem.GetBroadPhaseQuery();
 
         for (UInt16 i = 0; i < MAX_OBJECTS; i++) {
-            ObjectInfo& obj = s_ObjectInfos[i];
+            Object& obj = s_Objects[i];
             obj.bodyId = INVALID_BODYID;
             obj.index = 0;
             obj.layer = Layer::NON_MOVING;
@@ -232,10 +230,11 @@ namespace IR::Physics {
     void Shutdown()
     {
         for (UInt32 i = 0; i < MAX_OBJECTS; i++) {
-            ObjectInfo* obj = &s_ObjectInfos[i];
+            Object* obj = &s_Objects[i];
             if (obj->bodyId == INVALID_BODYID) continue;
 
             s_BodyInterface->RemoveBody((JPH::BodyID)obj->bodyId);
+            s_BodyInterface->DestroyBody((JPH::BodyID)obj->bodyId);
             obj->bodyId = INVALID_BODYID;
 	    }
 
@@ -265,7 +264,7 @@ namespace IR::Physics {
         JPH::RVec3 tempVec3;
         JPH::Quat tempQuat;
         for (UInt16 i = 0; i < s_ObjectReach; i++) {
-            ObjectInfo& obj = s_ObjectInfos[i];
+            Object& obj = s_Objects[i];
             if (obj.bodyId == UINT32_MAX) {
                 continue;
             }
@@ -288,10 +287,13 @@ namespace IR::Physics {
 
             tempVec3 = body.GetAngularVelocity();
             obj.angularVel = { tempVec3.GetX(), tempVec3.GetY(), tempVec3.GetZ() };
+
+            obj.flags = 0;
+            obj.flags |= body.IsActive() ? Object::FLAG_ISACTIVE : 0;
         }
     }
 
-    ObjectInfo* MakeCubeObject(
+    Object* MakeCubeObject(
         const glm::vec3 scale,
         Type type, Layer layer,
         const glm::vec3& pos, const glm::quat& rot,
@@ -301,7 +303,7 @@ namespace IR::Physics {
         JPH::Vec3 jphSize = JPH::Vec3( scale.x, scale.y, scale.z );
         JPH::BoxShape* shape = new JPH::BoxShape(jphSize);
 
-        ObjectInfo* obj = MakeObjectInfo(shape, Shape::CUBE, type, layer, pos, rot, 0);
+        Object* obj = MakeObject(shape, Shape::CUBE, type, layer, pos, rot, 0);
 
         if (!obj) {
             delete shape;
@@ -310,7 +312,7 @@ namespace IR::Physics {
         return obj;
     }
 
-    ObjectInfo* MakeSphereObject(
+    Object* MakeSphereObject(
         Float32 radius,
         Type type, Layer layer,
         const glm::vec3& pos, const glm::quat& rot,
@@ -318,7 +320,7 @@ namespace IR::Physics {
     )
     {
         JPH::SphereShape* shape = new JPH::SphereShape(radius);
-        ObjectInfo* obj = MakeObjectInfo(shape, Shape::SPHERE, type, layer, pos, rot, 0);
+        Object* obj = MakeObject(shape, Shape::SPHERE, type, layer, pos, rot, 0);
 
         if (!obj) {
             delete shape;
@@ -327,7 +329,7 @@ namespace IR::Physics {
         return obj;
     }
 
-    ObjectInfo* MakeCylinderObject(
+    Object* MakeCylinderObject(
         Float32 radius, Float32 height,
         Type type, Layer layer,
         const glm::vec3& pos, const glm::quat& rot,
@@ -335,7 +337,7 @@ namespace IR::Physics {
     )
     {
         JPH::CylinderShape* shape = new JPH::CylinderShape(height, radius);
-        ObjectInfo* obj = MakeObjectInfo(shape, Shape::SPHERE, type, layer, pos, rot, 0);
+        Object* obj = MakeObject(shape, Shape::SPHERE, type, layer, pos, rot, 0);
 
         if (!obj) {
             delete shape;
@@ -344,7 +346,7 @@ namespace IR::Physics {
         return obj;
     }
 
-    ObjectInfo* MakeCapsuleObject(
+    Object* MakeCapsuleObject(
         Float32 radius, Float32 height,
         Type type, Layer layer,
         const glm::vec3& pos, const glm::quat& rot,
@@ -352,7 +354,7 @@ namespace IR::Physics {
     )
     {
         JPH::CapsuleShape* shape = new JPH::CapsuleShape(height, radius);
-        ObjectInfo* obj = MakeObjectInfo(shape, Shape::CAPSULE, type, layer, pos, rot, 0);
+        Object* obj = MakeObject(shape, Shape::CAPSULE, type, layer, pos, rot, 0);
 
         if (!obj) {
             delete shape;
@@ -361,7 +363,7 @@ namespace IR::Physics {
         return obj;
     }
 
-    ObjectInfo* MakeConvexHullObject(
+    Object* MakeConvexHullObject(
         const glm::vec3* points, UInt32 count,
         Type type, Layer layer,
         const glm::vec3& pos, const glm::quat& rot,
@@ -385,7 +387,7 @@ namespace IR::Physics {
             return nullptr;
         }
 
-        ObjectInfo* obj = MakeObjectInfo(shape, Shape::CONVEX, type, layer, pos, rot, 0);
+        Object* obj = MakeObject(shape, Shape::CONVEX, type, layer, pos, rot, 0);
 
         if (!obj) {
             delete shape;
@@ -397,15 +399,8 @@ namespace IR::Physics {
     static struct {
         JPH::CompoundShapeSettings* settings = nullptr;
         bool isStatic = false;
-        Type type; Layer layer;
-        glm::vec3 pos; glm::quat rot;
-        UInt32 extra;
     } s_CompObjectInfo;
-    void BeginCompoundObject(
-        Type type, Layer layer,
-        bool bStatic,
-        const glm::vec3& pos, const glm::quat& rot,
-        UInt32 extra)
+    void BeginCompoundObject(bool bStatic)
     {
         if (s_CompObjectInfo.settings) {
             IR_MSG(FATAL, "An Compound Object was not finished before beginning another Compound Object");
@@ -415,12 +410,6 @@ namespace IR::Physics {
         s_CompObjectInfo.settings = bStatic ?
             (JPH::CompoundShapeSettings*)new JPH::StaticCompoundShapeSettings :
             (JPH::CompoundShapeSettings*)new JPH::MutableCompoundShapeSettings;
-
-        s_CompObjectInfo.type = type;
-        s_CompObjectInfo.layer = layer;
-        s_CompObjectInfo.pos = pos;
-        s_CompObjectInfo.rot = rot;
-        s_CompObjectInfo.extra = extra;
     }
 
     void AddCompoundCube(
@@ -431,7 +420,7 @@ namespace IR::Physics {
     {
         JPH::Vec3 jphSize = { scale.x, scale.y, scale.z };
         JPH::BoxShape* shape = new JPH::BoxShape(jphSize);
-        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, JPH::Quat::sIdentity(), shape, extra);
+        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, { rot.x, rot.y, rot.z, rot.w }, shape, extra);
     }
 
     void AddCompoundSphere(
@@ -441,7 +430,7 @@ namespace IR::Physics {
     )
     {
         JPH::SphereShape* shape = new JPH::SphereShape(radius);
-        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, JPH::Quat::sIdentity(), shape, extra);
+        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, { rot.x, rot.y, rot.z, rot.w }, shape, extra);
     }
 
     void AddCompoundCylinder(
@@ -451,7 +440,7 @@ namespace IR::Physics {
     )
     {
         JPH::CylinderShape* shape = new JPH::CylinderShape(height, radius);
-        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, JPH::Quat::sIdentity(), shape, extra);
+        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, { rot.x, rot.y, rot.z, rot.w }, shape, extra);
     }
 
     void AddCompoundCapsule(
@@ -461,7 +450,7 @@ namespace IR::Physics {
     )
     {
         JPH::CapsuleShape* shape = new JPH::CapsuleShape(height, radius);
-        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, JPH::Quat::sIdentity(), shape, extra);
+        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, { rot.x, rot.y, rot.z, rot.w }, shape, extra);
     }
 
     void AddCompoundConvexHull(
@@ -487,10 +476,13 @@ namespace IR::Physics {
             return;
         }
 
-        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, JPH::Quat::sIdentity(), shape, extra);
+        s_CompObjectInfo.settings->AddShape({ pos.x, pos.y, pos.z }, { rot.x, rot.y, rot.z, rot.w }, shape, extra);
     }
 
-    ObjectInfo* EndCompoundObject()
+    Object* EndCompoundObject(Type type, Layer layer,
+        const glm::vec3& pos, const glm::quat& rot,
+        UInt32 extra
+    )
     {
         IR_DEFER({
             if (s_CompObjectInfo.settings) {
@@ -511,7 +503,7 @@ namespace IR::Physics {
             return nullptr;
         }
 
-        ObjectInfo* obj = MakeObjectInfo(shape, Shape::COMPOUND, s_CompObjectInfo.type, s_CompObjectInfo.layer, s_CompObjectInfo.pos, s_CompObjectInfo.rot, s_CompObjectInfo.extra);
+        Object* obj = MakeObject(shape, Shape::COMPOUND, type, layer, pos, rot, extra);
 
         if (!obj) {
             delete shape;
@@ -520,13 +512,80 @@ namespace IR::Physics {
         return obj;
     }
 
-    ObjectInfo* GetObjectInfo(UInt32 index)
+    void DestroyObject(Object* object)
+    {
+        if (!object || object->bodyId == INVALID_BODYID) {
+            return;
+        }
+
+        s_BodyInterface->RemoveBody((JPH::BodyID)object->bodyId);
+        s_BodyInterface->DestroyBody((JPH::BodyID)object->bodyId);
+
+        bool canReduce = (object->index + 1) >= s_ObjectReach;
+        s_ObjectReach = canReduce ? object->index : s_ObjectReach;
+
+        s_ObjectCount--;
+
+        object->bodyId = INVALID_BODYID;
+    }
+
+    void SetObjectPosition(Object* object, const glm::vec3& pos, bool activateNearby)
+    {
+        if (activateNearby) {
+            JPH::AABox activatearea = s_BodyInterface->GetTransformedShape((JPH::BodyID)object->bodyId).GetWorldSpaceBounds();
+            activatearea.ExpandBy({ 0.1f, 0.1f, 0.1f });
+            s_BodyInterface->ActivateBodiesInAABox(activatearea, *(JPH::BroadPhaseLayerFilter*)&s_BPLayerInterface, {});
+        }
+
+        s_BodyInterface->SetPosition((JPH::BodyID)object->bodyId, { pos.x, pos.y, pos.z }, JPH::EActivation::Activate);
+        object->pos = pos;
+    }
+
+    void SetObjectRotation(Object* object, const glm::quat& rot, bool activateNearby)
+    {
+        if (activateNearby) {
+            JPH::AABox activatearea = s_BodyInterface->GetTransformedShape((JPH::BodyID)object->bodyId).GetWorldSpaceBounds();
+            activatearea.ExpandBy({ 0.1f, 0.1f, 0.1f });
+            s_BodyInterface->ActivateBodiesInAABox(activatearea, *(JPH::BroadPhaseLayerFilter*)&s_BPLayerInterface, {});
+        }
+
+        s_BodyInterface->SetRotation((JPH::BodyID)object->bodyId, { rot.x, rot.y, rot.z, rot.w }, JPH::EActivation::Activate);
+        object->rot = rot;
+    }
+
+    void SetObjectVelocity(Object* object, const glm::vec3& vel)
+    {
+        s_BodyInterface->SetLinearVelocity((JPH::BodyID)object->bodyId, { vel.x, vel.y, vel.z });
+        object->vel = vel;
+    }
+
+    void SetObjectAngularVelocity(Object* object, const glm::vec3& vel)
+    {
+        s_BodyInterface->SetAngularVelocity((JPH::BodyID)object->bodyId, { vel.x, vel.y, vel.z });
+        object->angularVel = vel;
+    }
+
+    void AddObjectVelocity(Object* object, const glm::vec3& vel)
+    {
+        s_BodyInterface->AddLinearVelocity((JPH::BodyID)object->bodyId, { vel.x, vel.y, vel.z });
+        object->vel += vel;
+    }
+
+    void AddObjectAngularVelocity(Object* object, const glm::vec3& vel)
+    {
+        glm::vec3 newVel = object->angularVel + vel;
+        s_BodyInterface->SetAngularVelocity((JPH::BodyID)object->bodyId, { newVel.x, newVel.y, newVel.z });
+
+        object->angularVel = newVel;
+    }
+
+    Object* GetObject(UInt32 index)
     {
         if (index >= s_ObjectReach) {
             return nullptr;
         }
 
-        ObjectInfo* obj = &s_ObjectInfos[index];
+        Object* obj = &s_Objects[index];
         return obj->bodyId != UINT32_MAX ? obj : nullptr;
     }
 

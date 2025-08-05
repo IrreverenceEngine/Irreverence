@@ -18,7 +18,7 @@ namespace IR::Window {
 
     bool Init(Renderer::API api)
     {
-        SDL_Init(SDL_INIT_VIDEO);
+        SDL_Init(0);
 
         Globals.width = 1280;
         Globals.height = 720;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <IR_CTypes.hpp>
+#include <IR_Types.hpp>
 
 namespace IR {
     struct GlobalsData {

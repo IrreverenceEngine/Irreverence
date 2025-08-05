@@ -11,9 +11,10 @@ namespace IR::Renderer {
             UInt32 handleIndexes[Material::MAP__COUNT];
         };
 
+        bool Init(const Texture*(&textures)[MAP__COUNT], Shader* shader) override;
         void Destroy() override;
 
-        void AddTexture(Map map, Texture* texture) override;
+        void SetTexture(Map map, Texture* texture) override;
         void SetShader(Shader* shader) override;
 
         void Bind();

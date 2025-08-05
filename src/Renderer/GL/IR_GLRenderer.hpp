@@ -12,6 +12,7 @@
 #include <Renderer/GL/IR_GLMeshPool.hpp>
 #include <Renderer/GL/IR_GLCmdList.hpp>
 #include <Renderer/GL/IR_GLInstance.hpp>
+#include <Renderer/GL/IR_GLLighting.hpp>
 
 #include <SDL3/SDL.h>
 
@@ -28,9 +29,11 @@ namespace IR::Renderer {
         };
 
         enum ShaderStorageLocation {
-            SSLOC_MATERIALINFO,
+            SSLOC_MATERIALINFO = 0,
             SSLOC_TEXTUREHANDLE,
-            SSLOC_ILSTANDARD,
+            SSLOC_POINTLIGHTS,
+            SSLOC_SPOTLIGHTS,
+            SSLOC_ILSTANDARD = 16,
             SSLOC_ILMAP,
         };
 
@@ -38,9 +41,11 @@ namespace IR::Renderer {
         UInt32 UseMaterialInfo(const GLMaterial::Info& info);
         void RemoveTextureHandle(UInt32 index);
         void RemoveMaterialInfo(UInt32 index);
+        bool AddShaderInclude(const char* name);
 
         const std::vector<std::string>& GetPatchIncludes() const IR_RETURN(m_PatchIncludes)
         GLLayout* GetLayout(GLLayout::Type type);
+        GLTexture* GetDefaultTexture(Material::Map map);
 
     private:
         bool m_InitialPrepare = false;
@@ -56,6 +61,8 @@ namespace IR::Renderer {
 
         std::vector<GLMaterial::Info> m_MaterialInfos;
         std::vector<UInt64> m_TextureHandles;
+
+        GLLighting m_Lighting;
 
         // --- [VERTEX LAYOUTS] ---
         GLLayout m_LayoutStandard;
@@ -75,6 +82,8 @@ namespace IR::Renderer {
             glm::mat4 projection;
             Float32 near;
             Float32 far;
+            UInt32 _p[2];
+            glm::vec3 viewPos;
         } m_CommonData;
         GLUniform m_UniformCommon;
 
@@ -93,6 +102,7 @@ namespace IR::Renderer {
         GLTexture m_TextureWhite;
         GLTexture m_TextureBlack;
         GLTexture m_TextureError;
+        GLTexture m_TextureNormal;
 
         // --- [SHADERS] ---
         GLShader* m_ShaderMapFaceLit = nullptr;
@@ -102,9 +112,6 @@ namespace IR::Renderer {
         GLMesh m_MeshPlane;
 
         // --- [MATERIALS] ---
-        GLMaterial m_MaterialWhite;
-        GLMaterial m_MaterialBlack;
-        GLMaterial m_MaterialError;
 
         SDL_GLContext m_GLContext;
     };

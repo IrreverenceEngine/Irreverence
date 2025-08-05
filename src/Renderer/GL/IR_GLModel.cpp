@@ -39,7 +39,7 @@ namespace IR::Renderer {
                 }
             }
 
-            info.skins[i] = (GLMaterial*)s_GL->GetMaterialError();
+            // info.skins[i] = (GLMaterial*)s_GL->GetMaterialError();
         }
 
         m_Meshes.emplace_back(info);
@@ -64,7 +64,7 @@ namespace IR::Renderer {
                 }
             }
 
-            info.skins[i] = (GLMaterial*)s_GL->GetMaterialError();
+            // info.skins[i] = (GLMaterial*)s_GL->GetMaterialError();
         }
 
         m_Meshes.emplace_back(info);

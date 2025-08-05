@@ -20,5 +20,11 @@ namespace IR::Renderer {
         void* m_Map = nullptr;
         bool m_Realloc = false;
         Int32 m_Type = 0;
+
+        // TODO: Implement scheduled bulk updates, uint8 list
+        struct ScheduledData {
+            std::vector<UInt8> data;
+            UInt64 offset;
+        };
     };
 }
