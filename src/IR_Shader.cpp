@@ -78,7 +78,12 @@ namespace IR::Renderer {
         char* fscode = fsfile.ReadAll();
         IR_DEFER({ if (fscode) delete[] fscode; });
 
-        return InitRasterMemory(vscode, fscode);
+		if (!InitRasterMemory(vscode, fscode)) {
+			IR_MSG(ERROR, "Shader failed to initialize Raster Shader from files \"%s\" and \"%s\"", vspath, fspath);
+            return false;
+        }
+
+        return true;
     }
 
     bool Shader::InitCompute(const char* cspath)
@@ -92,6 +97,11 @@ namespace IR::Renderer {
         char* cscode = csfile.ReadAll();
         IR_DEFER({ if (cscode) delete[] cscode; });
 
-        return InitComputeMemory(cscode);
+		if (!InitComputeMemory(cscode)) {
+			IR_MSG(ERROR, "Shader failed to initialize Compute Shader from file \"%s\"", cspath);
+			return false;
+		}
+
+        return true;
     }
 }

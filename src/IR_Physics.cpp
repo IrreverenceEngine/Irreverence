@@ -1,6 +1,7 @@
 #include "IR_Globals.hpp"
 #include <IR_Physics.hpp>
 #include <IR_CVar.hpp>
+#include <IR_Tracy.hpp>
 
 #include <Jolt/Jolt.h>
 #include <Jolt/RegisterTypes.h>
@@ -246,6 +247,8 @@ namespace IR::Physics {
 
     void Update()
     {
+		IR_ZONE_NAME("Physics Update");
+
 		static CVar* tickrate = CVar::Get("tickrate");
 
 		if (!tickrate) {

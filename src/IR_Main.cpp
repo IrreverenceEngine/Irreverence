@@ -7,8 +7,11 @@
 #include <IR_Assets.hpp>
 #include <IR_CVar.hpp>
 #include <IR_QUtil.hpp>
+#include <IR_Audio.hpp>
 
 #include <glm/gtc/quaternion.hpp>
+
+#include <IR_Tracy.hpp>
 
 using namespace IR;
 
@@ -131,6 +134,10 @@ int main(int argc, char** argv)
 		IR_MSG(FATAL, "Failed to init Physics, shutting down!");
 	}
 
+	if (!Audio::Init()) {
+		IR_MSG(FATAL, "Failed to init Audio, shutting down!");
+	}
+
     IR_MSG(INFO, "Successfully initialized Irreverence");
 
 	std::vector<BinaryMap::EntityData> entDatas;
@@ -184,8 +191,13 @@ int main(int argc, char** argv)
 	float nextTick = 0.0f;
 	const float tickTime = 1.0f / tickrate.GetInt64();
 
+	IR_THREAD_NAME("Main Thread");
+
 	while(!Window::ShouldClose()) {
+		IR_ZONE_NAME("Main Thread");
+
 		if (nextTick < Globals.curtime) {
+			IR_ZONE_NAME("Tick");
 			Physics::Update();
 
 			nextTick = Globals.curtime + tickTime;
@@ -222,6 +234,7 @@ int main(int argc, char** argv)
 		}
     }
 
+	Audio::Shutdown();
 	Physics::Shutdown();
 	Renderer::Shutdown();
 	Window::Shutdown();

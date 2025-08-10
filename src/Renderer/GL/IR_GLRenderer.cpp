@@ -6,12 +6,16 @@
 #include <IR_Assets.hpp>
 #include <IR_File.hpp>
 #include <IR_CVar.hpp>
+#include <IR_Tracy.hpp>
 
 #include <GL/glew.h>
 #include <Thirdparty/stb_image.h>
 
 #include <glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <tracy/Tracy.hpp>
+#include <tracy/TracyOpenGL.hpp>
 
 void glMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
 
@@ -181,6 +185,7 @@ namespace IR::Renderer {
 
         // --- [MATERIALS] ---
 
+		TracyGpuContext;
 
         return true;
     }
@@ -232,6 +237,8 @@ namespace IR::Renderer {
 
     void GL::Present()
     {
+		IR_ZONE_NAME("OpenGL Renderer Present");
+
         if (!m_InitialPrepare) {
             m_ILSMap.Upload();
             m_InitialPrepare = true;
@@ -243,14 +250,30 @@ namespace IR::Renderer {
         m_CommonData.height = Globals.height;
         Debug::FlyCam(m_CommonData.view, m_CommonData.projection, m_CommonData.viewPos);
 
-        m_UniformCommon.Update(&m_CommonData, sizeof(m_CommonData), 0);
+		{
+			TracyGpuZone("Update Common Data");
+			m_UniformCommon.Update(&m_CommonData, sizeof(m_CommonData), 0);
+		}
 
-        m_SBMaterialInfos.Update(m_MaterialInfos.data(), m_MaterialInfos.size() * sizeof(GLMaterial::Info), 0);
-        m_SBTextureHandles.Update(m_TextureHandles.data(), m_TextureHandles.size() * sizeof(UInt64), 0);
+		{
+			TracyGpuZone("Update Material Infos");
+			m_SBMaterialInfos.Update(m_MaterialInfos.data(), m_MaterialInfos.size() * sizeof(GLMaterial::Info), 0);
+		}
 
-        m_ILDStandard.Upload();
+        {
+			TracyGpuZone("Update Texture Handles");
+			m_SBTextureHandles.Update(m_TextureHandles.data(), m_TextureHandles.size() * sizeof(UInt64), 0);
+		}
 
-        m_Lighting.Upload();
+		{
+			TracyGpuZone("Update Instance Data");
+			m_ILDStandard.Upload();
+		}
+
+		{
+			TracyGpuZone("Update Lighting Data");
+			m_Lighting.Upload();
+		}
 
 		static CVar* r_clear_color = CVar::Get("r_clear_color");
 		glm::vec4 clearColor = glm::vec4(0.0f);
@@ -265,19 +288,36 @@ namespace IR::Renderer {
 			clearColor.a = 1.0f; // Alpha
 		}
 
-        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		{
+			TracyGpuZone("Clear Color");
+			glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
 
-        // - Static
-        m_CmdListStatic.Draw();
+		{
+			TracyGpuZone("Draw Static Command Lists");
+			// - Static
+			m_CmdListStatic.Draw();
+		}
 
         // - Dynamic
-        m_CmdListDynamic.Draw();
-        m_CmdListDynamic.Flush();
+		{
+			TracyGpuZone("Draw Dynamic Command Lists");
+			m_CmdListDynamic.Draw();
+			m_CmdListDynamic.Flush();
+		}
 
-        m_ILDStandard.Flush();
+		{
+			TracyGpuZone("Flush Dynamic Instance Data");
+			m_ILDStandard.Flush();
+		}
 
-        SDL_GL_SwapWindow((SDL_Window*)Window::GetHandle());
+		{
+			TracyGpuZone("Swap Buffers");
+			SDL_GL_SwapWindow((SDL_Window*)Window::GetHandle());
+		}
+
+		TracyGpuCollect;
     }
 
     void GL::SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, UInt8 skin)

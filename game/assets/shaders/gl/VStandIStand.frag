@@ -42,7 +42,7 @@ void main()
         );
     }
 
-    vec3 color = vec3(0.01) * albedoCol + lightTotal;
+    vec3 color = vec3(0.1) * albedoCol + lightTotal;
 
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));

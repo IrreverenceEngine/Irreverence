@@ -7,3 +7,12 @@
 [submodule "vendor/JoltPhysics"]
 	path = vendor/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics.git
+[submodule "vendor/GameNetworkingSockets"]
+	path = vendor/GameNetworkingSockets
+	url = https://github.com/ValveSoftware/GameNetworkingSockets
+[submodule "vendor/openal-soft"]
+	path = vendor/openal-soft
+	url = https://github.com/kcat/openal-soft.git
+[submodule "vendor/tracy"]
+	path = vendor/tracy
+	url = https://github.com/wolfpld/tracy
