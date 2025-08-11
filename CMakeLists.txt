@@ -12,7 +12,7 @@ option(ENABLE_TRACY "Enable Tracy profiling" OFF)
 find_package(OpenGL REQUIRED)
 
 # NOTE: Copy pasted from older project, if not work seek help.
-file(DOWNLOAD https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz ${CMAKE_BINARY_DIR}/vendor/glew.tgz)
+file(DOWNLOAD https://sourceforge.net/projects/glew/files/glew/snapshots/glew-20220402.tgz/download ${CMAKE_BINARY_DIR}/vendor/glew.tgz)
 file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/vendor/glew.tgz DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glew)
 
 set(BUILD_UTILS OFF)
@@ -29,7 +29,7 @@ add_subdirectory(vendor/JoltPhysics/Build)
 
 set(BUILD_SHARED_LIB OFF)
 set(BUILD_STATIC_LIB ON)
-# add_subdirectory(vendor/GameNetworkingSockets)
+add_subdirectory(vendor/GameNetworkingSockets)
 
 if (WIN32)
 	set(ALSOFT_UTILS OFF)
@@ -59,7 +59,7 @@ add_subdirectory(vendor/tracy)
 
 target_link_libraries(irreverence PRIVATE
     glm::glm SDL3-static glew_s OpenGL::GL Jolt
-	openal Tracy::TracyClient
+	openal Tracy::TracyClient GameNetworkingSockets_s
 )
 
 target_include_directories(irreverence PUBLIC
