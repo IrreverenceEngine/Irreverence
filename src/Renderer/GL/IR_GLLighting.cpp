@@ -106,7 +106,9 @@ namespace IR::Renderer {
     void GLLighting::SetPLightPosition(UInt16 index, const glm::vec3& pos)
     {
         Pointlight& light = m_Pointlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.position = pos;
         light.outdated = true;
@@ -115,7 +117,9 @@ namespace IR::Renderer {
     void GLLighting::SetPLightColor(UInt16 index, const Color& col)
     {
         Pointlight& light = m_Pointlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.color = col;
         light.outdated = true;
@@ -124,7 +128,9 @@ namespace IR::Renderer {
     void GLLighting::SetPLightInnerRadius(UInt16 index, const float radius)
     {
         Pointlight& light = m_Pointlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.innerRadius = radius;
         light.outdated = true;
@@ -133,7 +139,9 @@ namespace IR::Renderer {
     void GLLighting::SetPLightOuterRadius(UInt16 index, const float radius)
     {
         Pointlight& light = m_Pointlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.outerRadius = radius;
         light.outdated = true;
@@ -181,7 +189,9 @@ namespace IR::Renderer {
     void GLLighting::SetSLightPosition(UInt16 index, const glm::vec3& pos)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.position = pos;
         light.outdated = true;
@@ -190,7 +200,9 @@ namespace IR::Renderer {
     void GLLighting::SetSLightDirection(UInt16 index, const glm::vec3& dir)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.direction = dir;
         light.outdated = true;
@@ -199,7 +211,9 @@ namespace IR::Renderer {
     void GLLighting::SetSLightColor(UInt16 index, const Color& col)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.color = col;
         light.outdated = true;
@@ -208,7 +222,9 @@ namespace IR::Renderer {
     void GLLighting::SetSLightInnerRadius(UInt16 index, const float radius)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.innerRadius = radius;
         light.outdated = true;
@@ -217,7 +233,9 @@ namespace IR::Renderer {
     void GLLighting::SetSLightOuterRadius(UInt16 index, const float radius)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
         light.data.outerRadius = radius;
         light.outdated = true;
@@ -226,18 +244,22 @@ namespace IR::Renderer {
     void GLLighting::SetSLightInnerCutoff(UInt16 index, const float deg)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
-        light.data.innerCutoff = glm::radians(deg);
+        light.data.innerCutoff = cosf(glm::radians(deg));
         light.outdated = true;
     }
 
     void GLLighting::SetSLightOuterCutoff(UInt16 index, const float deg)
     {
         Spotlight& light = m_Spotlights[index];
-        if (!light.ready) return;
+        if (!light.ready) {
+            return;
+        }
 
-        light.data.outerCutoff = glm::radians(deg);
+        light.data.outerCutoff = cosf(glm::radians(deg));
         light.outdated = true;
     }
 

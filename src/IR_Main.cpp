@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 					}
 
 					Renderer::Mesh* mesh = Renderer::MakeMesh();
-					mesh->Init(face.vertices.data(), face.vertices.size(), face.indices.data(), face.indices.size());
+					mesh->InitPool(face.vertices.data(), face.vertices.size(), face.indices.data(), face.indices.size());
 					meshes.push_back({ mesh, Assets::Material(face.materialName.c_str()) });
 				}
 
@@ -186,10 +186,19 @@ int main(int argc, char** argv)
 		Renderer::SubmitMapMesh(meshes[i].mesh, meshes[i].mat);
 	}
 
-	Physics::Object* obj = Physics::MakeCubeObject(glm::vec3(25.0f), Physics::Type::DYNAMIC, Physics::Layer::MOVING, {186, 450, 128});
+	Physics::Object* obj = Physics::MakeCubeObject(glm::vec3(25.0f), Physics::Type::DYNAMIC, Physics::Layer::MOVING, { 186, 450, 128 });
 
-	float nextTick = 0.0f;
-	const float tickTime = 1.0f / tickrate.GetInt64();
+	Float64 nextTick = 0.0f;
+	const Float64 tickTime = 1.0 / tickrate.GetInt64();
+
+	UInt16 light = Renderer::MakeSLight();
+	Renderer::SetSLightColor(light, { 200, 225, 255, 128 });
+	Renderer::SetSLightDirection(light, { 0.0f, -1.0f, 0.9f });
+	Renderer::SetSLightPosition(light, { 512.0f, 140.0f, 128.0f });
+	Renderer::SetSLightInnerCutoff(light, 30.0f);
+	Renderer::SetSLightOuterCutoff(light, 45.0f);
+	Renderer::SetSLightInnerRadius(light, 256.0f);
+	Renderer::SetSLightOuterRadius(light, 512.0f);
 
 	IR_THREAD_NAME("Main Thread");
 
@@ -207,19 +216,11 @@ int main(int argc, char** argv)
 			Physics::SetObjectVelocity(obj, { 0, 256, 0 });
 		}
 
-		Renderer::SubmitMesh(Renderer::GetMeshCube(), obj->pos, obj->rot, glm::vec3(25.0f), Color(255), Assets::Material("crate1_ent.shader"));
+		Renderer::SetSLightColor(light, { fabs(sinf(Globals.curtime)) * 255.0, fabs(cosf(Globals.curtime)) * 255.0, 150, 255 });
+
+		Renderer::SubmitMesh(Renderer::GetMeshCube(), obj->pos, obj->rot, glm::vec3(25.0f), Color(255), Assets::Material("GRID_BLACK0_ent.shader"));
 
 		Renderer::Present();
-
-		if (Input::IsKeyPressed(Input::Key::X)) {
-			IR_MSG(INFO, "Destroyed door1");
-			Renderer::Texture* tex = Assets::Texture("door1.png", false, false);
-			tex->Destroy();
-
-			Renderer::Material* mat = Assets::Material("door1.shader");
-			mat->SetTexture(Renderer::Material::MAP_ALBEDO, Assets::Texture("gem.png", true, true));
-			mat->Reset();
-		}
 
 		if (Input::IsKeyPressed(Input::Key::F1)) {
 			Window::ToggleMouseLock();

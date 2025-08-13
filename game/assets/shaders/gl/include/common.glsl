@@ -1,4 +1,5 @@
 #extension GL_ARB_bindless_texture : require
+#define INCLUDE_COMMON
 
 // ----- [DEFINES] -----
 const uint UNIFORM_COMMON = 0;
@@ -65,9 +66,6 @@ layout(std140, binding = UNIFORM_COMMON) uniform UniformCommon {
     float FrameTime;
     mat4 View;
     mat4 Projection;
-    float Near;
-    float Far;
-    float _p[2];
     vec3 ViewPosition;
 } uCommon;
 

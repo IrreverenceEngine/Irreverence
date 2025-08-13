@@ -6,8 +6,9 @@
 namespace IR::Renderer {
     class Mesh {
     public:
-        virtual bool Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) = 0;
-        virtual bool Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) = 0;
+        virtual bool InitPool(const VertexBasic2D* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) = 0;
+        virtual bool InitPool(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) = 0;
+        virtual bool InitPool(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) = 0;
         virtual void Destroy() {}
     };
 }

@@ -39,7 +39,7 @@ namespace IR::Renderer {
 
         SetShader(Assets::Shader(shaderName.c_str()));
 
-        bool linearize = (bool)params->FindChildNumber("Linearize", 1);
+        bool linearize = false; // (bool)params->FindChildNumber("Linearize", 1);
         bool mipmaps = (bool)params->FindChildNumber("Mipmap", 1);
 
 	    const std::string& albedoPath = params->FindChildString("Albedo");
@@ -60,6 +60,8 @@ namespace IR::Renderer {
     bool Material::SetTextureFromPath(Map map, const std::string& path, bool linearize, bool mipmaps, Texture* def)
     {
         Texture* texture = !path.empty() ? Assets::Texture(path.substr(9).c_str(), linearize, mipmaps) : def;
+        texture = texture ? texture : def; // funny
+
         SetTexture(map, texture);
 
         return texture != def;

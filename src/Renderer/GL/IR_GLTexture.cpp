@@ -46,7 +46,7 @@ namespace IR::Renderer {
             glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAllowAniso);
             glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, Math::Clamp(maxAllowAniso, 0.0f, 16.0f));
 
-            m_MipCount = (UInt32)(1 + floorf(log2f(Math::Max(width, height))));
+            m_MipCount = 1 + floorf(log2f(Math::Max(width, height)));
             glTextureStorage2D(m_ID, m_MipCount, glFormat, width, height);
             glTextureSubImage2D(m_ID, 0, 0, 0, width, height, glFormatAlt, GL_UNSIGNED_BYTE, data);
 
@@ -73,6 +73,45 @@ namespace IR::Renderer {
         }
 
         return true;
+    }
+
+    void GLTexture::InitColorAttachment(const GLFrame& frame, UInt8 location, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type, UInt8 maxMips)
+    {
+        if (samples == 0 || maxMips > 1) {
+            glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+            glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            m_MipCount = 1 + floorf(log2f(Math::Max(width, height)));
+            glTextureStorage2D(m_ID, m_MipCount, format, width, height);
+
+            glNamedFramebufferTexture(frame.GetID(), GL_COLOR_ATTACHMENT0 + location, m_ID, 0);
+        } else {
+            glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &m_ID);
+            glTextureStorage2DMultisample(m_ID, samples, type, width, height, GL_TRUE);
+
+            glNamedFramebufferTexture(frame.GetID(), GL_COLOR_ATTACHMENT0 + location, m_ID, 0);
+        }
+    }
+
+    void GLTexture::InitDepthAttachment(const GLFrame& frame, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type)
+    {
+        if (samples == 0) {
+            glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+
+            glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTextureStorage2D(m_ID, 1, format, width, height);
+        } else {
+            glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &m_ID);
+            glTextureStorage2DMultisample(m_ID, (GLsizei)samples, type, width, height, GL_TRUE);
+        }
+
+        glNamedFramebufferTexture(frame.GetID(), GL_DEPTH_ATTACHMENT, m_ID, 0);
     }
 
     void GLTexture::Destroy()

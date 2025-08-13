@@ -7,9 +7,10 @@
     - [x] Key Values.
     - [ ] Model File Loading.
     - [x] Determine a standard model file format for the game (GLTF).
+    - [ ] Resize GL Framebuffer attachments 
 
 * GENERAL:
     - [ ] Renderer.
     - [ ] GUI.
-    - [ ] Physics.
+    - [x] Physics.
     - [ ] Audio.

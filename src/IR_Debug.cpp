@@ -8,7 +8,7 @@
 namespace IR::Debug
 {
 
-    void FlyCam(glm::mat4& outView, glm::mat4& outProjection, glm::vec3& outPos)
+    glm::vec3 FlyCam(glm::mat4& outView, glm::mat4& outProjection)
     {
         static glm::vec3 pos = glm::vec3(-96, 112, 96);
         static glm::vec3 dir = glm::vec3(0, 0, 1);
@@ -57,7 +57,8 @@ namespace IR::Debug
 
         outView = glm::lookAt(pos, pos + dir, glm::vec3(0, 1, 0));
         outProjection = glm::perspective(glm::radians(fov), (Float32)Globals.width / Globals.height, nearz, farz);
-		outPos = pos;
+
+		return pos;
     }
 
 }

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(irreverence LANGUAGES CXX C)
 
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -12,7 +13,7 @@ option(ENABLE_TRACY "Enable Tracy profiling" OFF)
 find_package(OpenGL REQUIRED)
 
 # NOTE: Copy pasted from older project, if not work seek help.
-file(DOWNLOAD https://sourceforge.net/projects/glew/files/glew/snapshots/glew-20220402.tgz/download ${CMAKE_BINARY_DIR}/vendor/glew.tgz)
+file(DOWNLOAD https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz ${CMAKE_BINARY_DIR}/vendor/glew.tgz)
 file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/vendor/glew.tgz DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glew)
 
 set(BUILD_UTILS OFF)

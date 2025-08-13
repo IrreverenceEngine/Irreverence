@@ -4,6 +4,31 @@
 
 namespace IR::Renderer {
 
+    bool GLLayout::InitBasic2D()
+    {
+        enum {
+            POSITION,
+            UV
+        };
+
+        m_Type = Type::BASIC2D;
+
+        glCreateVertexArrays(1, &m_ID);
+
+        glEnableVertexArrayAttrib(m_ID, POSITION);
+        glVertexArrayAttribFormat(m_ID, POSITION, 2, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayAttribBinding(m_ID, POSITION, 0);
+
+        glEnableVertexArrayAttrib(m_ID, UV);
+        glVertexArrayAttribFormat(m_ID, UV, 2, GL_FLOAT, GL_FALSE, offsetof(VertexBasic2D, texcoord));
+        glVertexArrayAttribBinding(m_ID, UV, 0);
+
+        m_Stride = sizeof(VertexBasic2D);
+        m_MeshPool.Init(m_ID, m_Stride);
+
+        return true;
+    }
+
     bool GLLayout::InitStandard()
     {
         enum {
@@ -28,7 +53,8 @@ namespace IR::Renderer {
         glVertexArrayAttribFormat(m_ID, UV, 2, GL_FLOAT, GL_FALSE, offsetof(VertexStandard, texcoord));
         glVertexArrayAttribBinding(m_ID, UV, 0);
 
-        m_MeshPool.Init(m_ID, sizeof(VertexStandard));
+        m_Stride = sizeof(VertexStandard);
+        m_MeshPool.Init(m_ID, m_Stride);
 
         return true;
     }
@@ -67,7 +93,8 @@ namespace IR::Renderer {
         glVertexArrayAttribFormat(m_ID, WEIGHTS, 4, GL_FLOAT, GL_FALSE, offsetof(VertexAnimated, weights));
         glVertexArrayAttribBinding(m_ID, WEIGHTS, 0);
 
-        m_MeshPool.Init(m_ID, sizeof(VertexAnimated));
+        m_Stride = sizeof(VertexAnimated);
+        m_MeshPool.Init(m_ID, m_Stride);
 
         return true;
     }

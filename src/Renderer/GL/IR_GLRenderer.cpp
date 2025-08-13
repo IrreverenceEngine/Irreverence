@@ -19,15 +19,6 @@
 
 void glMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param);
 
-/*
-TODO: Fix possible problems mentioned below
-Should Renderer be able to use the Asset Manager? If yes then use it to load required Assets, on fail, return false.
-    - Solution: Just fuckin use em who cares
-
-If we delete an Texture, how does the other objects know whether it doesnt exist anymore?
-    - Solution: ?
-*/
-
 namespace IR::Renderer {
 
 	constexpr VertexStandard CUBE_VERTS[] = {
@@ -121,6 +112,7 @@ namespace IR::Renderer {
         m_Lighting.Init(SSLOC_POINTLIGHTS, SSLOC_SPOTLIGHTS);
 
         // --- [VERTEX LAYOUTS] ---
+        m_LayoutBasic2D.InitBasic2D();
         m_LayoutStandard.InitStandard();
         m_LayoutAnimated.InitAnimated();
 
@@ -138,6 +130,16 @@ namespace IR::Renderer {
         // --- [INSTANCE LISTS] ---
         m_ILDStandard.Init(sizeof(GLInstanceStandard), SSLOC_ILSTANDARD);
         m_ILSMap.Init(sizeof(GLInstanceMap), SSLOC_ILMAP);
+
+        // --- [FRAMEBUFFERS] ---
+        m_FrameMain.Init(Globals.width, Globals.height, 0, {
+            { GL_RGB16F, GL_FLOAT }, // Pos
+            { GL_RGB16F, GL_FLOAT }, // Normal
+            { GL_RGB8, GL_UNSIGNED_BYTE }, // Color
+            { GL_RGBA8, GL_UNSIGNED_BYTE }, // AMRE
+            { GL_RGBA16F, GL_FLOAT }, // Transparent Colors
+            { GL_R16F, GL_FLOAT }, // Transparent Reveal
+        }, {});
 
         // --- [TEXTURES] ---
         const struct glm::vec<3, UInt8> missingColor1 = { 0, 0, 0 };
@@ -162,6 +164,7 @@ namespace IR::Renderer {
 
         // --- [SHADERS] ---
         m_ShaderMapFaceLit = (GLShader*)Assets::Shader("MapFaceLit.irs");
+        m_ShaderScreen = (GLShader*)Assets::Shader("Screen.irs");
 
         if (!m_ShaderMapFaceLit) {
             IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load irs file \"MapFaceLit.irs\"");
@@ -176,22 +179,30 @@ namespace IR::Renderer {
             { { -1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 1.0f } },
         };
 
+        const VertexBasic2D scrVerts[] = {
+            { { 0.0f, 0.0f }, { 0.0f, 0.0f } },
+            { { 1.0f, 0.0f }, { 1.0f, 0.0f } },
+            { { 1.0f, 1.0f }, { 1.0f, 1.0f } },
+            { { 0.0f, 1.0f }, { 0.0f, 1.0f } },
+        };
+
         const UInt32 planeIndices[] = {
             2, 1, 0, 0, 3, 2
         };
 
-        m_MeshCube.Init(CUBE_VERTS, IR_ARRLEN(CUBE_VERTS), CUBE_INDICES, IR_ARRLEN(CUBE_INDICES));
-        m_MeshPlane.Init(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
+        TracyGpuContext;
+        m_MeshCube.InitPool(CUBE_VERTS, IR_ARRLEN(CUBE_VERTS), CUBE_INDICES, IR_ARRLEN(CUBE_INDICES));
+        m_MeshPlane.InitPool(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
+        m_MeshScreen.Init(scrVerts, IR_ARRLEN(scrVerts), planeIndices, IR_ARRLEN(planeIndices));
 
         // --- [MATERIALS] ---
-
-		TracyGpuContext;
 
         return true;
     }
 
     void GL::Shutdown()
     {
+        m_LayoutBasic2D.Destroy();
         m_LayoutStandard.Destroy();
         m_LayoutAnimated.Destroy();
 
@@ -205,6 +216,8 @@ namespace IR::Renderer {
 
         m_ILDStandard.Destroy();
         m_ILSMap.Destroy();
+
+        m_FrameMain.Destroy();
 
         for (auto& shader : m_Shaders) {
             shader.Destroy();
@@ -220,8 +233,13 @@ namespace IR::Renderer {
         }
         m_Textures.clear();
 
-        // These three don't actually have a destroy func
+        m_MeshScreen.Destroy();
+        for (auto& mesh : m_Meshes) {
+            mesh.Destroy();
+        }
         m_Meshes.clear();
+
+        // These three don't actually have a destroy func
         m_Models.clear();
         m_Materials.clear();
 
@@ -248,7 +266,7 @@ namespace IR::Renderer {
         m_CommonData.frametime = Globals.frametime;
         m_CommonData.width = Globals.width;
         m_CommonData.height = Globals.height;
-        Debug::FlyCam(m_CommonData.view, m_CommonData.projection, m_CommonData.viewPos);
+        m_CommonData.viewPos = Debug::FlyCam(m_CommonData.view, m_CommonData.projection);
 
 		{
 			TracyGpuZone("Update Common Data");
@@ -288,29 +306,50 @@ namespace IR::Renderer {
 			clearColor.a = 1.0f; // Alpha
 		}
 
+        m_FrameMain.Bind();
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glDepthFunc(GL_LESS);
+	    glDepthMask(GL_TRUE);
+	    glDisable(GL_BLEND);
+
 		{
 			TracyGpuZone("Clear Color");
 			glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 
+        // - Static
 		{
-			TracyGpuZone("Draw Static Command Lists");
-			// - Static
+            TracyGpuZone("Draw Static Command Lists");
 			m_CmdListStatic.Draw();
 		}
 
         // - Dynamic
 		{
-			TracyGpuZone("Draw Dynamic Command Lists");
+            TracyGpuZone("Draw Dynamic Command Lists");
 			m_CmdListDynamic.Draw();
 			m_CmdListDynamic.Flush();
 		}
+        m_FrameMain.UnBind();
 
 		{
-			TracyGpuZone("Flush Dynamic Instance Data");
+            TracyGpuZone("Flush Dynamic Instance Data");
 			m_ILDStandard.Flush();
 		}
+
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+
+        m_CommonData.projection = glm::ortho<Float32>(0.0f, Globals.width, 0.0f, Globals.height, 0.0f, 1.0f);
+        m_UniformCommon.Update(&m_CommonData.projection, sizeof(m_CommonData.projection), offsetof(CommonData, projection));
+
+        m_ShaderScreen->Bind();
+        m_FrameMain.GetColorTexture(0)->Bind(0);
+        m_FrameMain.GetColorTexture(1)->Bind(1);
+        m_FrameMain.GetColorTexture(2)->Bind(2);
+        m_FrameMain.GetColorTexture(3)->Bind(3);
+        m_MeshScreen.Draw();
 
 		{
 			TracyGpuZone("Swap Buffers");
@@ -500,6 +539,7 @@ namespace IR::Renderer {
     GLLayout* GL::GetLayout(GLLayout::Type type)
     {
         switch (type) {
+        case GLLayout::Type::BASIC2D: return &m_LayoutBasic2D;
         case GLLayout::Type::STANDARD: return &m_LayoutStandard;
         case GLLayout::Type::ANIMATED: return &m_LayoutAnimated;
         default: IR_UNREACHABLE;

@@ -27,7 +27,7 @@ namespace IR::Renderer {
         MeshInfo info;
 
         GLMesh mesh;
-        mesh.Init(vertices, vertnum, indices, indnum);
+        mesh.InitPool(vertices, vertnum, indices, indnum);
         info.mesh = mesh;
 
         for (UInt8 i = 0; i < Model::MAX_SKINS; i++) {
@@ -52,7 +52,7 @@ namespace IR::Renderer {
         MeshInfo info;
 
         GLMesh mesh;
-        mesh.Init(vertices, vertnum, indices, indnum);
+        mesh.InitPool(vertices, vertnum, indices, indnum);
         info.mesh = mesh;
 
         for (UInt8 i = 0; i < Model::MAX_SKINS; i++) {

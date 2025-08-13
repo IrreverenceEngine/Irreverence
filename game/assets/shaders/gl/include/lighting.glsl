@@ -1,3 +1,7 @@
+#ifndef INCLUDE_COMMON
+#error You need to include common.glsl before lighting.glsl
+#endif
+
 const float L_PI = 3.14159265359;
 
 float DistributionGGX(vec3 normal, vec3 H, float roughness)
@@ -42,28 +46,30 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
 
 float LightAttenuation(float dist, float innerRadius, float outerRadius)
 {
-    return 1.0 - smoothstep(innerRadius, outerRadius, dist);
+    float t = clamp((dist - innerRadius) / (outerRadius - innerRadius), 0.0, 1.0);
+    float invSq = 1.0 / (1.0 + 25.0 * t * t);
+    return invSq * (1.0 - t);
 }
 
-vec3 CalcPointLight(
+vec3 CalcPointlight(
 	vec3 N, vec3 V,
 	vec3 lightPos, vec3 lightCol, float lightInner, float lightOuter,
 	vec3 fragPos,
 	vec3 albedo, float metallic, float roughness, vec3 F0
 )
 {
-    vec3 posDiff = lightPos - fragPos;
+    vec3 lightToPos = lightPos - fragPos;
 
-    vec3 L = normalize(posDiff);
+    vec3 L = normalize(lightToPos);
     vec3 H = normalize(V + L);
-    float dist = length(posDiff);
+    float dist = length(lightToPos);
     float attenuation = LightAttenuation(dist, lightInner, lightOuter);
     vec3 radiance = lightCol * attenuation;
 
     float NDF = DistributionGGX(N, H, roughness);
     float G = GeometrySmith(N, V, L, roughness);
     vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
-    
+
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;
@@ -75,4 +81,90 @@ vec3 CalcPointLight(
     float NdotL = max(dot(N, L), 0.0);
 
     return (kD * albedo / L_PI + specular) * radiance * NdotL;
+}
+
+vec3 CalcSpotlight(
+	vec3 N, vec3 V,
+	vec3 lightPos, vec3 lightCol, float lightInRad, float lightOutRad, vec3 lightDir, float lightInCut, float lightOutCut,
+	vec3 fragPos,
+	vec3 albedo, float metallic, float roughness, vec3 F0
+)
+{
+    vec3 lightToPos = lightPos - fragPos;
+    vec3 L = normalize(lightToPos);
+
+	float theta = dot(L, normalize(-lightDir));
+	float epsilon = lightInCut - lightOutCut;
+	if (theta <= lightOutCut) {
+		return vec3(0.0);
+	}
+
+	float intensity = clamp((theta - lightOutCut) / epsilon, 0.0, 1.0);
+
+    vec3 H = normalize(V + L);
+    float dist = length(lightToPos);
+    float attenuation = LightAttenuation(dist, lightInRad, lightOutRad) * intensity;
+    vec3 radiance = lightCol * attenuation;
+
+    float NDF = DistributionGGX(N, H, roughness);
+    float G = GeometrySmith(N, V, L, roughness);
+    vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
+
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;
+
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+    vec3 specular = numerator / denominator;
+
+    float NdotL = max(dot(N, L), 0.0);
+
+    return (kD * albedo / L_PI + specular) * radiance * NdotL;
+}
+
+vec3 CalcAllLights(vec3 albedoCol, vec3 fragPos, vec3 normal, float ao, float metallic, float roughness, float emissive)
+{
+   bool doLighting = emissive < 0.99;
+    uint plightNum = doLighting ? uPointlightNum : 0;
+    uint slightNum = doLighting ? uSpotlightNum : 0;
+
+    vec3 F0 = vec3(0.04);
+    F0 = mix(F0, albedoCol, metallic);
+
+    vec3 V = normalize(uCommon.ViewPosition - fragPos);
+
+    vec3 lightTotal = vec3(0);
+    for (uint i = 0; i < plightNum; i++) {
+        Pointlight light = uPointlights[i];
+        vec4 col = GetColorRGBA8(light.color);
+        if (col.a <= 0.001) {
+            continue;
+        }
+
+        lightTotal += CalcPointlight(
+            normal, V,
+            light.position, col.rgb * col.a * 8.0, light.innerRadius, light.outerRadius,
+            fragPos,
+            albedoCol, metallic, roughness, F0
+        );
+    }
+
+    for (uint i = 0; i < slightNum; i++) {
+        Spotlight light = uSpotlights[i];
+        vec4 col = GetColorRGBA8(light.color);
+        if (col.a <= 0.001) {
+            continue;
+        }
+
+        lightTotal += CalcSpotlight(
+            normal, V,
+            light.position, col.rgb * col.a * 8.0, light.innerRadius, light.outerRadius,
+            light.direction, light.innerCutoff, light.outerCutoff,
+            fragPos,
+            albedoCol, metallic, roughness, F0
+        );
+    }
+
+    return lightTotal;
 }

@@ -1,0 +1,6 @@
+Screen
+{
+    "Type" "Raster"
+    "Vertex" "Screen.vert"
+    "Fragment" "Screen.frag"
+}

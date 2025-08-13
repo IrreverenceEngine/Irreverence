@@ -13,6 +13,7 @@
 #include <Renderer/GL/IR_GLCmdList.hpp>
 #include <Renderer/GL/IR_GLInstance.hpp>
 #include <Renderer/GL/IR_GLLighting.hpp>
+#include <Renderer/GL/IR_GLFrame.hpp>
 
 #include <SDL3/SDL.h>
 
@@ -65,6 +66,7 @@ namespace IR::Renderer {
         GLLighting m_Lighting;
 
         // --- [VERTEX LAYOUTS] ---
+        GLLayout m_LayoutBasic2D;
         GLLayout m_LayoutStandard;
         GLLayout m_LayoutAnimated;
 
@@ -73,16 +75,13 @@ namespace IR::Renderer {
         GLCmdList m_CmdListDynamic;
 
         // --- [UNIFORMS] ---
-        struct {
+        struct CommonData {
             UInt32 width;
             UInt32 height;
             Float32 curtime;
             Float32 frametime;
             glm::mat4 view;
             glm::mat4 projection;
-            Float32 near;
-            Float32 far;
-            UInt32 _p[2];
             glm::vec3 viewPos;
         } m_CommonData;
         GLUniform m_UniformCommon;
@@ -98,6 +97,9 @@ namespace IR::Renderer {
         // - Statics
         GLInstanceList m_ILSMap;
 
+        // --- [FRAMEBUFFERS] ---
+        GLFrame m_FrameMain;
+
         // --- [TEXTURES] ---
         GLTexture m_TextureWhite;
         GLTexture m_TextureBlack;
@@ -106,10 +108,12 @@ namespace IR::Renderer {
 
         // --- [SHADERS] ---
         GLShader* m_ShaderMapFaceLit = nullptr;
+        GLShader* m_ShaderScreen = nullptr;
 
         // --- [MESHES] ---
         GLMesh m_MeshCube;
         GLMesh m_MeshPlane;
+        GLMesh m_MeshScreen;
 
         // --- [MATERIALS] ---
 

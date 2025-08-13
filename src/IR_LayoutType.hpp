@@ -5,6 +5,11 @@
 #include <glm.hpp>
 
 namespace IR::Renderer {
+    struct VertexBasic2D {
+        glm::vec2 position;
+        glm::vec2 texcoord;
+    };
+
     struct VertexStandard {
         glm::vec3 position;
         glm::vec3 normal;
