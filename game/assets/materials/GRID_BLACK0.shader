@@ -4,8 +4,8 @@ materials/GRID_BLACK0
         map textures/GRID_BLACK0.png
 
         Albedo textures/GRID_BLACK0.png
-        Shader MapFaceLit.irs
-        Linearize 1
+        Shader OpaqueMap.irs
+        Linearize 0
         Mipmap 1
     }
 }

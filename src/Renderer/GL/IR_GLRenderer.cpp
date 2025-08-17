@@ -100,6 +100,7 @@ namespace IR::Renderer {
 
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
 
         if (!AddShaderInclude("common.glsl")) {
             return false;
@@ -117,8 +118,8 @@ namespace IR::Renderer {
         m_LayoutAnimated.InitAnimated();
 
         // --- [COMMAND LISTS] ---
-        m_CmdListStatic.Init();
-        m_CmdListDynamic.Init();
+        m_CmdsStatic.Init();
+        m_CmdsDynamic.Init();
 
         // --- [UNIFORMS] ---
         m_UniformCommon.Init(nullptr, sizeof(m_CommonData), UNIFORMLOC_COMMON);
@@ -139,7 +140,7 @@ namespace IR::Renderer {
             { GL_RGBA8, GL_UNSIGNED_BYTE }, // AMRE
             { GL_RGBA16F, GL_FLOAT }, // Transparent Colors
             { GL_R16F, GL_FLOAT }, // Transparent Reveal
-        }, {});
+        }, { GL_DEPTH_COMPONENT24, GL_FLOAT });
 
         // --- [TEXTURES] ---
         const struct glm::vec<3, UInt8> missingColor1 = { 0, 0, 0 };
@@ -163,11 +164,17 @@ namespace IR::Renderer {
         m_TextureNormal.InitMemory((const UInt8*)&normalColor, 1, 1, 3, false, false, true);
 
         // --- [SHADERS] ---
-        m_ShaderMapFaceLit = (GLShader*)Assets::Shader("MapFaceLit.irs");
+        m_ShaderOpaqueMap = (GLShader*)Assets::Shader("OpaqueMap.irs");
+        m_ShaderTransMap = (GLShader*)Assets::Shader("TransMap.irs");
         m_ShaderScreen = (GLShader*)Assets::Shader("Screen.irs");
 
-        if (!m_ShaderMapFaceLit) {
-            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load irs file \"MapFaceLit.irs\"");
+        if (!m_ShaderOpaqueMap) {
+            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load irs file \"OpaqueMap.irs\"");
+            return false;
+        }
+
+        if (!m_ShaderTransMap) {
+            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load irs file \"TransMap.irs\"");
             return false;
         }
 
@@ -186,14 +193,13 @@ namespace IR::Renderer {
             { { 0.0f, 1.0f }, { 0.0f, 1.0f } },
         };
 
-        const UInt32 planeIndices[] = {
-            2, 1, 0, 0, 3, 2
-        };
+        const UInt32 planeIndices[] = { 2, 1, 0, 0, 3, 2 };
+        const UInt32 scrIndices[] = { 0, 1, 2, 0, 2, 3 };
 
         TracyGpuContext;
         m_MeshCube.InitPool(CUBE_VERTS, IR_ARRLEN(CUBE_VERTS), CUBE_INDICES, IR_ARRLEN(CUBE_INDICES));
         m_MeshPlane.InitPool(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
-        m_MeshScreen.Init(scrVerts, IR_ARRLEN(scrVerts), planeIndices, IR_ARRLEN(planeIndices));
+        m_MeshScreen.Init(scrVerts, IR_ARRLEN(scrVerts), scrIndices, IR_ARRLEN(scrIndices));
 
         // --- [MATERIALS] ---
 
@@ -206,8 +212,8 @@ namespace IR::Renderer {
         m_LayoutStandard.Destroy();
         m_LayoutAnimated.Destroy();
 
-        m_CmdListStatic.Destroy();
-        m_CmdListDynamic.Destroy();
+        m_CmdsStatic.Destroy();
+        m_CmdsDynamic.Destroy();
 
         m_UniformCommon.Destroy();
 
@@ -250,7 +256,7 @@ namespace IR::Renderer {
 
 	void GL::Resize(UInt32 width, UInt32 height)
 	{
-		glViewport(0, 0, width, height);
+        m_FrameMain.Resize(width, height);
 	}
 
     void GL::Present()
@@ -311,7 +317,7 @@ namespace IR::Renderer {
         glEnable(GL_CULL_FACE);
         glDepthFunc(GL_LESS);
 	    glDepthMask(GL_TRUE);
-	    glDisable(GL_BLEND);
+	    glEnable(GL_BLEND);
 
 		{
 			TracyGpuZone("Clear Color");
@@ -322,14 +328,14 @@ namespace IR::Renderer {
         // - Static
 		{
             TracyGpuZone("Draw Static Command Lists");
-			m_CmdListStatic.Draw();
+			m_CmdsStatic.Draw();
 		}
 
         // - Dynamic
 		{
             TracyGpuZone("Draw Dynamic Command Lists");
-			m_CmdListDynamic.Draw();
-			m_CmdListDynamic.Flush();
+			m_CmdsDynamic.Draw();
+			m_CmdsDynamic.Flush();
 		}
         m_FrameMain.UnBind();
 
@@ -339,17 +345,23 @@ namespace IR::Renderer {
 		}
 
         glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
+        // glDisable(GL_CULL_FACE);
+        glDisable(GL_BLEND);
 
         m_CommonData.projection = glm::ortho<Float32>(0.0f, Globals.width, 0.0f, Globals.height, 0.0f, 1.0f);
         m_UniformCommon.Update(&m_CommonData.projection, sizeof(m_CommonData.projection), offsetof(CommonData, projection));
 
-        m_ShaderScreen->Bind();
-        m_FrameMain.GetColorTexture(0)->Bind(0);
-        m_FrameMain.GetColorTexture(1)->Bind(1);
-        m_FrameMain.GetColorTexture(2)->Bind(2);
-        m_FrameMain.GetColorTexture(3)->Bind(3);
-        m_MeshScreen.Draw();
+        {
+            TracyGpuZone("Compose PBR + Forward WBOIT");
+            m_ShaderScreen->Bind();
+            m_FrameMain.GetColorTexture(0)->Bind(0);
+            m_FrameMain.GetColorTexture(1)->Bind(1);
+            m_FrameMain.GetColorTexture(2)->Bind(2);
+            m_FrameMain.GetColorTexture(3)->Bind(3);
+            m_FrameMain.GetColorTexture(4)->Bind(4);
+            m_FrameMain.GetColorTexture(5)->Bind(5);
+            m_MeshScreen.Draw();
+        }
 
 		{
 			TracyGpuZone("Swap Buffers");
@@ -376,7 +388,7 @@ namespace IR::Renderer {
 
             material->Use();
             inst.matIndex = material->GetInfoIndex();
-            m_CmdListDynamic.Submit(&mesh, material->GetShader(), m_ILDStandard.Add(&inst));
+            m_CmdsDynamic.Submit(&mesh, material->GetShader(), m_ILDStandard.Add(&inst));
         }
     }
 
@@ -395,7 +407,7 @@ namespace IR::Renderer {
         inst.color.a = col.a;
         inst.matIndex = glmaterial->GetInfoIndex();
 
-        m_CmdListDynamic.Submit(glmesh, glmaterial->GetShader(), m_ILDStandard.Add(&inst));
+        m_CmdsDynamic.Submit(glmesh, glmaterial->GetShader(), m_ILDStandard.Add(&inst));
     }
 
     void GL::SubmitMapMesh(const Mesh* mesh, const Material* material)
@@ -408,7 +420,7 @@ namespace IR::Renderer {
         GLInstanceMap inst;
         inst.matIndex = glmaterial->GetInfoIndex();
 
-        m_CmdListStatic.Submit(glmesh, glmaterial->GetShader(), m_ILSMap.Add(&inst));
+        m_CmdsStatic.Submit(glmesh, glmaterial->GetShader(), m_ILSMap.Add(&inst));
     }
 
     Model* GL::MakeModel()

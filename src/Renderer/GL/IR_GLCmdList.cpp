@@ -2,12 +2,15 @@
 #include <Renderer/GL/IR_GLRenderer.hpp>
 
 #include <GL/glew.h>
+#include <unistd.h>
 
 namespace IR::Renderer {
 
+    constexpr UInt64 CMDLIST_RESERVE = 1024;
+
     void GLCmdList::Init()
     {
-        m_Buffer.Init(GL_DRAW_INDIRECT_BUFFER, nullptr, 2 * sizeof(GLCmdElements), UINT8_MAX, true);
+        m_Buffer.Init(GL_DRAW_INDIRECT_BUFFER, nullptr, CMDLIST_RESERVE * sizeof(GLCmdElements), UINT8_MAX, true);
     }
 
     void GLCmdList::Destroy()
@@ -28,59 +31,68 @@ namespace IR::Renderer {
         cmd.baseVertex = mesh->GetVertexOffset();
         cmd.baseInstance = instanceId;
 
-        m_List[mesh->GetLayoutType()][shader->GetID()].push_back(cmd);
+        UInt32 shaderId = shader->GetID();
+        UInt8 layoutType = mesh->GetLayoutType();
+
+        LayoutInfo& layoutInfo = m_LayoutInfos[layoutType];
+
+        auto& shaderMap = layoutInfo.shaderLists;
+        if (shaderMap.find(shaderId) == shaderMap.end()) {
+            layoutInfo.shaderOrders.push_back(shaderId);
+        }
+        shaderMap[shaderId].push_back(cmd);
+
+        m_Outdated = true;
     }
 
     void GLCmdList::Flush()
     {
-        for (UInt8 i = 0; i < IR_ARRLEN(m_List); i++) {
-            m_List[i].clear();
+        for (UInt8 i = 0; i < IR_ARRLEN(m_LayoutInfos); i++) {
+            LayoutInfo& layoutInfo = m_LayoutInfos[i];
+            layoutInfo.shaderLists.clear();
+            layoutInfo.shaderOrders.clear();
         }
     }
 
     void GLCmdList::Draw()
     {
-        m_Buffer.Bind();
+        if (m_Outdated) {
+            m_Cmds.clear();
 
-        for (UInt8 i = 0; i < IR_ARRLEN(m_List); i++) {
-            GLLayout* layout = s_GL->GetLayout((GLLayout::Type)i);
-            layout->GetMeshPool().Bind();
+            for (UInt8 lType = 0; lType < IR_ARRLEN(m_LayoutInfos); lType++) {
+                LayoutInfo& layoutInfo = m_LayoutInfos[lType];
 
-            for (const auto& [shaderId, list] : m_List[i]) {
-                if (list.size() == 0) {
-                    continue;
+                for (UInt32 id : layoutInfo.shaderOrders) {
+                    auto& list = layoutInfo.shaderLists[id];
+
+                    m_Cmds.reserve(m_Cmds.size() + list.size());
+                    m_Cmds.insert(m_Cmds.end(), list.begin(), list.end());
                 }
-
-                if (m_Buffer.Update(list.data(), list.size() * sizeof(GLCmdElements), 0)) { // Rebind the buffer if resized.
-                    m_Buffer.Bind();
-                }
-
-                // TODO: Bind Shader in a better way
-
-                glUseProgram(shaderId);
-                glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, list.size(), 0);
             }
-        }
-    }
 
-    void GLCmdList::DrawShaderless()
-    {
+            m_Buffer.Update(m_Cmds.data(), m_Cmds.size() * sizeof(GLCmdElements), 0);
+            m_Outdated = false;
+        }
+
         m_Buffer.Bind();
 
-        for (UInt8 i = 0; i < IR_ARRLEN(m_List); i++) {
-            GLLayout* layout = s_GL->GetLayout((GLLayout::Type)i);
+        UInt64 offset = 0;
+        for (UInt8 lType = 0; lType < IR_ARRLEN(m_LayoutInfos); lType++) {
+            LayoutInfo& layoutInfo = m_LayoutInfos[lType];
+
+            GLLayout* layout = s_GL->GetLayout((GLLayout::Type)lType);
             layout->GetMeshPool().Bind();
 
-            for (const auto& [shaderId, list] : m_List[i]) {
-                if (list.size() == 0) {
+            for (UInt32 id : layoutInfo.shaderOrders) {
+                auto& list = layoutInfo.shaderLists[id];
+                if (list.empty()) {
                     continue;
                 }
 
-                if (m_Buffer.Update(list.data(), list.size() * sizeof(GLCmdElements), 0)) { // Rebind the buffer if resized.
-                    m_Buffer.Bind();
-                }
+                glUseProgram(id);
+                glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (const void*)offset, list.size(), 0);
 
-                glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, nullptr, list.size(), 0);
+                offset += list.size() * sizeof(GLCmdElements);
             }
         }
     }

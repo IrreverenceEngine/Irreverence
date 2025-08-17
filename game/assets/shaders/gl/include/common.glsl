@@ -1,5 +1,6 @@
-#extension GL_ARB_bindless_texture : require
 #define INCLUDE_COMMON
+
+#extension GL_ARB_bindless_texture : require
 
 // ----- [DEFINES] -----
 const uint UNIFORM_COMMON = 0;

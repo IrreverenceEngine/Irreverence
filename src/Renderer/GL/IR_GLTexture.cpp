@@ -12,7 +12,7 @@ namespace IR::Renderer {
         width = width;
         height = height;
         m_ChannelCount = channel_count;
-        m_MipCount = 0;
+        m_MipCount = 1;
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 
@@ -77,6 +77,10 @@ namespace IR::Renderer {
 
     void GLTexture::InitColorAttachment(const GLFrame& frame, UInt8 location, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type, UInt8 maxMips)
     {
+        m_Width = width;
+        m_Height = height;
+        m_MipCount = 1;
+
         if (samples == 0 || maxMips > 1) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
             glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -86,18 +90,19 @@ namespace IR::Renderer {
 
             m_MipCount = 1 + floorf(log2f(Math::Max(width, height)));
             glTextureStorage2D(m_ID, m_MipCount, format, width, height);
-
-            glNamedFramebufferTexture(frame.GetID(), GL_COLOR_ATTACHMENT0 + location, m_ID, 0);
         } else {
             glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &m_ID);
             glTextureStorage2DMultisample(m_ID, samples, type, width, height, GL_TRUE);
-
-            glNamedFramebufferTexture(frame.GetID(), GL_COLOR_ATTACHMENT0 + location, m_ID, 0);
         }
+
+        glNamedFramebufferTexture(frame.GetID(), GL_COLOR_ATTACHMENT0 + location, m_ID, 0);
     }
 
     void GLTexture::InitDepthAttachment(const GLFrame& frame, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type)
     {
+        m_Width = width;
+        m_Height = height;
+
         if (samples == 0) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
 

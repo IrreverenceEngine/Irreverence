@@ -71,8 +71,9 @@ namespace IR::Renderer {
         GLLayout m_LayoutAnimated;
 
         // --- [COMMAND LISTS] ---
-        GLCmdList m_CmdListStatic;
-        GLCmdList m_CmdListDynamic;
+        GLCmdList m_CmdsStatic;
+        GLCmdList m_CmdsStaticTrans;
+        GLCmdList m_CmdsDynamic;
 
         // --- [UNIFORMS] ---
         struct CommonData {
@@ -107,7 +108,8 @@ namespace IR::Renderer {
         GLTexture m_TextureNormal;
 
         // --- [SHADERS] ---
-        GLShader* m_ShaderMapFaceLit = nullptr;
+        GLShader* m_ShaderOpaqueMap = nullptr;
+        GLShader* m_ShaderTransMap = nullptr;
         GLShader* m_ShaderScreen = nullptr;
 
         // --- [MESHES] ---

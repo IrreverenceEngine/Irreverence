@@ -1,0 +1,6 @@
+OpaqueMap
+{
+    "Type" "Raster"
+    "Vertex" "OpaqueMap.vert"
+    "Fragment" "OpaqueMap.frag"
+}

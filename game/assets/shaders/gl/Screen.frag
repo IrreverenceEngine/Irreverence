@@ -26,11 +26,11 @@ void main()
     float ao = amre.r;
     float metallic = amre.g;
     float roughness = amre.b;
-    float emissive = amre.a + 0.02;
+    float emissive = amre.a;
 
-    vec3 lightTotal = CalcAllLights(albedoCol, fragPos, normal, ao, metallic, roughness, emissive);
+    vec3 lightTotal = CalcAllLights(albedoCol, fragPos, normal, ao, metallic, roughness);
 
-    vec3 color = emissive * albedoCol + lightTotal;
+    vec3 color = mix(lightTotal, albedoCol, emissive);
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));
 

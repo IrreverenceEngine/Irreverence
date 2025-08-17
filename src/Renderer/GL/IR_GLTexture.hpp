@@ -18,6 +18,7 @@ namespace IR::Renderer {
         void Reset();
 
         UInt32 GetID() const IR_RETURN(m_ID);
+        UInt32 GetMipCount() const IR_RETURN(m_MipCount);
         UInt32 GetBTHandle() const IR_RETURN(m_BTHandle);
         UInt32 GetBTIndex() const IR_RETURN(m_BTIndex);
 

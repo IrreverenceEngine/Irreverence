@@ -4,6 +4,6 @@ materials/AREA
         map textures/AREA.png
 
         Albedo textures/AREA.png
-        Shader MapFaceLit.irs
+        Shader OpaqueMap.irs
     }
 }

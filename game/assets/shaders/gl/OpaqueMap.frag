@@ -22,34 +22,19 @@ in VP_Shared {
 void main()
 {
     vec4 albedo = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV);
+    if (albedo.a < 0.01) {
+        discard;
+    }
+
     vec3 normal = GetNormalFromMap(pFragPos, pNormal, pUV, GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_NORMAL));
     float metallic = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_METALNESS), pUV).r;
     float roughness = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ROUGHNESS), pUV).r;
     float ao = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_AMBIENTOCCLUSION), pUV).r;
     float emissive = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_EMISSIVENESS), pUV).r;
 
-    // This amount of branching is fine... right?
-    if (albedo.a < 0.01) {
-        discard;
-    } else if (albedo.a < 0.99) {
-        // Transparent Object, do Forward-ish
-        emissive += 0.02;
-        vec3 albedoCol = pow(albedo.rgb, vec3(2.2));
-
-        vec3 lightTotal = CalcAllLights(albedoCol, pFragPos, normal, ao, metallic, roughness, emissive);
-
-        vec3 color = emissive * albedoCol + lightTotal;
-        color = color / (color + vec3(1.0));
-        color = pow(color, vec3(1.0 / 2.2));
-
-        float weight = clamp(pow(min(1.0, albedo.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
-        oTransColors = vec4(albedoCol.rgb * albedo.a, albedo.a) * weight;
-        oTransReveal = albedo.a;
-    } else {
-        // Opaque Object, do Deferred
-        oPosition = pFragPos;
-        oNormal = normal;
-        oColor = albedo.rgb;
-        oAMRE = vec4(ao, metallic, roughness, emissive);
-    }
+    // Opaque Object, do Deferred
+    oPosition = pFragPos;
+    oNormal = normal;
+    oColor = albedo.rgb;
+    oAMRE = vec4(ao, metallic, roughness, emissive);
 }

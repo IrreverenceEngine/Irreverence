@@ -23,10 +23,16 @@ namespace IR::Renderer {
         void Submit(const GLMesh* mesh, const GLShader* shader, UInt32 instanceId);
         void Flush();
         void Draw();
-        void DrawShaderless();
 
     private:
+        struct LayoutInfo {
+            std::vector<UInt32> shaderOrders;
+            std::unordered_map<UInt32, std::vector<GLCmdElements>> shaderLists;
+        };
+
         GLBuffer m_Buffer;
-        std::unordered_map<UInt32, std::vector<GLCmdElements>> m_List[(UInt8)GLLayout::Type::_COUNT];
+        LayoutInfo m_LayoutInfos[(UInt8)GLLayout::Type::_COUNT];
+        std::vector<GLCmdElements> m_Cmds;
+        bool m_Outdated = false;
     };
 }

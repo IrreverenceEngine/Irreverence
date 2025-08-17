@@ -26,6 +26,7 @@ namespace IR::Renderer {
             tex->InitColorAttachment(*this, colorAttCount, width, height, samples, att.format, att.type, att.maxMips);
 
             m_Colors[colorAttCount] = tex;
+            m_ColorInfos[colorAttCount] = att;
         }
         colorAttCount++;
 
@@ -33,6 +34,7 @@ namespace IR::Renderer {
             GLTexture* tex = (GLTexture*)s_GL->MakeTexture();
             tex->InitDepthAttachment(*this, width, height, samples, depth.format, depth.type);
             m_Depth = tex;
+            m_DepthInfo = depth;
         } else {
             glCreateRenderbuffers(1, &m_RBO);
 
@@ -44,12 +46,7 @@ namespace IR::Renderer {
 
         if (glCheckNamedFramebufferStatus(m_ID, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             IR_MSG(INFO, "GL Frame couldn't init. Something fucked up.");
-            glDeleteFramebuffers(1, &m_ID);
-
-            if (m_RBO) {
-                glDeleteRenderbuffers(1, &m_RBO);
-            }
-
+            Destroy();
             return false;
         }
 
@@ -75,9 +72,47 @@ namespace IR::Renderer {
 
         if (m_RBO > 0) {
             glDeleteRenderbuffers(1, &m_RBO);
+        } else {
+            m_Depth->Destroy();
+        }
+
+        for (UInt8 i = 0; i < MAX_COLOR_ATTACHS; i++) {
+            GLTexture* tex = m_Colors[i];
+            if (tex) {
+                tex->Destroy();
+            }
         }
 
         m_ID = 0;
+    }
+
+    void GLFrame::Resize(UInt32 width, UInt32 height)
+    {
+        m_Width = width;
+        m_Height = height;
+
+        for (UInt32 i = 0; i < MAX_COLOR_ATTACHS; i++) {
+            GLTexture* col = m_Colors[i];
+            GLAttachment info = m_ColorInfos[i];
+
+            if (col) {
+                col->Destroy();
+                col->InitColorAttachment(*this, i, width, height, m_Samples, info.format, info.type, info.maxMips);
+            }
+        }
+
+        if (m_Depth) {
+            m_Depth->Destroy();
+            m_Depth->InitDepthAttachment(*this, width, height, m_Samples, m_DepthInfo.format, m_DepthInfo.type);
+        } else {
+            glDeleteRenderbuffers(1, &m_RBO);
+            glCreateRenderbuffers(1, &m_RBO);
+
+            if (m_Samples == 0) glNamedRenderbufferStorage(m_RBO, GL_DEPTH24_STENCIL8, width, height);
+            else glNamedRenderbufferStorageMultisample(m_RBO, m_Samples, GL_DEPTH24_STENCIL8, width, height);
+
+            glNamedFramebufferRenderbuffer(m_ID, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+        }
     }
 
     void GLFrame::CopyTo(GLFrame* to, UInt8 colorIndex)

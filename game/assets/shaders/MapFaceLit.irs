@@ -1,6 +1,0 @@
-MapFaceLit
-{
-    "Type" "Raster"
-    "Vertex" "MapMesh.vert"
-    "Fragment" "MapMesh.frag"
-}

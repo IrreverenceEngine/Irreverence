@@ -1,4 +1,4 @@
-MapFaceLit
+OpaqueMap
 {
     "Type" "Raster"
     "Vertex" "VStandIStand.vert"

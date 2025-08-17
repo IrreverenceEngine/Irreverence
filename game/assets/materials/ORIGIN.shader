@@ -4,6 +4,6 @@ materials/ORIGIN
         map textures/ORIGIN.png
 
         Albedo textures/ORIGIN.png
-        Shader MapFaceLit.irs
+        Shader OpaqueMap.irs
     }
 }

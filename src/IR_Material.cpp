@@ -39,19 +39,19 @@ namespace IR::Renderer {
 
         SetShader(Assets::Shader(shaderName.c_str()));
 
-        bool linearize = false; // (bool)params->FindChildNumber("Linearize", 1);
+        bool linearize = (bool)params->FindChildNumber("Linearize", 1);
         bool mipmaps = (bool)params->FindChildNumber("Mipmap", 1);
 
 	    const std::string& albedoPath = params->FindChildString("Albedo");
-        if (!SetTextureFromPath(Map::MAP_ALBEDO, params->FindChildString("Albedo"), linearize, mipmaps, Renderer::GetTextureError())) {
+        if (!SetTextureFromPath(MAP_ALBEDO, params->FindChildString("Albedo"), linearize, mipmaps, Renderer::GetTextureError())) {
             IR_MSG(WARN, "Material is missing \"Albedo\" parameter in file \"%s\"", path);
         }
 
-        SetTextureFromPath(Map::MAP_NORMAL, params->FindChildString("Normal"), linearize, mipmaps, Renderer::GetTextureNormal());
-        SetTextureFromPath(Map::MAP_METALNESS, params->FindChildString("Metalness"), linearize, mipmaps, Renderer::GetTextureBlack());
-        SetTextureFromPath(Map::MAP_ROUGHNESS, params->FindChildString("Roughness"), linearize, mipmaps, Renderer::GetTextureBlack());
-        SetTextureFromPath(Map::MAP_EMISSIVENESS, params->FindChildString("Emissiveness"), linearize, mipmaps, Renderer::GetTextureBlack());
-        SetTextureFromPath(Map::MAP_AMBIENTOCCLUSION, params->FindChildString("AmbientOcclusion"), linearize, mipmaps, Renderer::GetTextureWhite());
+        SetTextureFromPath(MAP_NORMAL, params->FindChildString("Normal"), linearize, mipmaps, Renderer::GetTextureNormal());
+        SetTextureFromPath(MAP_METALNESS, params->FindChildString("Metal"), linearize, mipmaps, Renderer::GetTextureBlack());
+        SetTextureFromPath(MAP_ROUGHNESS, params->FindChildString("Rough"), linearize, mipmaps, Renderer::GetTextureBlack());
+        SetTextureFromPath(MAP_EMISSIVENESS, params->FindChildString("Emissive"), linearize, mipmaps, Renderer::GetTextureBlack());
+        SetTextureFromPath(MAP_AMBIENTOCCLUSION, params->FindChildString("AO"), linearize, mipmaps, Renderer::GetTextureWhite());
 
         return true;
     }

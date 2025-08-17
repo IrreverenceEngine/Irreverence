@@ -9,7 +9,7 @@ namespace IR::Renderer {
         void Destroy();
 
         void Bind() const;
-        bool Update(const void* data, UInt64 size, UInt64 offset);
+        bool Update(const void* data, UInt64 size, UInt64 offset, bool copy = false);
 
         UInt32 GetID() const IR_RETURN(m_ID)
 
@@ -17,7 +17,6 @@ namespace IR::Renderer {
         UInt32 m_ID = 0;
         UInt8 m_Location = 0;
         UInt64 m_CurrentSize = 0;
-        void* m_Map = nullptr;
         bool m_Realloc = false;
         Int32 m_Type = 0;
 

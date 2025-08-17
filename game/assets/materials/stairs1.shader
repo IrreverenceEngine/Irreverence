@@ -4,8 +4,8 @@ materials/stairs1
         map textures/stairs1.png
 
         Albedo textures/stairs1.png
-        Shader MapFaceLit.irs
-        Linearize 1
+        Shader OpaqueMap.irs
+        Linearize 0
         Mipmap 1
     }
 }

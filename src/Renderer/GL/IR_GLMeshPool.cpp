@@ -28,8 +28,8 @@ namespace IR::Renderer {
         UInt32 vId = m_VertexOffset;
         UInt32 iId = m_IndexOffset;
 
-        m_VertexBuffer.Update(vertices, vertnum * m_Stride, vId * m_Stride);
-        m_IndexBuffer.Update(indices, indexnum * sizeof(UInt32), iId * sizeof(UInt32));
+        m_VertexBuffer.Update(vertices, vertnum * m_Stride, vId * m_Stride, true);
+        m_IndexBuffer.Update(indices, indexnum * sizeof(UInt32), iId * sizeof(UInt32), true);
 
         m_VertexOffset += vertnum;
         m_IndexOffset += indexnum;

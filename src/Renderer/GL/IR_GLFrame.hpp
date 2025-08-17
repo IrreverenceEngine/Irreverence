@@ -23,6 +23,8 @@ namespace IR::Renderer {
         bool Init(UInt32 width, UInt32 height, UInt8 samples, const GLAttachment (&colors)[MAX_COLOR_ATTACHS], const GLAttachment& depth);
         void Destroy();
 
+        void Resize(UInt32 width, UInt32 height);
+
         void CopyTo(GLFrame* to, UInt8 colorIndex);
         void ClearColor(UInt8 colorIndex, Color color);
         void RelinkAttachment(UInt8 colorIndex, UInt8 miplevel);
@@ -42,7 +44,11 @@ namespace IR::Renderer {
         UInt32 m_Width = 0;
         UInt32 m_Height = 0;
         UInt8 m_Samples = 0;
+
         GLTexture* m_Colors[MAX_COLOR_ATTACHS] = {};
+        GLAttachment m_ColorInfos[MAX_COLOR_ATTACHS] = {};
+
         GLTexture* m_Depth = nullptr;
+        GLAttachment m_DepthInfo = {};
     };
 }
