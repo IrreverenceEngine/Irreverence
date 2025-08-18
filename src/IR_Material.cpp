@@ -6,14 +6,14 @@ namespace IR::Renderer {
 
     bool Material::Init(const char* path)
     {
-        m_KeyValues = KeyValue::Load(path);
+        KeyValue* kv = KeyValue::Load(path);
 
-        if (!m_KeyValues) {
+        if (!kv) {
             IR_MSG(ERROR, "Material failed to load KeyValue file \"%s\"", path);
             return false;
         }
 
-        KeyValue* material = m_KeyValues->GetChild(0);
+        KeyValue* material = kv->GetChild(0);
         if (!material) {
             IR_MSG(ERROR, "Material failed to load get child data in file \"%s\"", path);
             return false;
@@ -24,6 +24,8 @@ namespace IR::Renderer {
             IR_MSG(ERROR, "Material is missing parameters in file \"%s\"", path);
             return false;
         }
+
+        m_KeyValues = params;
 
         std::string shaderName = params->FindChildString("Shader");
         if (shaderName.empty()) {
@@ -55,7 +57,6 @@ namespace IR::Renderer {
 
         return true;
     }
-
 
     bool Material::SetTextureFromPath(Map map, const std::string& path, bool linearize, bool mipmaps, Texture* def)
     {

@@ -24,6 +24,8 @@ const uint MATERIAL_MAP_COUNT = 6;
 const uint MAX_POINTLIGHTS = 2048;
 const uint MAX_SPOTLIGHTS = 2048;
 
+const float EPSILON = 0.00001;
+
 // ----- [STRUCTS] -----
 struct MaterialInfo {
     uint handleIndex[MATERIAL_MAP_COUNT];
@@ -102,6 +104,17 @@ layout(std430, binding = STORAGE_INST_MAP) readonly buffer InstanceMaps {
 };
 
 // ----- [FUNCTIONS] -----
+
+bool approxEq(float a, float b)
+{
+    return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;
+}
+
+float max3(vec3 v)
+{
+    return max(max(v.x, v.y), v.z);
+}
+
 sampler2D GetMaterialSampler(uint matIndex, uint mapIndex)
 {
     return sampler2D(uTexHandles[uMaterial[matIndex].handleIndex[mapIndex]]);

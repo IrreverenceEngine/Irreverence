@@ -5,12 +5,14 @@
 #include "common.glsl"
 #include "lighting.glsl"
 
-out vec4 FRAG_COLOR;
+layout (location = 6) out vec4 oFinalColor;
 
-layout(binding = 0) uniform sampler2D oPosition;
-layout(binding = 1) uniform sampler2D oNormal;
-layout(binding = 2) uniform sampler2D oColor;
-layout(binding = 3) uniform sampler2D oAMRE;
+layout(binding = 0) uniform sampler2D uPosition;
+layout(binding = 1) uniform sampler2D uNormal;
+layout(binding = 2) uniform sampler2D uColor;
+layout(binding = 3) uniform sampler2D uAMRE;
+layout(binding = 4) uniform sampler2D uTransColor;
+layout(binding = 5) uniform sampler2D uTransReveal;
 
 in VP_Shared {
     vec2 pUV;
@@ -18,10 +20,10 @@ in VP_Shared {
 
 void main()
 {
-    vec3 fragPos = texture(oPosition, pUV).rgb;
-    vec3 albedoCol = pow(texture(oColor, pUV).rgb, vec3(2.2));
-    vec3 normal = texture(oNormal, pUV).rgb;
-    vec4 amre = texture(oAMRE, pUV);
+    vec3 fragPos = texture(uPosition, pUV).rgb;
+    vec3 albedoCol = pow(texture(uColor, pUV).rgb, vec3(2.2));
+    vec3 normal = texture(uNormal, pUV).rgb;
+    vec4 amre = texture(uAMRE, pUV);
 
     float ao = amre.r;
     float metallic = amre.g;
@@ -31,8 +33,5 @@ void main()
     vec3 lightTotal = CalcAllLights(albedoCol, fragPos, normal, ao, metallic, roughness);
 
     vec3 color = mix(lightTotal, albedoCol, emissive);
-    color = color / (color + vec3(1.0));
-    color = pow(color, vec3(1.0 / 2.2));
-
-    FRAG_COLOR = vec4(color, 1);
+    oFinalColor = vec4(color, 1.0);
 }

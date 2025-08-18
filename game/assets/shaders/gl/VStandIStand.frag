@@ -22,7 +22,11 @@ in VP_Shared {
 
 void main()
 {
-    vec4 albedo = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV) * pInstanceColor;
+    vec4 albedo = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV);
+    if (albedo.a < 0.01) {
+        discard;
+    }
+
     vec3 normal = GetNormalFromMap(pFragPos, pNormal, pUV, GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_NORMAL));
     float metallic = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_METALNESS), pUV).r;
     float roughness = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ROUGHNESS), pUV).r;

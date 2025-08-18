@@ -9,8 +9,6 @@ layout (location = 0) out vec3 oPosition;
 layout (location = 1) out vec3 oNormal;
 layout (location = 2) out vec3 oColor;
 layout (location = 3) out vec4 oAMRE;
-layout (location = 4) out vec4 oTransColors;
-layout (location = 5) out float oTransReveal;
 
 in VP_Shared {
 	vec3 pFragPos;
@@ -32,7 +30,6 @@ void main()
     float ao = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_AMBIENTOCCLUSION), pUV).r;
     float emissive = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_EMISSIVENESS), pUV).r;
 
-    // Opaque Object, do Deferred
     oPosition = pFragPos;
     oNormal = normal;
     oColor = albedo.rgb;

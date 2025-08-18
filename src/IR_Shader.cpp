@@ -12,13 +12,7 @@ namespace IR::Renderer {
             return false;
         }
 
-        KeyValue* params = kv->GetChild(0);
-        if (!params) {
-            IR_MSG(ERROR, "Shader is missing parameters in file \"%s\"", path);
-            return false;
-        }
-
-        const std::string& type = params->FindChildString("Type");
+        const std::string& type = kv->FindChildString("Type");
 
         if (type.empty()) {
             IR_MSG(ERROR, "Shader is missing \"Type\" parameter in file \"%s\"", path);
@@ -28,14 +22,14 @@ namespace IR::Renderer {
         std::string assetPath = "assets/shaders/" + std::string(Renderer::GetDirectory());
 
         if (type == "Raster") {
-            const std::string& vertPath = params->FindChildString("Vertex");
+            const std::string& vertPath = kv->FindChildString("Vertex");
 
             if (vertPath.empty()) {
                 IR_MSG(ERROR, "Shader is missing \"Vertex\" parameter in file \"%s\"", path);
                 return false;
             }
 
-            const std::string& fragPath = params->FindChildString("Fragment");
+            const std::string& fragPath = kv->FindChildString("Fragment");
             if (fragPath.empty()) {
                 IR_MSG(ERROR, "Shader is missing \"Fragment\" parameter in file \"%s\"", path);
                 return false;
@@ -44,7 +38,7 @@ namespace IR::Renderer {
             return InitRaster((assetPath + vertPath).c_str(), (assetPath + fragPath).c_str());
 
         } else if (type == "Compute") {
-            const std::string& compPath = params->FindChildString("Compute");
+            const std::string& compPath = kv->FindChildString("Compute");
             if (compPath.empty()) {
                 IR_MSG(ERROR, "Shader is missing \"Compute\" parameter in file \"%s\"", path);
                 return false;

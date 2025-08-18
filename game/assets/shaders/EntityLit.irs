@@ -1,6 +1,3 @@
-OpaqueMap
-{
-    "Type" "Raster"
-    "Vertex" "VStandIStand.vert"
-    "Fragment" "VStandIStand.frag"
-}
+"Type" "Raster"
+"Vertex" "VStandIStand.vert"
+"Fragment" "VStandIStand.frag"
