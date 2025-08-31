@@ -18,7 +18,7 @@ namespace IR::Renderer {
 
     class GLFrame {
     public:
-        static constexpr UInt8 MAX_COLOR_ATTACHS = 8;
+        static constexpr UInt8 MAX_COLOR_ATTACHS = 16;
 
         bool Init(UInt32 width, UInt32 height, UInt8 samples, const GLAttachment (&colors)[MAX_COLOR_ATTACHS], const GLAttachment& depth);
         void Destroy();

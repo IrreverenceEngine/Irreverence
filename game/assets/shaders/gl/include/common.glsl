@@ -4,7 +4,8 @@
 
 // ----- [DEFINES] -----
 const uint UNIFORM_COMMON = 0;
-const uint UNIFORM_ANIMATION = 1;
+const uint UNIFORM_SSAOSAMPLES = 1;
+const uint UNIFORM_ANIMATION = 2;
 
 const uint STORAGE_MATERIALINFO = 0;
 const uint STORAGE_TEXTUREHANDLE = 1;
@@ -68,9 +69,14 @@ layout(std140, binding = UNIFORM_COMMON) uniform UniformCommon {
     float CurTime;
     float FrameTime;
     mat4 View;
-    mat4 Projection;
+    mat4 Perspective;
+    mat4 Ortho;
     vec3 ViewPosition;
 } uCommon;
+
+layout(std140, binding = UNIFORM_SSAOSAMPLES) uniform UniformSSAOSamples {
+    vec4 samples[64];
+} uSSAOSamples;
 
 layout(std140, binding = UNIFORM_ANIMATION) uniform UniformAnimation {
     uint Dummy;
@@ -146,5 +152,15 @@ vec3 GetNormalFromMap(vec3 fragPos, vec3 normal, vec2 uv, sampler2D sampler)
 	mat3 TBN = mat3(T, B, N);
 
 	return normalize(TBN * tangentNormal);
+}
+
+float CalcWBOITWeight(float alpha)
+{
+    return clamp(pow(min(1.0, alpha * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+}
+
+vec4 CalcWBOITColor(vec3 color, float alpha, float weight)
+{
+    return vec4(color * alpha, alpha) * weight;
 }
 #endif

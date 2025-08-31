@@ -24,8 +24,12 @@ namespace IR::Renderer {
     public:
         IR_RENDERER_FUNCS(, override)
 
+        static constexpr UInt32 SSAO_SAMPLE_NUM = 64;
+        static constexpr UInt8 SSAO_NOISE_LEN = 4;
+
         enum UniformLocation {
             UNIFORMLOC_COMMON,
+            UNIFORMLOC_SSAOSAMPLES,
             UNIFORMLOC_ANIMATION,
         };
 
@@ -67,6 +71,7 @@ namespace IR::Renderer {
 
         // --- [VERTEX LAYOUTS] ---
         GLLayout m_LayoutBasic2D;
+        GLLayout m_LayoutPosition;
         GLLayout m_LayoutStandard;
         GLLayout m_LayoutAnimated;
 
@@ -83,10 +88,16 @@ namespace IR::Renderer {
             Float32 curtime;
             Float32 frametime;
             glm::mat4 view;
-            glm::mat4 projection;
+            glm::mat4 perspective;
+            glm::mat4 ortho;
             glm::vec3 viewPos;
         } m_CommonData;
         GLUniform m_UniformCommon;
+
+        struct SSAOSamplesData {
+            glm::vec4 samples[SSAO_SAMPLE_NUM];
+        };
+        GLUniform m_UniformSSAOSamples;
 
         // --- [BUFFERS] ---
         GLBuffer m_SBMaterialInfos;
@@ -107,18 +118,22 @@ namespace IR::Renderer {
         GLTexture m_TextureBlack;
         GLTexture m_TextureError;
         GLTexture m_TextureNormal;
+        GLTexture m_TextureSSAONoise;
 
         // --- [SHADERS] ---
-        GLShader* m_ShaderOpaqueMap = nullptr;
-        GLShader* m_ShaderTransMap = nullptr;
-        GLShader* m_ShaderScreen = nullptr;
-        GLShader* m_ShaderScreenTrans = nullptr;
-        GLShader* m_ShaderScreenFinal = nullptr;
+        GLShader* m_ShaderSky = nullptr;
+        GLShader* m_ShaderMapOpaque = nullptr;
+        GLShader* m_ShaderMapTrans = nullptr;
+        GLShader* m_ShaderCompositeSSAO = nullptr;
+        GLShader* m_ShaderCompositePBR = nullptr;
+        GLShader* m_ShaderCompositeTrans = nullptr;
+        GLShader* m_ShaderCompositeFinal = nullptr;
 
         // --- [MESHES] ---
         GLMesh m_MeshCube;
         GLMesh m_MeshPlane;
         GLMesh m_MeshScreen;
+        GLMesh m_MeshSkybox;
 
         // --- [MATERIALS] ---
 

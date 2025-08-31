@@ -5,7 +5,7 @@ materials/gem_purple
 
         Albedo textures/gem_purple.png
         Emissive textures/gem_emissive.png
-        Shader TransMap.irs
+        Shader MapTrans.irs
         Linearize 0
         Mipmap 1
         Transparent 1

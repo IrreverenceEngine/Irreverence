@@ -5,7 +5,7 @@ materials/crate1
 
         Albedo textures/crate1.png
         Normal textures/crate1_norm.png
-        Shader OpaqueMap.irs
+        Shader MapOpaque.irs
         Linearize 0
         Mipmap 1
     }

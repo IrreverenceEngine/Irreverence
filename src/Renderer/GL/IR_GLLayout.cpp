@@ -59,6 +59,26 @@ namespace IR::Renderer {
         return true;
     }
 
+    bool GLLayout::InitPosition()
+    {
+        enum {
+            POSITION,
+        };
+
+        m_Type = Type::POSITION;
+
+        glCreateVertexArrays(1, &m_ID);
+
+        glEnableVertexArrayAttrib(m_ID, POSITION);
+        glVertexArrayAttribFormat(m_ID, POSITION, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayAttribBinding(m_ID, POSITION, 0);
+
+        m_Stride = sizeof(VertexPosition);
+        m_MeshPool.Init(m_ID, m_Stride);
+
+        return true;
+    }
+
     bool GLLayout::InitAnimated()
     {
         enum {

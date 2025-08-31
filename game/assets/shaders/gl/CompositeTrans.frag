@@ -5,10 +5,10 @@
 #include "common.glsl"
 #include "lighting.glsl"
 
-layout (location = 6) out vec4 oFinalColor;
+layout (location = 7) out vec4 oFinalColor;
 
-layout(binding = 4) uniform sampler2D uTransColor;
-layout(binding = 5) uniform sampler2D uTransReveal;
+layout(binding = 5) uniform sampler2D uTransColor;
+layout(binding = 6) uniform sampler2D uTransReveal;
 
 in VP_Shared {
     vec2 pUV;

@@ -11,12 +11,14 @@ namespace IR::Renderer {
     public:
         enum class Type : UInt8 {
             BASIC2D,
+            POSITION,
             STANDARD,
             ANIMATED,
             _COUNT
         };
 
         bool InitBasic2D();
+        bool InitPosition();
         bool InitStandard();
         bool InitAnimated();
 

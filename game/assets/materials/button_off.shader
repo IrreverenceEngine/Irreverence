@@ -5,7 +5,7 @@ materials/button_off
 
         Albedo textures/button_off.png
         Emissive textures/button_off_emissive.png
-        Shader OpaqueMap.irs
+        Shader MapOpaque.irs
         Linearize 0
         Mipmap 1
     }

@@ -4,7 +4,7 @@ materials/doorframe1
         map textures/doorframe1.png
 
         Albedo textures/doorframe1.png
-        Shader OpaqueMap.irs
+        Shader MapOpaque.irs
         Linearize 0
         Mipmap 1
     }

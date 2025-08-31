@@ -10,6 +10,8 @@ namespace IR::Renderer {
     public:
         bool InitPool(const VertexBasic2D* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;
         bool Init(const VertexBasic2D* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
+        bool InitPool(const VertexPosition* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;
+        bool Init(const VertexPosition* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
         bool InitPool(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;
         bool Init(const VertexStandard* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
         bool InitPool(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;

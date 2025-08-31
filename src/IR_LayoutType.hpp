@@ -10,6 +10,10 @@ namespace IR::Renderer {
         glm::vec2 texcoord;
     };
 
+    struct VertexPosition {
+        glm::vec3 position;
+    };
+
     struct VertexStandard {
         glm::vec3 position;
         glm::vec3 normal;

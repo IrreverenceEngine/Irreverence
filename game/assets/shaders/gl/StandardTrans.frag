@@ -5,19 +5,20 @@
 #include "common.glsl"
 #include "lighting.glsl"
 
-layout (location = 4) out vec4 oTransColors;
-layout (location = 5) out float oTransReveal;
+layout (location = 5) out vec4 oTransColors;
+layout (location = 6) out float oTransReveal;
 
 in VP_Shared {
 	vec3 pFragPos;
     vec3 pNormal;
     vec2 pUV;
+	vec4 pInstanceColor;
 	flat uint pMaterialIndex;
 };
 
 void main()
 {
-    vec4 albedo = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV);
+    vec4 albedo = pInstanceColor * texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_ALBEDO), pUV);
     if (albedo.a < 0.01) {
         discard;
     }
@@ -29,12 +30,12 @@ void main()
     float ao = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_AMBIENTOCCLUSION), pUV).r;
     float emissive = texture(GetMaterialSampler(pMaterialIndex, MATERIAL_MAP_EMISSIVENESS), pUV).r;
 
-    // Transparent Object, do Forward-ish
     vec3 lightTotal = CalcAllLights(albedoCol, pFragPos, normal, ao, metallic, roughness);
 
     vec3 color = mix(lightTotal, albedoCol, emissive);
+    color = pow(color, vec3(1.0 / 2.2));
 
-    float weight = clamp(pow(min(1.0, albedo.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
-    oTransColors = vec4(color * albedo.a, albedo.a) * weight;
+    float weight = CalcWBOITWeight(albedo.a);
+    oTransColors = CalcWBOITColor(color, albedo.a, weight);
     oTransReveal = albedo.a;
 }

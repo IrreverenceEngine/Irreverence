@@ -22,7 +22,7 @@ void main()
 	pFragPos = aPos;
 
 	vec4 viewPos = uCommon.View * vec4(pFragPos, 1.0);
-	gl_Position = uCommon.Projection * viewPos;
+	gl_Position = uCommon.Perspective * viewPos;
 
 	pNormal = aNormal;
 	pUV = aUV;

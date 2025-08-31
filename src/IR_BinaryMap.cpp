@@ -1,5 +1,9 @@
 #include <IR_BinaryMap.hpp>
 
+#include <DetourCommon.h>
+#include <DetourAlloc.h>
+#include <DetourNavMeshBuilder.h>
+
 #include <fstream>
 
 namespace IR::BinaryMap {
@@ -12,6 +16,7 @@ namespace IR::BinaryMap {
         LUMPTYPE_FACES,
         LUMPTYPE_VERTICES,
         LUMPTYPE_MATERIALTABLE,
+        LUMPTYPE_NAVTILES,
         LUMPTYPE__COUNT
     };
 
@@ -35,9 +40,11 @@ namespace IR::BinaryMap {
     };
 
     struct BMBrush {
+        UInt32 flags;
         UInt32 faceNum;
         UInt32 faceBegin;
         glm::vec3 origin;
+        AABB aabb;
         std::vector<glm::vec3> convexPoints;
     };
 
@@ -56,10 +63,14 @@ namespace IR::BinaryMap {
         glm::vec2 texcoord;
     };
 
+    struct BMNavTile {
+        UInt32 size;
+        UInt8* data;
+    };
+
     static void ReadEntities(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMEntity>& ents)
     {
         stream.seekg(pos);
-
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
             BMEntity tmpEnt;
@@ -87,22 +98,30 @@ namespace IR::BinaryMap {
 
     static void ReadBrushes(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMBrush>& brushes)
     {
-        stream.seekg(pos);
-
         BMBrush brush;
         glm::vec3 tmpVec;
         UInt32 convexVecCount;
 
+        stream.seekg(pos);
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
             brush.convexPoints.clear();
 
+            stream.read((char*)&brush.flags, sizeof(brush.flags));
             stream.read((char*)&brush.faceNum, sizeof(brush.faceNum));
             stream.read((char*)&brush.faceBegin, sizeof(brush.faceBegin));
 
             stream.read((char*)&brush.origin.x, sizeof(brush.origin.x));
             stream.read((char*)&brush.origin.y, sizeof(brush.origin.y));
             stream.read((char*)&brush.origin.z, sizeof(brush.origin.z));
+
+            stream.read((char*)&brush.aabb.min.x, sizeof(brush.aabb.min.x));
+            stream.read((char*)&brush.aabb.min.y, sizeof(brush.aabb.min.y));
+            stream.read((char*)&brush.aabb.min.z, sizeof(brush.aabb.min.z));
+
+            stream.read((char*)&brush.aabb.max.x, sizeof(brush.aabb.max.x));
+            stream.read((char*)&brush.aabb.max.y, sizeof(brush.aabb.max.y));
+            stream.read((char*)&brush.aabb.max.z, sizeof(brush.aabb.max.z));
 
             stream.read((char*)&convexVecCount, sizeof(convexVecCount));
             brush.convexPoints.reserve(convexVecCount);
@@ -120,11 +139,10 @@ namespace IR::BinaryMap {
 
     static void ReadFaces(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMFace>& faces)
     {
-        stream.seekg(pos);
-
         BMFace face;
         UInt32 indexCount;
 
+        stream.seekg(pos);
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
             face.indices.clear();
@@ -154,10 +172,9 @@ namespace IR::BinaryMap {
 
     static void ReadVertices(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMVertex>& vertices)
     {
-        stream.seekg(pos);
-
         BMVertex vert;
 
+        stream.seekg(pos);
         UInt32 end = pos + len;
         while (stream.tellg() < end) {
             stream.read((char*)&vert.position.x, sizeof(vert.position.x));
@@ -182,7 +199,70 @@ namespace IR::BinaryMap {
         stream.read(materialtable.data(), len);
     }
 
-    bool Load(const char* path, std::vector<EntityData>& entDatas)
+    static void LoadNavMesh(std::ifstream& stream, UInt32 pos, UInt32 len, dtNavMesh** outNavmesh)
+    {
+        if (len == 0) {
+            *outNavmesh = nullptr;
+            return;
+        }
+
+        stream.seekg(pos);
+
+        dtNavMesh* navmesh = dtAllocNavMesh();
+
+        dtNavMeshParams navParams;
+
+        Int32 maxTiles;
+        Int32 maxPolys;
+        Float32 tileWidth;
+        Float32 tileHeight;
+        glm::vec3 origin;
+        stream.read((char*)&maxTiles, sizeof(maxTiles));
+        stream.read((char*)&maxPolys, sizeof(maxPolys));
+        stream.read((char*)&tileWidth, sizeof(tileWidth));
+        stream.read((char*)&tileHeight, sizeof(tileHeight));
+        stream.read((char*)&origin, sizeof(origin));
+
+        navParams.maxTiles = maxTiles;
+        navParams.maxPolys = maxPolys;
+        navParams.tileWidth = tileWidth;
+        navParams.tileHeight = tileHeight;
+        navParams.orig[0] = origin.x;
+        navParams.orig[1] = origin.y;
+        navParams.orig[2] = origin.z;
+
+        if (dtStatusFailed(navmesh->init(&navParams))) {
+            dtFreeNavMesh(navmesh);
+            IR_MSG(ERROR, "Binary Map: Failed to load Navmesh");
+            *outNavmesh = nullptr;
+            return;
+        }
+
+        BMNavTile tile;
+
+        UInt32 end = pos + len;
+        while (stream.tellg() < end) {
+            stream.read((char*)&tile.size, sizeof(tile.size));
+            if (tile.size == 0) {
+                continue;
+            }
+
+            tile.data = (UInt8*)dtAlloc(tile.size, DT_ALLOC_PERM);
+            stream.read((char*)tile.data, tile.size);
+
+            dtTileRef ref;
+            if (dtStatusFailed(navmesh->addTile(tile.data, tile.size, DT_TILE_FREE_DATA, 0, &ref))) {
+                dtFreeNavMesh(navmesh);
+                IR_MSG(ERROR, "Binary Map: Failed to load add NavTile");
+                *outNavmesh = nullptr;
+                return;
+            };
+        }
+
+        *outNavmesh = navmesh;
+    }
+
+    bool Load(const char* path, std::vector<EntityData>& entDatas, dtNavMesh** navmesh)
     {
         std::ifstream stream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
         if (!stream.is_open()) {
@@ -213,7 +293,7 @@ namespace IR::BinaryMap {
         std::vector<char> materialtable;
         ReadMaterialTable(stream, hdr.lumps[LUMPTYPE_MATERIALTABLE].offset, hdr.lumps[LUMPTYPE_MATERIALTABLE].length, materialtable);
 
-        for (const auto& ent : ents) {
+        for (const BMEntity& ent : ents) {
             EntityData entdata;
             entdata.brushes.reserve(ent.brushNum);
             for (UInt32 brushIndex = ent.brushBegin; brushIndex < ent.brushBegin + ent.brushNum; brushIndex++) {
@@ -249,6 +329,9 @@ namespace IR::BinaryMap {
                 brushdata.convexPoints.insert(brushdata.convexPoints.end(), brush.convexPoints.begin(), brush.convexPoints.end());
 
                 brushdata.origin = brush.origin;
+                brushdata.aabb = brush.aabb;
+
+                brushdata.flags = brush.flags;
 
                 entdata.brushes.emplace_back(brushdata);
             }
@@ -265,6 +348,8 @@ namespace IR::BinaryMap {
 
             entDatas.emplace_back(entdata);
         }
+
+        LoadNavMesh(stream, hdr.lumps[LUMPTYPE_NAVTILES].offset, hdr.lumps[LUMPTYPE_NAVTILES].length, navmesh);
 
         return true;
     }

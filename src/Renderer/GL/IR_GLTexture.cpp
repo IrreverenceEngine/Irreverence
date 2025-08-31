@@ -75,11 +75,64 @@ namespace IR::Renderer {
         return true;
     }
 
+    bool GLTexture::InitMemory(UInt32 format, UInt32 formatAlt, UInt32 datatype, const UInt8* data, UInt32 width, UInt32 height, UInt8 channel_count, bool linearize, bool mipmaps, bool handle)
+    {
+        width = width;
+        height = height;
+        m_ChannelCount = channel_count;
+        m_MipCount = 1;
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+        if (mipmaps && data) {
+            GLenum minFilEnum = linearize ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
+            GLenum minFilEnumMag = linearize ? GL_LINEAR : GL_NEAREST;
+
+            glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, minFilEnum);
+            glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, minFilEnumMag);
+
+            Float32 maxAllowAniso = 0.0f;
+            glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAllowAniso);
+            glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, Math::Clamp(maxAllowAniso, 0.0f, 16.0f));
+
+            m_MipCount = 1 + floorf(log2f(Math::Max(width, height)));
+            glTextureStorage2D(m_ID, m_MipCount, format, width, height);
+            glTextureSubImage2D(m_ID, 0, 0, 0, width, height, formatAlt, datatype, data);
+
+            glGenerateTextureMipmap(m_ID);
+        } else {
+            GLenum minFilEnum = linearize ? GL_LINEAR : GL_NEAREST;
+            glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, minFilEnum);
+            glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, minFilEnum);
+
+            glTextureStorage2D(m_ID, 1, format, width, height);
+
+            if (data) {
+                glTextureSubImage2D(m_ID, 0, 0, 0, width, height, formatAlt, datatype, data);
+            }
+        }
+
+        if (handle) {
+            m_BTHandle = glGetTextureHandleARB(m_ID);
+            if (m_BTHandle == 0) {
+                IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
+            }
+
+            glMakeTextureHandleResidentARB(m_BTHandle);
+        }
+
+        return true;
+    }
+
     void GLTexture::InitColorAttachment(const GLFrame& frame, UInt8 location, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type, UInt8 maxMips)
     {
         m_Width = width;
         m_Height = height;
         m_MipCount = 1;
+
 
         if (samples == 0 || maxMips > 1) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
@@ -103,9 +156,9 @@ namespace IR::Renderer {
         m_Width = width;
         m_Height = height;
 
+
         if (samples == 0) {
             glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
-
             glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
             glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

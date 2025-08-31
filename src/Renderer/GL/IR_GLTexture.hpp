@@ -9,6 +9,7 @@ namespace IR::Renderer {
     class GLTexture : public Texture {
     public:
         bool InitMemory(const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps, bool handle = false) override;
+        bool InitMemory(UInt32 format, UInt32 formatAlt, UInt32 datatype, const UInt8* data, UInt32 width, UInt32 height, UInt8 channelnum, bool linearize, bool mipmaps, bool handle = false);
         void InitColorAttachment(const GLFrame& frame, UInt8 location, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type, UInt8 maxMips);
         void InitDepthAttachment(const GLFrame& frame, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type);
         void Destroy() override;

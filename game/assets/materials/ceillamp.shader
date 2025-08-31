@@ -4,7 +4,7 @@ materials/ceillamp
         map textures/ceillamp.png
 
         Albedo textures/ceillamp.png
-        Shader OpaqueMap.irs
+        Shader MapOpaque.irs
         Linearize 0
         Mipmap 1
     }

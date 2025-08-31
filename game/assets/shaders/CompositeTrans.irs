@@ -1,0 +1,3 @@
+"Type" "Raster"
+"Vertex" "Composite.vert"
+"Fragment" "CompositeTrans.frag"

@@ -141,7 +141,8 @@ int main(int argc, char** argv)
     IR_MSG(INFO, "Successfully initialized Irreverence");
 
 	std::vector<BinaryMap::EntityData> entDatas;
-	if (!BinaryMap::Load("concept.irbm", entDatas)) {
+	dtNavMesh* navmesh = nullptr;
+	if (!BinaryMap::Load("dev_generic.irbm", entDatas, &navmesh)) {
 		return 1;
 	}
 
@@ -154,13 +155,17 @@ int main(int argc, char** argv)
 		if (className == "worldspawn") {
 			for (const auto& brush : ent.brushes) {
 				for (const auto& face : brush.faces) {
-					if (face.flags & 1) {
+					if (face.flags & BinaryMap::FaceData::FLAGS_NOMESH || face.flags & BinaryMap::FaceData::FLAGS_NORENDER) {
 						continue;
 					}
 
 					Renderer::Mesh* mesh = Renderer::MakeMesh();
 					mesh->InitPool(face.vertices.data(), face.vertices.size(), face.indices.data(), face.indices.size());
 					meshes.push_back({ mesh, Assets::Material(face.materialName.c_str()) });
+				}
+
+				if (brush.flags & BinaryMap::BrushData::FLAGS_NOCONVEX) {
+					continue;
 				}
 
 				Physics::AddCompoundConvexHull(brush.convexPoints.data(), brush.convexPoints.size(), brush.origin);
@@ -186,19 +191,10 @@ int main(int argc, char** argv)
 		Renderer::SubmitMapMesh(meshes[i].mesh, meshes[i].mat);
 	}
 
-	Physics::Object* obj = Physics::MakeCubeObject(glm::vec3(25.0f), Physics::Type::DYNAMIC, Physics::Layer::MOVING, { 186, 450, 128 });
+	Physics::Object* obj = Physics::MakeCubeObject(glm::vec3(32.0f), Physics::Type::DYNAMIC, Physics::Layer::MOVING, { 180, 250, -476 });
 
 	Float64 nextTick = 0.0f;
 	const Float64 tickTime = 1.0 / tickrate.GetInt64();
-
-	UInt16 light = Renderer::MakeSLight();
-	Renderer::SetSLightColor(light, { 200, 225, 255, 128 });
-	Renderer::SetSLightDirection(light, { 0.0f, -1.0f, 0.9f });
-	Renderer::SetSLightPosition(light, { 512.0f, 140.0f, 128.0f });
-	Renderer::SetSLightInnerCutoff(light, 30.0f);
-	Renderer::SetSLightOuterCutoff(light, 45.0f);
-	Renderer::SetSLightInnerRadius(light, 256.0f);
-	Renderer::SetSLightOuterRadius(light, 512.0f);
 
 	IR_THREAD_NAME("Main Thread");
 
@@ -216,9 +212,7 @@ int main(int argc, char** argv)
 			Physics::SetObjectVelocity(obj, { 0, 256, 0 });
 		}
 
-		Renderer::SetSLightColor(light, { fabs(sinf(Globals.curtime)) * 255.0, fabs(cosf(Globals.curtime)) * 255.0, 150, 255 });
-
-		Renderer::SubmitMesh(Renderer::GetMeshCube(), obj->pos, obj->rot, glm::vec3(25.0f), Color(255), Assets::Material("GRID_BLACK0_ent.shader"));
+		Renderer::SubmitMesh(Renderer::GetMeshCube(), obj->pos, obj->rot, glm::vec3(32.0f), Color(200, 150, 100, 255), Assets::Material("GRID_BLACK0_ent.shader"));
 
 		Renderer::Present();
 

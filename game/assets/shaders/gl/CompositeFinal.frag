@@ -6,7 +6,7 @@
 
 out vec4 FRAG_COLOR;
 
-layout(binding = 6) uniform sampler2D uFinalColor;
+layout(binding = 0) uniform sampler2D uFinalColor;
 
 in VP_Shared {
     vec2 pUV;
@@ -16,8 +16,7 @@ void main()
 {
     vec3 color = texture(uFinalColor, pUV).rgb;
 
-    color = vec3(1.0) - exp(-color * 5.0);
-    color = pow(color, vec3(1.0 / 2.2));
+    color = vec3(1.0) - exp(-color * 2.5);
 
     FRAG_COLOR = vec4(color, 1.0);
 }

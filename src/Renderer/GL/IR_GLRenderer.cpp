@@ -12,6 +12,8 @@
 #include <Thirdparty/stb_image.h>
 
 #include <glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/easing.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <tracy/Tracy.hpp>
@@ -47,8 +49,51 @@ namespace IR::Renderer {
 		{ { 1.0f, 1.0f, 1.0f },			{ 1.0f, 0.0f, 0.0f },		{ 1.0f, 0.0f } },
 		{ { 1.0f, 1.0f, -1.0f },		{ 0.0f, 0.0f, -1.0f },		{ 1.0f, 0.0f } }
 	};
-
     constexpr UInt32 CUBE_INDICES[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 18, 1, 3, 19, 4, 6, 20, 7, 9, 21, 10, 12, 22, 13, 15, 23, 16 };
+
+    constexpr VertexPosition SKYBOX_VERTICES[] = {
+		{ { -1.0f,  1.0f, -1.0f } },
+		{ { -1.0f, -1.0f, -1.0f } },
+		{ {  1.0f, -1.0f, -1.0f } },
+		{ {  1.0f, -1.0f, -1.0f } },
+		{ {  1.0f,  1.0f, -1.0f } },
+		{ { -1.0f,  1.0f, -1.0f } },
+
+		{ { -1.0f, -1.0f,  1.0f } },
+		{ { -1.0f, -1.0f, -1.0f } },
+		{ { -1.0f,  1.0f, -1.0f } },
+		{ { -1.0f,  1.0f, -1.0f } },
+		{ { -1.0f,  1.0f,  1.0f } },
+		{ { -1.0f, -1.0f,  1.0f } },
+
+		{ { 1.0f, -1.0f, -1.0f } },
+		{ { 1.0f, -1.0f,  1.0f } },
+		{ { 1.0f,  1.0f,  1.0f } },
+		{ { 1.0f,  1.0f,  1.0f } },
+		{ { 1.0f,  1.0f, -1.0f } },
+		{ { 1.0f, -1.0f, -1.0f } },
+
+		{ { -1.0f, -1.0f,  1.0f } },
+		{ { -1.0f,  1.0f,  1.0f } },
+		{ {  1.0f,  1.0f,  1.0f } },
+		{ {  1.0f,  1.0f,  1.0f } },
+		{ {  1.0f, -1.0f,  1.0f } },
+		{ { -1.0f, -1.0f,  1.0f } },
+
+		{ { -1.0f,  1.0f, -1.0f } },
+		{ {  1.0f,  1.0f, -1.0f } },
+		{ {  1.0f,  1.0f,  1.0f } },
+		{ {  1.0f,  1.0f,  1.0f } },
+		{ { -1.0f,  1.0f,  1.0f } },
+		{ { -1.0f,  1.0f, -1.0f } },
+
+		{ { -1.0f, -1.0f, -1.0f } },
+		{ { -1.0f, -1.0f,  1.0f } },
+		{ {  1.0f, -1.0f, -1.0f } },
+		{ {  1.0f, -1.0f, -1.0f } },
+		{ { -1.0f, -1.0f,  1.0f } },
+		{ {  1.0f, -1.0f,  1.0f } }
+	};
 
     const char* GL::GetName() IR_RETURN("OpenGL")
     const char* GL::GetDirectory() IR_RETURN("gl/")
@@ -114,6 +159,7 @@ namespace IR::Renderer {
 
         // --- [VERTEX LAYOUTS] ---
         m_LayoutBasic2D.InitBasic2D();
+        m_LayoutPosition.InitPosition();
         m_LayoutStandard.InitStandard();
         m_LayoutAnimated.InitAnimated();
 
@@ -125,6 +171,25 @@ namespace IR::Renderer {
 
         // --- [UNIFORMS] ---
         m_UniformCommon.Init(nullptr, sizeof(m_CommonData), UNIFORMLOC_COMMON);
+
+        SSAOSamplesData ssaosamples;
+        for (UInt32 i = 0; i < SSAO_SAMPLE_NUM; i++) {
+            glm::vec3 sample = {
+                Random::Float(0.0f, 1.0f) * 2.0f - 1.0f,
+                Random::Float(0.0f, 1.0f) * 2.0f - 1.0f,
+                Random::Float(0.0f, 1.0f)
+            };
+
+            sample = glm::normalize(sample);
+            sample *= Random::Float(0.0f, 1.0f);
+            Float32 scale = (Float32)i / SSAO_SAMPLE_NUM;
+
+            scale = Math::Lerp(0.1f, 1.0f, scale * scale);
+            sample *= scale;
+            ssaosamples.samples[i] = { sample.x, sample.y, sample.z, 0.0f };
+        }
+
+        m_UniformSSAOSamples.Init(&ssaosamples, sizeof(ssaosamples), UNIFORMLOC_SSAOSAMPLES);
 
         // --- [BUFFERS] ---
         m_SBMaterialInfos.Init(GL_SHADER_STORAGE_BUFFER, nullptr, sizeof(GLMaterial::Info), SSLOC_MATERIALINFO, true);
@@ -140,13 +205,15 @@ namespace IR::Renderer {
             { GL_RGB16F, GL_FLOAT }, // Normal
             { GL_RGB8, GL_UNSIGNED_BYTE }, // Color
             { GL_RGBA8, GL_UNSIGNED_BYTE }, // AMRE
+            { GL_RG8, GL_UNSIGNED_BYTE }, // SSAO Color + Blur
             { GL_RGBA16F, GL_FLOAT }, // Transparent Colors
             { GL_R16F, GL_FLOAT }, // Transparent Reveal
-            { GL_RGB16F, GL_FLOAT} // Screen Color
+            { GL_RGB16F, GL_FLOAT } // Screen Color
         }, { GL_DEPTH_COMPONENT24, GL_FLOAT });
 
         // --- [TEXTURES] ---
         const struct glm::vec<3, UInt8> missingColor1 = { 0, 0, 0 };
+
         const struct glm::vec<3, UInt8> missingColor2 = { 251, 62, 249 };
         const struct glm::vec<3, UInt8> whiteColor = { 255, 255, 255 };
         const struct glm::vec<3, UInt8> normalColor = { 127, 127, 255 };
@@ -161,24 +228,40 @@ namespace IR::Renderer {
             }
         }
 
+        const UInt32 ssaoNoiseSqr = SSAO_NOISE_LEN * SSAO_NOISE_LEN;
+        glm::vec3 noiseData[ssaoNoiseSqr];
+        for (UInt32 i = 0; i < ssaoNoiseSqr; i++) {
+            glm::vec3 noise = {
+                Random::Float(0.0f, 1.0f) * 2.0 - 1.0,
+                Random::Float(0.0f, 1.0f) * 2.0 - 1.0,
+                0.0f
+            };
+            noiseData[i] = noise;
+        }
+
         m_TextureError.InitMemory((const UInt8*)missingPixels.data(), 64, 64, 3, false, false, true);
         m_TextureBlack.InitMemory((const UInt8*)&missingColor1, 1, 1, 3, false, false, true);
         m_TextureWhite.InitMemory((const UInt8*)&whiteColor, 1, 1, 3, false, false, true);
         m_TextureNormal.InitMemory((const UInt8*)&normalColor, 1, 1, 3, false, false, true);
+        m_TextureSSAONoise.InitMemory(GL_RGB16F, GL_RGB, GL_FLOAT, (const UInt8*)noiseData, SSAO_NOISE_LEN, SSAO_NOISE_LEN, 3, false, false, false);
 
         // --- [SHADERS] ---
-        m_ShaderOpaqueMap = (GLShader*)Assets::Shader("OpaqueMap.irs");
-        m_ShaderTransMap = (GLShader*)Assets::Shader("TransMap.irs");
-        m_ShaderScreen = (GLShader*)Assets::Shader("Screen.irs");
-        m_ShaderScreenTrans = (GLShader*)Assets::Shader("ScreenTrans.irs");
-        m_ShaderScreenFinal = (GLShader*)Assets::Shader("ScreenFinal.irs");
+        m_ShaderMapOpaque = (GLShader*)Assets::Shader("MapOpaque.irs");
+        m_ShaderMapTrans = (GLShader*)Assets::Shader("MapTrans.irs");
+        m_ShaderSky = (GLShader*)Assets::Shader("Sky.irs");
+        m_ShaderCompositeSSAO = (GLShader*)Assets::Shader("CompositeSSAO.irs");
+        m_ShaderCompositePBR = (GLShader*)Assets::Shader("CompositePBR.irs");
+        m_ShaderCompositeTrans = (GLShader*)Assets::Shader("CompositeTrans.irs");
+        m_ShaderCompositeFinal = (GLShader*)Assets::Shader("CompositeFinal.irs");
 
         if (
-            !m_ShaderOpaqueMap ||
-            !m_ShaderTransMap ||
-            !m_ShaderScreen ||
-            !m_ShaderScreenTrans ||
-            !m_ShaderScreenFinal
+            !m_ShaderMapOpaque ||
+            !m_ShaderMapTrans ||
+            !m_ShaderSky ||
+            !m_ShaderCompositeSSAO ||
+            !m_ShaderCompositePBR ||
+            !m_ShaderCompositeTrans ||
+            !m_ShaderCompositeFinal
         ) {
             IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load internal shaders");
             return false;
@@ -202,12 +285,19 @@ namespace IR::Renderer {
         const UInt32 planeIndices[] = { 2, 1, 0, 0, 3, 2 };
         const UInt32 scrIndices[] = { 0, 1, 2, 0, 2, 3 };
 
-        TracyGpuContext;
+        UInt32 skyboxIndices[IR_ARRLEN(SKYBOX_VERTICES)];
+        for (UInt32 i = 0; i < IR_ARRLEN(SKYBOX_VERTICES); i++) {
+            skyboxIndices[i] = i;
+        }
+
         m_MeshCube.InitPool(CUBE_VERTS, IR_ARRLEN(CUBE_VERTS), CUBE_INDICES, IR_ARRLEN(CUBE_INDICES));
         m_MeshPlane.InitPool(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
         m_MeshScreen.Init(scrVerts, IR_ARRLEN(scrVerts), scrIndices, IR_ARRLEN(scrIndices));
+        m_MeshSkybox.Init(SKYBOX_VERTICES, IR_ARRLEN(SKYBOX_VERTICES), skyboxIndices, IR_ARRLEN(SKYBOX_VERTICES));
 
         // --- [MATERIALS] ---
+
+        TracyGpuContext;
 
         return true;
     }
@@ -215,6 +305,7 @@ namespace IR::Renderer {
     void GL::Shutdown()
     {
         m_LayoutBasic2D.Destroy();
+        m_LayoutPosition.Destroy();
         m_LayoutStandard.Destroy();
         m_LayoutAnimated.Destroy();
 
@@ -224,6 +315,7 @@ namespace IR::Renderer {
         m_CmdsDynamicTrans.Destroy();
 
         m_UniformCommon.Destroy();
+        m_UniformSSAOSamples.Destroy();
 
         m_SBMaterialInfos.Destroy();
         m_SBTextureHandles.Destroy();
@@ -242,12 +334,16 @@ namespace IR::Renderer {
         m_TextureBlack.Destroy();
         m_TextureError.Destroy();
         m_TextureNormal.Destroy();
+        m_TextureSSAONoise.Destroy();
         for (auto& texture : m_Textures) {
             texture.Destroy();
         }
         m_Textures.clear();
 
+        m_MeshCube.Destroy();
+        m_MeshPlane.Destroy();
         m_MeshScreen.Destroy();
+        m_MeshSkybox.Destroy();
         for (auto& mesh : m_Meshes) {
             mesh.Destroy();
         }
@@ -280,7 +376,8 @@ namespace IR::Renderer {
         m_CommonData.frametime = Globals.frametime;
         m_CommonData.width = Globals.width;
         m_CommonData.height = Globals.height;
-        m_CommonData.viewPos = Debug::FlyCam(m_CommonData.view, m_CommonData.projection);
+        m_CommonData.ortho = glm::ortho(0.0f, (Float32)Globals.width, 0.0f, (Float32)Globals.height, 0.0f, 1.0f);
+        m_CommonData.viewPos = Debug::FlyCam(m_CommonData.view, m_CommonData.perspective);
 
 		{
 			TracyGpuZone("Update Common Data");
@@ -316,7 +413,7 @@ namespace IR::Renderer {
 			Int64 colorValue  = r_clear_color->GetInt64();
 			clearColor.b = ((colorValue >> 16) & 0xFF) / 255.0f; // Red
 			clearColor.g = ((colorValue >> 8) & 0xFF) / 255.0f;  // Green
-			clearColor.r = (colorValue & 0xFF) / 255.0f;           // Blue
+			clearColor.r = (colorValue & 0xFF) / 255.0f;         // Blue
 			clearColor.a = 1.0f; // Alpha
 		}
 
@@ -325,13 +422,14 @@ namespace IR::Renderer {
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
-	    glDepthMask(GL_TRUE);
+        glDepthMask(GL_TRUE);
 
 		{
-			TracyGpuZone("Clear Color");
+            TracyGpuZone("Clear Color");
 			glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
+
 
         // - Opaque
 		{
@@ -344,14 +442,24 @@ namespace IR::Renderer {
 			m_CmdsDynamicOpaque.Flush();
 		}
 
+
+        glDepthFunc(GL_LEQUAL);
+        glDepthMask(GL_FALSE);
+        glDisable(GL_CULL_FACE);
+        m_ShaderSky->Bind();
+        m_MeshSkybox.Draw();
+        glEnable(GL_CULL_FACE);
+        glDepthMask(GL_TRUE);
+        glDepthFunc(GL_LESS);
+
         glEnable(GL_BLEND);
-        glBlendFunciARB(4, GL_ONE, GL_ONE);
-        glBlendFunciARB(5, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+        glBlendFunciARB(5, GL_ONE, GL_ONE);
+        glBlendFunciARB(6, GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
         glBlendEquation(GL_FUNC_ADD);
         glDepthMask(GL_FALSE);
 
-        m_FrameMain.ClearColor(4, Color(0));
-        m_FrameMain.ClearColor(5, Color(255));
+        m_FrameMain.ClearColor(5, Color(0));
+        m_FrameMain.ClearColor(6, Color(255));
 
         // - Transparent
 		{
@@ -371,12 +479,8 @@ namespace IR::Renderer {
 
         glDisable(GL_DEPTH_TEST);
 
-        m_CommonData.projection = glm::ortho(0.0f, (Float32)Globals.width, 0.0f, (Float32)Globals.height, 0.0f, 1.0f);
-        m_UniformCommon.Update(&m_CommonData.projection, sizeof(m_CommonData.projection), offsetof(CommonData, projection));
-
         {
             TracyGpuZone("Compose PBR + Forward WBOIT");
-            m_FrameMain.ClearColor(6, Color(0));
 
             m_FrameMain.GetColorTexture(0)->Bind(0);
             m_FrameMain.GetColorTexture(1)->Bind(1);
@@ -385,20 +489,27 @@ namespace IR::Renderer {
             m_FrameMain.GetColorTexture(4)->Bind(4);
             m_FrameMain.GetColorTexture(5)->Bind(5);
             m_FrameMain.GetColorTexture(6)->Bind(6);
+            m_FrameMain.GetColorTexture(7)->Bind(7);
 
             glDisable(GL_BLEND);
 
-            m_ShaderScreen->Bind();
+            m_TextureSSAONoise.Bind(16);
+            m_ShaderCompositeSSAO->Bind();
+            m_MeshScreen.Draw();
+
+            m_ShaderCompositePBR->Bind();
             m_MeshScreen.Draw();
 
             glDepthFunc(GL_ALWAYS);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            m_ShaderScreenTrans->Bind();
+            m_ShaderCompositeTrans->Bind();
             m_MeshScreen.Draw();
             m_FrameMain.UnBind();
 
-            m_ShaderScreenFinal->Bind();
+            m_FrameMain.GetColorTexture(7)->Bind(0);
+
+            m_ShaderCompositeFinal->Bind();
             m_MeshScreen.Draw();
         }
 
@@ -602,6 +713,7 @@ namespace IR::Renderer {
     {
         switch (type) {
         case GLLayout::Type::BASIC2D: return &m_LayoutBasic2D;
+        case GLLayout::Type::POSITION: return &m_LayoutPosition;
         case GLLayout::Type::STANDARD: return &m_LayoutStandard;
         case GLLayout::Type::ANIMATED: return &m_LayoutAnimated;
         default: IR_UNREACHABLE;

@@ -16,3 +16,6 @@
 [submodule "vendor/tracy"]
 	path = vendor/tracy
 	url = https://github.com/wolfpld/tracy
+[submodule "vendor/recastnavigation"]
+	path = vendor/recastnavigation
+	url = https://github.com/recastnavigation/recastnavigation.git

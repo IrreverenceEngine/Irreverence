@@ -39,6 +39,11 @@ else()
 	find_package(OpenAL REQUIRED)
 endif()
 
+set(RECASTNAVIGATION_DEMO OFF)
+set(RECASTNAVIGATION_TESTS OFF)
+set(RECASTNAVIGATION_EXAMPLES OFF)
+add_subdirectory(vendor/recastnavigation)
+
 file(GLOB_RECURSE IRREVERENCE_SRC CONFIGURE_DEPENDS src/*.cpp)
 
 add_executable(irreverence ${IRREVERENCE_SRC})
@@ -61,6 +66,7 @@ add_subdirectory(vendor/tracy)
 target_link_libraries(irreverence PRIVATE
     glm::glm SDL3-static glew_s OpenGL::GL Jolt
 	openal Tracy::TracyClient GameNetworkingSockets_s
+    RecastNavigation::Recast RecastNavigation::Detour RecastNavigation::DetourTileCache
 )
 
 target_include_directories(irreverence PUBLIC
@@ -72,4 +78,7 @@ target_include_directories(irreverence PUBLIC
 	vendor/GameNetworkingSockets/include
 	vendor/openal-soft/include
 	vendor/tracy/public
+    vendor/recastnavigation/Recast/Include
+    vendor/recastnavigation/Detour/Include
+    vendor/recastnavigation/DetourTileCache/Include
 )

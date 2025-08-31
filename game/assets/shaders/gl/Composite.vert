@@ -13,6 +13,6 @@ out VP_Shared {
 
 void main()
 {
-	gl_Position = uCommon.Projection * vec4(aPos * vec2(uCommon.Width, uCommon.Height), 0.0, 1.0);
+	gl_Position = uCommon.Ortho * vec4(aPos * vec2(uCommon.Width, uCommon.Height), 0.0, 1.0);
     pUV = aUV;
 }

@@ -5,7 +5,7 @@ materials/gem_orange
 
         Albedo textures/gem_orange.png
         Emissive textures/gem_emissive.png
-        Shader TransMap.irs
+        Shader MapTrans.irs
         Linearize 0
         Mipmap 1
         Transparent 1
