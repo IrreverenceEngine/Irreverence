@@ -14,7 +14,7 @@
     _x const char* GetDirectory() _y; \
     _x bool Init() _y; \
     _x void Shutdown() _y; \
-	_x void Resize(UInt32 width, UInt32 height) _y; \
+    _x void Resize(UInt32 width, UInt32 height) _y; \
     _x void Present() _y; \
     _x void SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, UInt8 skin) _y; \
     _x void SubmitMesh(const Mesh* mesh, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, const Material* material) _y; \
@@ -43,6 +43,7 @@
     _x Texture* GetTextureBlack() _y; \
     _x Texture* GetTextureError() _y; \
     _x Texture* GetTextureNormal() _y; \
+    _x Texture* GetTextureSDE() _y; \
     _x Mesh* GetMeshCube() _y;
 
 namespace IR::Renderer {

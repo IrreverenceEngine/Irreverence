@@ -28,10 +28,6 @@ set(CROSS_PLATFORM_DETERMINISTIC ON)
 set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF)
 add_subdirectory(vendor/JoltPhysics/Build)
 
-set(BUILD_SHARED_LIB OFF)
-set(BUILD_STATIC_LIB ON)
-add_subdirectory(vendor/GameNetworkingSockets)
-
 if (WIN32)
 	set(ALSOFT_UTILS OFF)
 	add_subdirectory(vendor/openal-soft)
@@ -65,19 +61,18 @@ add_subdirectory(vendor/tracy)
 
 target_link_libraries(irreverence PRIVATE
     glm::glm SDL3-static glew_s OpenGL::GL Jolt
-	openal Tracy::TracyClient GameNetworkingSockets_s
+  	openal Tracy::TracyClient
     RecastNavigation::Recast RecastNavigation::Detour RecastNavigation::DetourTileCache
 )
 
 target_include_directories(irreverence PUBLIC
     src/
-	vendor/glew/glew-2.2.0/include
+  	vendor/glew/glew-2.2.0/include
     vendor/glm/glm
     vendor/SDL/include
     vendor/JoltPhysics/
-	vendor/GameNetworkingSockets/include
-	vendor/openal-soft/include
-	vendor/tracy/public
+  	vendor/openal-soft/include
+  	vendor/tracy/public
     vendor/recastnavigation/Recast/Include
     vendor/recastnavigation/Detour/Include
     vendor/recastnavigation/DetourTileCache/Include

@@ -1,4 +1,3 @@
-#include "IR_Globals.hpp"
 #include <IR_Physics.hpp>
 #include <IR_CVar.hpp>
 #include <IR_Tracy.hpp>
@@ -38,8 +37,7 @@ namespace IR::Physics {
         /*    MOVING: [1]*/ 0b11,
     };
 
-    class BPLayerInterface : public JPH::BroadPhaseLayerInterface
-    {
+    class BPLayerInterface : public JPH::BroadPhaseLayerInterface {
     public:
         BPLayerInterface() {}
 
@@ -59,22 +57,19 @@ namespace IR::Physics {
         }
     };
 
-    class OvsBPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter
-    {
+    class OvsBPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter {
     public:
         virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
             IR_RETURN((s_TouchMask[(UInt8)inLayer1] >> (UInt8)inLayer2) & 1)
     };
 
-    class ObjectLayerPairFilter : public JPH::ObjectLayerPairFilter
-    {
+    class ObjectLayerPairFilter : public JPH::ObjectLayerPairFilter {
     public:
         virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
            IR_RETURN((s_TouchMask[(UInt8)inObject1] >> (UInt8)inObject2) & 1)
     };
 
-    class ContactListener : public JPH::ContactListener
-    {
+    class ContactListener : public JPH::ContactListener {
     public:
         virtual JPH::ValidateResult	OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult& inCollisionResult) override
             IR_RETURN(JPH::ValidateResult::AcceptAllContactsForThisBodyPair)

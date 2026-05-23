@@ -41,7 +41,7 @@ namespace IR::Renderer {
         }
 
         flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
-		flags |= SDL_WINDOW_RESIZABLE;
+    		flags |= SDL_WINDOW_RESIZABLE;
 
         return flags;
     }
@@ -69,8 +69,8 @@ namespace IR::Renderer {
         return success;
     }
 
-    void Shutdown() { s_HAPI->Shutdown(); }
-	void Resize(UInt32 width, UInt32 height) { s_HAPI->Resize(width, height); }
+    void Shutdown() { s_HAPI->Shutdown(); delete s_HAPI; }
+    void Resize(UInt32 width, UInt32 height) { s_HAPI->Resize(width, height); }
     void Present() { s_HAPI->Present(); }
     void SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, UInt8 skin) { s_HAPI->SubmitModel(model, pos, rot, size, col, skin); }
     void SubmitMesh(const Mesh* mesh, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, const Material* material) {
@@ -105,5 +105,6 @@ namespace IR::Renderer {
     Texture* GetTextureBlack() IR_RETURN(s_HAPI->GetTextureBlack())
     Texture* GetTextureError() IR_RETURN(s_HAPI->GetTextureError())
     Texture* GetTextureNormal() IR_RETURN(s_HAPI->GetTextureNormal())
+    Texture* GetTextureSDE() IR_RETURN(s_HAPI->GetTextureSDE())
     Mesh* GetMeshCube() IR_RETURN(s_HAPI->GetMeshCube())
 }

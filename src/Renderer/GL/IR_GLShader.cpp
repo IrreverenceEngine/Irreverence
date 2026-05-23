@@ -84,7 +84,58 @@ namespace IR::Renderer {
         return true;
     }
 
-    bool GLShader::InitComputeMemory(const char* cscode) IR_UNIMPLEMENTED
+    bool GLShader::InitComputeMemory(const char* cscode)
+    {
+
+        if (!cscode) return false;
+
+        std::string cscodeCpy = cscode;
+
+        for (const std::string& incl : s_GL->GetPatchIncludes()) {
+            UInt64 csPos = cscodeCpy.find(incl);
+            while (csPos != std::string::npos) {
+                cscodeCpy.insert(cscodeCpy.begin() + csPos, '/');
+                csPos = cscodeCpy.find(incl, csPos + incl.length());
+            }
+        }
+
+        char* cscodePtr = cscodeCpy.data();
+
+        char failureLog[1024];
+        Int32 bSuccess = true;
+
+        UInt32 c_id = 0;
+
+        c_id = glCreateShader(GL_COMPUTE_SHADER);
+        glShaderSource(c_id, 1, (const GLchar* const*)&cscodePtr, NULL);
+        glCompileShader(c_id);
+        glGetShaderiv(c_id, GL_COMPILE_STATUS, &bSuccess);
+        IR_DEFER({ glDeleteShader(c_id); });
+
+        bool bFailedShaderCompilation = false;
+        if (!bSuccess) {
+            glGetShaderInfoLog(c_id, 1024, NULL, failureLog);
+            IR_MSG(ERROR, "GLShader Compute shader compilation failed:\n %s", failureLog);
+            
+            return true;
+        }
+
+        UInt32 p_id = glCreateProgram();
+        glAttachShader(p_id, c_id);
+        glLinkProgram(p_id);
+        glGetProgramiv(p_id, GL_LINK_STATUS, &bSuccess);
+
+        if (!bSuccess) {
+            glGetProgramInfoLog(p_id, 1024, NULL, failureLog);
+            IR_MSG(ERROR, "GLShader Linking failed:\n %s", failureLog);
+            glDeleteProgram(m_ID);
+            return false;
+        }
+
+        m_ID = p_id;
+
+        return true;
+    }
 
     void GLShader::Destroy()
     {

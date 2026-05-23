@@ -15,5 +15,12 @@ in VP_Shared {
 
 void main()
 {
-    oColor = vec3(abs(cos(uCommon.CurTime * 0.75) + 0.2), abs(sin(uCommon.CurTime * 0.5)), abs(cos(uCommon.CurTime * 0.2)));
+    vec4 skyPaint = UnpackColor(uCommon.SkyPaintCol);
+    vec4 skyHorizon = UnpackColor(uCommon.SkyHorizonCol);
+    vec3 skyDir = normalize(pUV);
+
+    vec3 skyMixPaint = mix(texture(uSkyTexture, pUV).rgb, skyPaint.rgb, skyPaint.a);
+    vec3 skyMixHorizon = mix(texture(uSkyTexture, pUV).rgb, skyHorizon.rgb, skyPaint.a);
+
+    oColor = mix(skyMixHorizon, skyMixPaint, clamp(skyDir.y - uCommon.SkyHorizonHeight, 0.0, 1.0));
 }

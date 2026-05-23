@@ -91,6 +91,9 @@ namespace IR::Renderer {
             glm::mat4 perspective;
             glm::mat4 ortho;
             glm::vec3 viewPos;
+            Float32 skyHorizonHeight;
+            Color skyHorizon;
+            Color skyPaint;
         } m_CommonData;
         GLUniform m_UniformCommon;
 
@@ -118,6 +121,7 @@ namespace IR::Renderer {
         GLTexture m_TextureBlack;
         GLTexture m_TextureError;
         GLTexture m_TextureNormal;
+        GLTexture m_TextureSDE;
         GLTexture m_TextureSSAONoise;
 
         // --- [SHADERS] ---

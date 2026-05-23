@@ -2,20 +2,22 @@
 
 #include <IR_Renderer.hpp>
 
-namespace IR::Window {
-    bool Init(Renderer::API api);
-    void Shutdown();
+namespace IR {
+    struct Window {
+        static bool Init(Renderer::API api);
+        static void Shutdown();
 
-    void Close();
+        static void Close();
 
-    bool ShouldClose();
-    void* GetHandle();
+        static bool ShouldClose();
+        static void* GetHandle();
 
-	bool IsMouseLocked();
-	void LockMouse(bool lock);
-	void ToggleMouseLock();
+        static bool IsMouseLocked();
+        static void LockMouse(bool lock);
+        static void ToggleMouseLock();
 
-	bool IsFullscreen();
-	void SetFullscreen(bool fullscreen);
-	void ToggleFullscreen();
+        static bool IsFullscreen();
+        static void SetFullscreen(bool fullscreen);
+        static void ToggleFullscreen();
+    };
 }

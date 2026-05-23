@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include <glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace IR {
     using Int8 = int8_t;

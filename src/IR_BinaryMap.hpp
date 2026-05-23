@@ -4,11 +4,11 @@
 #include <IR_AABB.hpp>
 #include <IR_LayoutType.hpp>
 
-#include <DetourNavMesh.h>
-
 #include <unordered_map>
 #include <string>
 #include <vector>
+
+namespace IR { class Navmesh; }
 
 namespace IR::BinaryMap {
     struct FaceData {
@@ -46,5 +46,5 @@ namespace IR::BinaryMap {
         std::vector<BrushData> brushes;
     };
 
-    bool Load(const char* path, std::vector<EntityData>& entDatas, dtNavMesh** navmesh);
+    bool Load(const char* path, std::vector<EntityData>& entDatas, Navmesh& navmesh);
 }

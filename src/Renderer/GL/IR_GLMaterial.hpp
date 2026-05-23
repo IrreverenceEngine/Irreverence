@@ -17,7 +17,7 @@ namespace IR::Renderer {
         void SetTexture(Map map, Texture* texture) override;
         void SetShader(Shader* shader) override;
 
-        void Bind();
+        void Bind() override;
         void Use();
         void Reset() override;
 

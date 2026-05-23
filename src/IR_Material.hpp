@@ -9,21 +9,20 @@
 namespace IR::Renderer {
     class Material {
     public:
-		virtual ~Material() = default;
+		    virtual ~Material() = default;
 
         enum Map {
             MAP_ALBEDO,
             MAP_NORMAL,
-            MAP_METALNESS,  // TODO: Combine these into one thing
-            MAP_ROUGHNESS,
-            MAP_EMISSIVENESS,
-            MAP_AMBIENTOCCLUSION,
+            MAP_SDE,
             MAP__COUNT
         };
 
         bool Init(const char* path);
         virtual bool Init(const Texture*(&textures)[MAP__COUNT], Shader* shader) = 0;
         virtual void Destroy() {}
+
+        virtual void Bind() {};
 
         virtual void Reset() = 0;
 

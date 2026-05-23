@@ -16,7 +16,7 @@ void main()
 {
     vec3 color = texture(uFinalColor, pUV).rgb;
 
-    color = vec3(1.0) - exp(-color * 2.5);
+    color = vec3(1.0) - exp(-color * 2.0);
 
     FRAG_COLOR = vec4(color, 1.0);
 }

@@ -1,4 +1,5 @@
 #include <Renderer/GL/IR_GLRenderer.hpp>
+#include <Renderer/GL/IR_GLDefaultMesh.hpp>
 #include <IR_Common.hpp>
 #include <IR_Random.hpp>
 #include <IR_Window.hpp>
@@ -23,78 +24,6 @@ void glMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 
 namespace IR::Renderer {
 
-	constexpr VertexStandard CUBE_VERTS[] = {
-		{ { -1.0f, 1.0f, -1.0f },		{ 0.0f, 1.0f, 0.0f },		{ 1.0f, 1.0f } },
-		{ { 1.0f, 1.0f, 1.0f },			{ 0.0f, 1.0f, 0.0f },		{ 0.0f, 0.0f } },
-		{ { 1.0f, 1.0f, -1.0f },		{ 0.0f, 1.0f, 0.0f },		{ 0.0f, 1.0f } },
-		{ { 1.0f, 1.0f, 1.0f },			{ 0.0f, 0.0f, 1.0f },		{ 1.0f, 1.0f } },
-		{ { -1.0f, -1.0f, 1.0f },		{ 0.0f, 0.0f, 1.0f },		{ 0.0f, 0.0f } },
-		{ { 1.0f, -1.0f, 1.0f },		{ 0.0f, 0.0f, 1.0f },		{ 0.0f, 1.0f } },
-		{ { -1.0f, 1.0f, 1.0f },		{ -1.0f, 0.0f, 0.0f },		{ 1.0f, 1.0f } },
-		{ { -1.0f, -1.0f, -1.0f },		{ -1.0f, 0.0f, 0.0f },		{ 0.0f, 0.0f } },
-		{ { -1.0f, -1.0f, 1.0f },		{ -1.0f, 0.0f, 0.0f },		{ 0.0f, 1.0f } },
-		{ { 1.0f, -1.0f, -1.0f },		{ 0.0f, -1.0f, 0.0f },		{ 1.0f, 1.0f } },
-		{ { -1.0f, -1.0f, 1.0f },		{ 0.0f, -1.0f, 0.0f },		{ 0.0f, 0.0f } },
-		{ { -1.0f, -1.0f, -1.0f },		{ 0.0f, -1.0f, 0.0f },		{ 0.0f, 1.0f } },
-		{ { 1.0f, 1.0f, -1.0f },		{ 1.0f, 0.0f, 0.0f },		{ 1.0f, 1.0f } },
-		{ { 1.0f, -1.0f, 1.0f },		{ 1.0f, 0.0f, 0.0f },		{ 0.0f, 0.0f } },
-		{ { 1.0f, -1.0f, -1.0f },		{ 1.0f, 0.0f, 0.0f },		{ 0.0f, 1.0f } },
-		{ { -1.0f, 1.0f, -1.0f },		{ 0.0f, 0.0f, -1.0f },		{ 1.0f, 1.0f } },
-		{ { 1.0f, -1.0f, -1.0f },		{ 0.0f, 0.0f, -1.0f },		{ 0.0f, 0.0f } },
-		{ { -1.0f, -1.0f, -1.0f },		{ 0.0f, 0.0f, -1.0f },		{ 0.0f, 1.0f } },
-		{ { -1.0f, 1.0f, 1.0f },		{ 0.0f, 1.0f, 0.0f },		{ 1.0f, 0.0f } },
-		{ { -1.0f, 1.0f, 1.0f },		{ 0.0f, 0.0f, 1.0f },		{ 1.0f, 0.0f } },
-		{ { -1.0f, 1.0f, -1.0f },		{ -1.0f, 0.0f, 0.0f },		{ 1.0f, 0.0f } },
-		{ { 1.0f, -1.0f, 1.0f },		{ 0.0f, -1.0f, 0.0f },		{ 1.0f, 0.0f } },
-		{ { 1.0f, 1.0f, 1.0f },			{ 1.0f, 0.0f, 0.0f },		{ 1.0f, 0.0f } },
-		{ { 1.0f, 1.0f, -1.0f },		{ 0.0f, 0.0f, -1.0f },		{ 1.0f, 0.0f } }
-	};
-    constexpr UInt32 CUBE_INDICES[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 0, 18, 1, 3, 19, 4, 6, 20, 7, 9, 21, 10, 12, 22, 13, 15, 23, 16 };
-
-    constexpr VertexPosition SKYBOX_VERTICES[] = {
-		{ { -1.0f,  1.0f, -1.0f } },
-		{ { -1.0f, -1.0f, -1.0f } },
-		{ {  1.0f, -1.0f, -1.0f } },
-		{ {  1.0f, -1.0f, -1.0f } },
-		{ {  1.0f,  1.0f, -1.0f } },
-		{ { -1.0f,  1.0f, -1.0f } },
-
-		{ { -1.0f, -1.0f,  1.0f } },
-		{ { -1.0f, -1.0f, -1.0f } },
-		{ { -1.0f,  1.0f, -1.0f } },
-		{ { -1.0f,  1.0f, -1.0f } },
-		{ { -1.0f,  1.0f,  1.0f } },
-		{ { -1.0f, -1.0f,  1.0f } },
-
-		{ { 1.0f, -1.0f, -1.0f } },
-		{ { 1.0f, -1.0f,  1.0f } },
-		{ { 1.0f,  1.0f,  1.0f } },
-		{ { 1.0f,  1.0f,  1.0f } },
-		{ { 1.0f,  1.0f, -1.0f } },
-		{ { 1.0f, -1.0f, -1.0f } },
-
-		{ { -1.0f, -1.0f,  1.0f } },
-		{ { -1.0f,  1.0f,  1.0f } },
-		{ {  1.0f,  1.0f,  1.0f } },
-		{ {  1.0f,  1.0f,  1.0f } },
-		{ {  1.0f, -1.0f,  1.0f } },
-		{ { -1.0f, -1.0f,  1.0f } },
-
-		{ { -1.0f,  1.0f, -1.0f } },
-		{ {  1.0f,  1.0f, -1.0f } },
-		{ {  1.0f,  1.0f,  1.0f } },
-		{ {  1.0f,  1.0f,  1.0f } },
-		{ { -1.0f,  1.0f,  1.0f } },
-		{ { -1.0f,  1.0f, -1.0f } },
-
-		{ { -1.0f, -1.0f, -1.0f } },
-		{ { -1.0f, -1.0f,  1.0f } },
-		{ {  1.0f, -1.0f, -1.0f } },
-		{ {  1.0f, -1.0f, -1.0f } },
-		{ { -1.0f, -1.0f,  1.0f } },
-		{ {  1.0f, -1.0f,  1.0f } }
-	};
-
     const char* GL::GetName() IR_RETURN("OpenGL")
     const char* GL::GetDirectory() IR_RETURN("gl/")
 
@@ -107,9 +36,10 @@ namespace IR::Renderer {
         m_GLContext = SDL_GL_CreateContext((SDL_Window*)Window::GetHandle());
         SDL_GL_MakeCurrent((SDL_Window*)Window::GetHandle(), m_GLContext);
 
-		SDL_GL_SetSwapInterval(0);
+        SDL_GL_SetSwapInterval(0);
 
         GLenum gcode = glewInit();
+
         if (gcode != GLEW_OK) {
             IR_MSG(ERROR, "Failed to init GL Renderer: failed to load OpenGL \"%s\"", glewGetErrorString(gcode));
             return false;
@@ -141,7 +71,7 @@ namespace IR::Renderer {
 
         // Set up OpenGL
         glEnable(GL_DEBUG_OUTPUT);
-	    glDebugMessageCallback(glMessageCallback, NULL);
+        glDebugMessageCallback(glMessageCallback, NULL);
 
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
@@ -200,7 +130,7 @@ namespace IR::Renderer {
         m_ILSMap.Init(sizeof(GLInstanceMap), SSLOC_ILMAP);
 
         // --- [FRAMEBUFFERS] ---
-        m_FrameMain.Init(Globals.width, Globals.height, 0, {
+        m_FrameMain.Init(Globals.Width(), Globals.Height(), 0, {
             { GL_RGB16F, GL_FLOAT }, // Pos
             { GL_RGB16F, GL_FLOAT }, // Normal
             { GL_RGB8, GL_UNSIGNED_BYTE }, // Color
@@ -217,6 +147,7 @@ namespace IR::Renderer {
         const struct glm::vec<3, UInt8> missingColor2 = { 251, 62, 249 };
         const struct glm::vec<3, UInt8> whiteColor = { 255, 255, 255 };
         const struct glm::vec<3, UInt8> normalColor = { 127, 127, 255 };
+        const struct glm::vec<3, UInt8> SDEColor = { 0, 255, 0 };
 
         std::vector<glm::vec<3, UInt8>> missingPixels;
         missingPixels.reserve(64 * 64);
@@ -243,6 +174,7 @@ namespace IR::Renderer {
         m_TextureBlack.InitMemory((const UInt8*)&missingColor1, 1, 1, 3, false, false, true);
         m_TextureWhite.InitMemory((const UInt8*)&whiteColor, 1, 1, 3, false, false, true);
         m_TextureNormal.InitMemory((const UInt8*)&normalColor, 1, 1, 3, false, false, true);
+        m_TextureSDE.InitMemory((const UInt8*)&SDEColor, 1, 1, 3, false, false, true);
         m_TextureSSAONoise.InitMemory(GL_RGB16F, GL_RGB, GL_FLOAT, (const UInt8*)noiseData, SSAO_NOISE_LEN, SSAO_NOISE_LEN, 3, false, false, false);
 
         // --- [SHADERS] ---
@@ -358,95 +290,99 @@ namespace IR::Renderer {
         SDL_GL_DestroyContext(m_GLContext);
     }
 
-	void GL::Resize(UInt32 width, UInt32 height)
-	{
+    void GL::Resize(UInt32 width, UInt32 height)
+    {
         m_FrameMain.Resize(width, height);
-	}
+    }
 
     void GL::Present()
     {
-		IR_ZONE_NAME("OpenGL Renderer Present");
+            IR_ZONE_NAME("OpenGL Renderer Present");
 
         if (!m_InitialPrepare) {
             m_ILSMap.Upload();
             m_InitialPrepare = true;
         }
 
-        m_CommonData.curtime = Globals.curtime;
-        m_CommonData.frametime = Globals.frametime;
-        m_CommonData.width = Globals.width;
-        m_CommonData.height = Globals.height;
-        m_CommonData.ortho = glm::ortho(0.0f, (Float32)Globals.width, 0.0f, (Float32)Globals.height, 0.0f, 1.0f);
+        m_CommonData.curtime = Globals.Curtime();
+        m_CommonData.frametime = Globals.Frametime();
+        m_CommonData.width = Globals.Width();
+        m_CommonData.height = Globals.Height();
+        m_CommonData.ortho = glm::ortho(0.0f, (Float32)Globals.Width(), 0.0f, (Float32)Globals.Height(), 0.0f, 1.0f);
         m_CommonData.viewPos = Debug::FlyCam(m_CommonData.view, m_CommonData.perspective);
 
-		{
-			TracyGpuZone("Update Common Data");
-			m_UniformCommon.Update(&m_CommonData, sizeof(m_CommonData), 0);
-		}
-
-		{
-			TracyGpuZone("Update Material Infos");
-			m_SBMaterialInfos.Update(m_MaterialInfos.data(), m_MaterialInfos.size() * sizeof(GLMaterial::Info), 0);
-		}
+        m_CommonData.skyHorizonHeight = -0.25f;
+        m_CommonData.skyHorizon = Color(50, 33, 33, 255);
+        m_CommonData.skyPaint = Color(75, 100, 200, 0);
 
         {
-			TracyGpuZone("Update Texture Handles");
-			m_SBTextureHandles.Update(m_TextureHandles.data(), m_TextureHandles.size() * sizeof(UInt64), 0);
-		}
+            TracyGpuZone("Update Common Data");
+            m_UniformCommon.Update(&m_CommonData, sizeof(m_CommonData), 0);
+        }
 
-		{
-			TracyGpuZone("Update Instance Data");
-			m_ILDStandard.Upload();
-		}
+        {
+            TracyGpuZone("Update Material Infos");
+            m_SBMaterialInfos.Update(m_MaterialInfos.data(), m_MaterialInfos.size() * sizeof(GLMaterial::Info), 0);
+        }
 
-		{
-			TracyGpuZone("Update Lighting Data");
-			m_Lighting.Upload();
-		}
+        {
+            TracyGpuZone("Update Texture Handles");
+            m_SBTextureHandles.Update(m_TextureHandles.data(), m_TextureHandles.size() * sizeof(UInt64), 0);
+        }
 
-		static CVar* r_clear_color = CVar::Get("r_clear_color");
-		glm::vec4 clearColor = glm::vec4(0.0f);
+        {
+            TracyGpuZone("Update Instance Data");
+            m_ILDStandard.Upload();
+        }
 
-		if (r_clear_color) {
+        {
+            TracyGpuZone("Update Lighting Data");
+            m_Lighting.Upload();
+        }
 
-			// Color is stored as a 0xBBGGRR format
-			Int64 colorValue  = r_clear_color->GetInt64();
-			clearColor.b = ((colorValue >> 16) & 0xFF) / 255.0f; // Red
-			clearColor.g = ((colorValue >> 8) & 0xFF) / 255.0f;  // Green
-			clearColor.r = (colorValue & 0xFF) / 255.0f;         // Blue
-			clearColor.a = 1.0f; // Alpha
-		}
+        static CVar* r_clear_color = CVar::Get("r_clear_color");
+        glm::vec4 clearColor = glm::vec4(0.0f);
+
+        if (r_clear_color) {
+
+            // Color is stored as a 0xBBGGRR format
+            Int64 colorValue  = r_clear_color->GetInt64();
+            clearColor.b = ((colorValue >> 16) & 0xFF) / 255.0f; // Red
+            clearColor.g = ((colorValue >> 8) & 0xFF) / 255.0f;  // Green
+            clearColor.r = (colorValue & 0xFF) / 255.0f;         // Blue
+            clearColor.a = 1.0f; // Alpha
+        }
 
         m_FrameMain.Bind();
-	    glDisable(GL_BLEND);
+        glDisable(GL_BLEND);
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LESS);
         glDepthMask(GL_TRUE);
 
-		{
+        {
             TracyGpuZone("Clear Color");
-			glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
+            glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
 
 
         // - Opaque
-		{
+        {
             TracyGpuZone("Draw Static Opaque Objects");
-			m_CmdsStaticOpaque.Draw();
-		}
-		{
+            m_CmdsStaticOpaque.Draw();
+        }
+        {
             TracyGpuZone("Draw Dynamic Opaque Objects");
-			m_CmdsDynamicOpaque.Draw();
-			m_CmdsDynamicOpaque.Flush();
-		}
+            m_CmdsDynamicOpaque.Draw();
+            m_CmdsDynamicOpaque.Flush();
+        }
 
 
         glDepthFunc(GL_LEQUAL);
         glDepthMask(GL_FALSE);
         glDisable(GL_CULL_FACE);
-        m_ShaderSky->Bind();
+        Assets::Material("testsky.shader")->Bind();
         m_MeshSkybox.Draw();
         glEnable(GL_CULL_FACE);
         glDepthMask(GL_TRUE);
@@ -462,20 +398,20 @@ namespace IR::Renderer {
         m_FrameMain.ClearColor(6, Color(255));
 
         // - Transparent
-		{
+        {
             TracyGpuZone("Draw Static Transparent Objects");
-			m_CmdsStaticTrans.Draw();
-		}
-		{
+            m_CmdsStaticTrans.Draw();
+        }
+        {
             TracyGpuZone("Draw Dynamic Transparent Objects");
-			m_CmdsDynamicTrans.Draw();
-			m_CmdsDynamicTrans.Flush();
-		}
+            m_CmdsDynamicTrans.Draw();
+            m_CmdsDynamicTrans.Flush();
+        }
 
-		{
+        {
             TracyGpuZone("Flush Dynamic Instance Data");
-			m_ILDStandard.Flush();
-		}
+            m_ILDStandard.Flush();
+        }
 
         glDisable(GL_DEPTH_TEST);
 
@@ -513,12 +449,12 @@ namespace IR::Renderer {
             m_MeshScreen.Draw();
         }
 
-		{
-			TracyGpuZone("Swap Buffers");
-			SDL_GL_SwapWindow((SDL_Window*)Window::GetHandle());
-		}
+        {
+            TracyGpuZone("Swap Buffers");
+            SDL_GL_SwapWindow((SDL_Window*)Window::GetHandle());
+        }
 
-		TracyGpuCollect;
+        TracyGpuCollect;
     }
 
     void GL::SubmitModel(const Model* model, const glm::vec3& pos, const glm::quat& rot, const glm::vec3& size, const Color& col, UInt8 skin)
@@ -635,6 +571,7 @@ namespace IR::Renderer {
     Texture* GL::GetTextureBlack() IR_RETURN(&m_TextureBlack);
     Texture* GL::GetTextureError() IR_RETURN(&m_TextureError);
     Texture* GL::GetTextureNormal() IR_RETURN(&m_TextureNormal);
+    Texture* GL::GetTextureSDE() IR_RETURN(&m_TextureSDE);
 
     Mesh* GL::GetMeshCube() IR_RETURN(&m_MeshCube);
 
@@ -725,10 +662,7 @@ namespace IR::Renderer {
         switch (map) {
         case Material::Map::MAP_ALBEDO: return &m_TextureError;
         case Material::Map::MAP_NORMAL: return &m_TextureNormal;
-        case Material::Map::MAP_METALNESS: return &m_TextureBlack;
-        case Material::Map::MAP_ROUGHNESS: return &m_TextureBlack;
-        case Material::Map::MAP_EMISSIVENESS: return &m_TextureBlack;
-        case Material::Map::MAP_AMBIENTOCCLUSION: return &m_TextureWhite;
+        case Material::Map::MAP_SDE: return &m_TextureSDE;
         default: IR_UNREACHABLE;
         }
     }

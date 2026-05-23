@@ -1,8 +1,7 @@
 #include <IR_BinaryMap.hpp>
+#include <IR_Navmesh.hpp>
 
-#include <DetourCommon.h>
 #include <DetourAlloc.h>
-#include <DetourNavMeshBuilder.h>
 
 #include <fstream>
 
@@ -199,18 +198,13 @@ namespace IR::BinaryMap {
         stream.read(materialtable.data(), len);
     }
 
-    static void LoadNavMesh(std::ifstream& stream, UInt32 pos, UInt32 len, dtNavMesh** outNavmesh)
+    static void LoadNavMesh(std::ifstream& stream, UInt32 pos, UInt32 len, Navmesh& navmesh)
     {
         if (len == 0) {
-            *outNavmesh = nullptr;
             return;
         }
 
         stream.seekg(pos);
-
-        dtNavMesh* navmesh = dtAllocNavMesh();
-
-        dtNavMeshParams navParams;
 
         Int32 maxTiles;
         Int32 maxPolys;
@@ -223,18 +217,8 @@ namespace IR::BinaryMap {
         stream.read((char*)&tileHeight, sizeof(tileHeight));
         stream.read((char*)&origin, sizeof(origin));
 
-        navParams.maxTiles = maxTiles;
-        navParams.maxPolys = maxPolys;
-        navParams.tileWidth = tileWidth;
-        navParams.tileHeight = tileHeight;
-        navParams.orig[0] = origin.x;
-        navParams.orig[1] = origin.y;
-        navParams.orig[2] = origin.z;
-
-        if (dtStatusFailed(navmesh->init(&navParams))) {
-            dtFreeNavMesh(navmesh);
+        if (!navmesh.Init(origin, maxPolys, maxTiles, { tileWidth, tileHeight })) {
             IR_MSG(ERROR, "Binary Map: Failed to load Navmesh");
-            *outNavmesh = nullptr;
             return;
         }
 
@@ -250,19 +234,14 @@ namespace IR::BinaryMap {
             tile.data = (UInt8*)dtAlloc(tile.size, DT_ALLOC_PERM);
             stream.read((char*)tile.data, tile.size);
 
-            dtTileRef ref;
-            if (dtStatusFailed(navmesh->addTile(tile.data, tile.size, DT_TILE_FREE_DATA, 0, &ref))) {
-                dtFreeNavMesh(navmesh);
-                IR_MSG(ERROR, "Binary Map: Failed to load add NavTile");
-                *outNavmesh = nullptr;
+            if (!navmesh.AddTile(tile.data, tile.size)) {
+                IR_MSG(ERROR, "Binary Map: Failed to load add a NavTile to the NavMesh");
                 return;
             };
         }
-
-        *outNavmesh = navmesh;
     }
 
-    bool Load(const char* path, std::vector<EntityData>& entDatas, dtNavMesh** navmesh)
+    bool Load(const char* path, std::vector<EntityData>& entDatas, Navmesh& navmesh)
     {
         std::ifstream stream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
         if (!stream.is_open()) {

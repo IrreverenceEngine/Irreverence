@@ -4,13 +4,8 @@
 #include <IR_Shader.hpp>
 #include <IR_Material.hpp>
 
-namespace IR {
-
-	class Assets {
-	public:
-		static Renderer::Texture* Texture(const char* path, bool linearize, bool mipmaps);
-		static Renderer::Shader* Shader(const char* path);
-		static Renderer::Material* Material(const char* path);
-	};
-
+namespace IR::Assets {
+    Renderer::Texture* Texture(const char* path, bool linearize, bool mipmaps, bool handle = false);
+    Renderer::Shader* Shader(const char* path);
+    Renderer::Material* Material(const char* path);
 }

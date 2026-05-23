@@ -45,7 +45,7 @@ namespace IR::Renderer {
         }
 
         if (glCheckNamedFramebufferStatus(m_ID, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            IR_MSG(INFO, "GL Frame couldn't init. Something fucked up.");
+            IR_MSG(ERROR, "GL Frame couldn't init. Something fucked up.");
             Destroy();
             return false;
         }
@@ -120,7 +120,7 @@ namespace IR::Renderer {
         glNamedFramebufferReadBuffer(m_ID, GL_COLOR_ATTACHMENT0 + colorIndex);
 
         if (!to) {
-            glBlitNamedFramebuffer(m_ID, 0, 0, 0, m_Width, m_Height, 0, 0, Globals.width, Globals.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            glBlitNamedFramebuffer(m_ID, 0, 0, 0, m_Width, m_Height, 0, 0, Globals.Width(), Globals.Height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
         } else {
             glNamedFramebufferDrawBuffer(to->GetID(), GL_COLOR_ATTACHMENT0 + colorIndex);
             glBlitNamedFramebuffer(m_ID, to->GetID(), 0, 0, m_Width, m_Height, 0, 0, to->GetWidth(), to->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
@@ -152,7 +152,7 @@ namespace IR::Renderer {
     void GLFrame::UnBind()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, Globals.width, Globals.height);
+        glViewport(0, 0, Globals.Width(), Globals.Height());
     }
 
 }

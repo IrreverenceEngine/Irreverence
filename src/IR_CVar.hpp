@@ -56,4 +56,4 @@ namespace IR {
 }
 
 #define CVAR(name, flags, value) \
-	static IR::CVar name(#name, flags, value)
+    static IR::CVar name(#name, flags, value)

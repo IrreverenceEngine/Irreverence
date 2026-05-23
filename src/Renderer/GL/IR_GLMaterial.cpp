@@ -1,3 +1,4 @@
+#include "IR_Renderer.hpp"
 #include <Renderer/GL/IR_GLMaterial.hpp>
 #include <Renderer/GL/IR_GLRenderer.hpp>
 
@@ -25,6 +26,10 @@ namespace IR::Renderer {
         if (m_InfoIndex) {
             s_GL->RemoveMaterialInfo(m_InfoIndex);
         }
+
+        if (m_KeyValues) {
+            delete m_KeyValues;
+        }
     }
 
     void GLMaterial::SetTexture(Map map, Texture* texture)
@@ -45,8 +50,12 @@ namespace IR::Renderer {
 
     void GLMaterial::Bind()
     {
+        m_Shader->Bind();
         for (UInt32 i = 0; i < MAP__COUNT; i++) {
-            m_Textures[i]->Bind(i);
+            GLTexture* tex = m_Textures[i];
+            if (tex) {
+                tex->Bind(i);
+            }
         }
     }
 
@@ -59,9 +68,11 @@ namespace IR::Renderer {
         GLMaterial::Info info;
         for (UInt8 i = 0; i < MAP__COUNT; i++) {
             GLTexture* texture = m_Textures[i];
+            if (!texture || texture->GetBTHandle() == 0) {
+                texture = (GLTexture*)GetTextureError();
+            }
             texture->Use();
 
-            // TODO: Use Error Texture if not existing.
             info.handleIndexes[i] = texture->GetBTIndex();
         }
 

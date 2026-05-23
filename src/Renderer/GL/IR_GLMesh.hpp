@@ -17,7 +17,7 @@ namespace IR::Renderer {
         bool InitPool(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum) override;
         bool Init(const VertexAnimated* vertices, UInt32 vertexnum, const UInt32* indices, UInt32 indexnum);
         void Destroy() override;
-
+        
         void Draw();
 
         UInt32 GetVertexOffset() const IR_RETURN(m_VertOffset)

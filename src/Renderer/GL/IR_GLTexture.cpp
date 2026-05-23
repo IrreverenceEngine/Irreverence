@@ -127,6 +127,62 @@ namespace IR::Renderer {
         return true;
     }
 
+    bool GLTexture::InitMemoryCubemap(const ImageInfo(&infos)[6], UInt8 channelnum, bool linearize, bool handle)
+    {
+        m_Width = 0;
+        m_Height = 0;
+        m_ChannelCount = channelnum;
+        m_MipCount = 1;
+
+        for (auto& info : infos) {
+            m_Width = IR::Math::Max(m_Width, (UInt32)info.width);
+            m_Height = IR::Math::Max(m_Height, (UInt32)info.height);
+        }
+
+        glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_ID);
+        
+        GLenum minFilEnum = linearize ? GL_LINEAR : GL_NEAREST;
+        glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, minFilEnum);
+        glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, minFilEnum);
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTextureParameteri(m_ID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        GLenum glFormat = GL_RGBA8;
+        GLenum glFormatAlt = GL_RGBA;
+        if (channelnum == 4) IR_LIKELY {
+            glFormat = GL_RGBA8;
+            glFormatAlt = GL_RGBA;
+        } else if (channelnum == 3) IR_LIKELY {
+            glFormat = GL_RGB8;
+            glFormatAlt = GL_RGB;
+        } else if (channelnum == 2) IR_UNLIKELY {
+            glFormat = GL_RG8;
+            glFormatAlt = GL_RG;
+        } else if (channelnum == 1) IR_UNLIKELY {
+            glFormat = GL_R8;
+            glFormatAlt = GL_RED;
+        }
+
+        glTextureStorage2D(m_ID, 1, glFormat, m_Width, m_Height);
+
+        for (UInt8 i = 0; i < 6; i++) {
+            const ImageInfo& info = infos[i];
+            glTextureSubImage3D(m_ID, 0, 0, 0, i, info.width, info.height, 1, glFormatAlt, GL_UNSIGNED_BYTE, info.data);
+        }
+
+        if (handle) {
+            m_BTHandle = glGetTextureHandleARB(m_ID);
+            if (m_BTHandle == 0) {
+                IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
+            }
+
+            glMakeTextureHandleResidentARB(m_BTHandle);
+        }
+
+        return true;
+    }
+
     void GLTexture::InitColorAttachment(const GLFrame& frame, UInt8 location, UInt32 width, UInt32 height, UInt8 samples, UInt32 format, UInt32 type, UInt8 maxMips)
     {
         m_Width = width;

@@ -5,208 +5,199 @@
 
 namespace IR::Audio {
 
-	static ALCdevice* s_pDevice = nullptr;
-	static ALCcontext* s_pContext = nullptr;
-	static SoundStream s_Streams[MAX_SOUND_STREAMS];
+    static ALCdevice* s_pDevice = nullptr;
+    static ALCcontext* s_pContext = nullptr;
+    static SoundStream s_Streams[MAX_SOUND_STREAMS];
 
-	bool Init()
-	{
-		s_pDevice = alcOpenDevice(nullptr);
+    bool Init()
+    {
+        s_pDevice = alcOpenDevice(nullptr);
 
-		if (!s_pDevice) {
-			return false;
-		}
+        if (!s_pDevice) {
+            return false;
+        }
 
-		s_pContext = alcCreateContext(s_pDevice, nullptr);
+        s_pContext = alcCreateContext(s_pDevice, nullptr);
 
-		if (!s_pContext) {
-			alcCloseDevice(s_pDevice);
-			return false;
-		}
+        if (!s_pContext) {
+            alcCloseDevice(s_pDevice);
+            return false;
+        }
 
-		alcMakeContextCurrent(s_pContext);
+        alcMakeContextCurrent(s_pContext);
 
-		alGenSources(MAX_SOUND_STREAMS, s_Streams);
+        alGenSources(MAX_SOUND_STREAMS, s_Streams);
 
-		return true;
-	}
+        return true;
+    }
 
-	void Shutdown()
-	{
-		alDeleteSources(MAX_SOUND_STREAMS, s_Streams);
+    void Shutdown()
+    {
+        alDeleteSources(MAX_SOUND_STREAMS, s_Streams);
 
-		if (s_pContext) {
-			alcMakeContextCurrent(nullptr);
-			alcDestroyContext(s_pContext);
-		}
+        if (s_pContext) {
+            alcMakeContextCurrent(nullptr);
+            alcDestroyContext(s_pContext);
+        }
 
-		if (s_pDevice) {
-			alcCloseDevice(s_pDevice);
-		}
-	}
+        if (s_pDevice) {
+            alcCloseDevice(s_pDevice);
+        }
+    }
 
-	static bool isUsedSoundStream(SoundStream stream)
-	{
-		int buffer;
-		alGetSourcei(stream, AL_BUFFER, &buffer);
-		int state;
-		alGetSourcei(stream, AL_SOURCE_STATE, &state);
+    static bool isUsedSoundStream(SoundStream stream)
+    {
+        int buffer;
+        alGetSourcei(stream, AL_BUFFER, &buffer);
+        int state;
+        alGetSourcei(stream, AL_SOURCE_STATE, &state);
 
-		return buffer != 0 && state != AL_PLAYING && state != AL_PAUSED;
-	}
+        return buffer != 0 && state != AL_PLAYING && state != AL_PAUSED;
+    }
 
-	Int64 GetSoundStreamCount()
-	{
-		Int64 count = 0;
+    Int64 GetSoundStreamCount()
+    {
+        Int64 count = 0;
 
-		for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
-			if (!isUsedSoundStream(s_Streams[i])) {
-				continue;
-			}
+        for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
+            if (!isUsedSoundStream(s_Streams[i])) {
+                continue;
+            }
 
-			++count;
-		}
+            ++count;
+        }
 
-		return count;
-	}
+        return count;
+    }
 
-	Int64 GetSoundStreamCount(Sound* sound)
-	{
-		Int64 count = 0;
+    Int64 GetSoundStreamCount(Sound* sound)
+    {
+        Int64 count = 0;
 
-		for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
-			int buffer;
-			alGetSourcei(s_Streams[i], AL_BUFFER, &buffer);
+        for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
+            int buffer;
+            alGetSourcei(s_Streams[i], AL_BUFFER, &buffer);
 
-			if (buffer != sound->GetHandle()) {
-				continue;
-			}
+            if (buffer != sound->GetHandle()) {
+                continue;
+            }
 
-			int state;
-			alGetSourcei(s_Streams[i], AL_SOURCE_STATE, &state);
+            int state;
+            alGetSourcei(s_Streams[i], AL_SOURCE_STATE, &state);
 
-			if (state != AL_PLAYING && state != AL_PAUSED) {
-				continue;
-			}
+            if (state != AL_PLAYING && state != AL_PAUSED) {
+                continue;
+            }
 
-			++count;
-		}
+            ++count;
+        }
 
-		return count;
-	}
+        return count;
+    }
 
-	static SoundStream getFreeSoundStream()
-	{
-		for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
-			if (isUsedSoundStream(s_Streams[i])) {
-				continue;
-			}
+    static SoundStream getFreeSoundStream()
+    {
+        for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
+            if (isUsedSoundStream(s_Streams[i])) {
+                continue;
+            }
 
-			return s_Streams[i];
-		}
+            return s_Streams[i];
+        }
 
-		return INVALID_SOUND_STREAM;
-	}
+        return INVALID_SOUND_STREAM;
+    }
 
-	SoundStream PlaySound(Sound* sound, const SoundParams& params)
-	{
-		SoundStream stream = getFreeSoundStream();
+    SoundStream PlaySound(Sound* sound, const SoundParams& params)
+    {
+        SoundStream stream = getFreeSoundStream();
 
-		if (stream < 0) {
-			return INVALID_SOUND_STREAM;
-		}
+        if (stream < 0) {
+            return INVALID_SOUND_STREAM;
+        }
 
-		if (sound->GetHandle() == INVALID_SOUND_HANDLE) {
-			return INVALID_SOUND_STREAM;
-		}
+        if (sound->GetHandle() == INVALID_SOUND_HANDLE) {
+            return INVALID_SOUND_STREAM;
+        }
 
-		alSourcei(stream, AL_BUFFER, sound->GetHandle());
-		alSourcef(stream, AL_GAIN, params.gain);
-		alSourcef(stream, AL_PITCH, params.pitch);
-		alSource3f(stream, AL_POSITION, params.position.x, params.position.y, params.position.z);
-		alSourcei(stream, AL_LOOPING, params.loop ? AL_TRUE : AL_FALSE);
+        alSourcei(stream, AL_BUFFER, sound->GetHandle());
+        alSourcef(stream, AL_GAIN, params.gain);
+        alSourcef(stream, AL_PITCH, params.pitch);
+        alSource3f(stream, AL_POSITION, params.position.x, params.position.y, params.position.z);
+        alSourcei(stream, AL_LOOPING, params.loop ? AL_TRUE : AL_FALSE);
 
-		alSourcePlay(stream);
+        alSourcePlay(stream);
 
-		return stream;
-	}
+        return stream;
+    }
 
-	void StopSound(SoundStream stream)
-	{
-		if (stream < 0 || stream >= MAX_SOUND_STREAMS) {
-			return;
-		}
+    void StopSound(SoundStream stream)
+    {
+        if (stream < 0 || stream >= MAX_SOUND_STREAMS) {
+            return;
+        }
 
-		if (!isUsedSoundStream(stream)) {
-			return;
-		}
+        if (!isUsedSoundStream(stream)) {
+            return;
+        }
 
-		alSourceStop(stream);
-		alSourcei(stream, AL_BUFFER, 0);
-	}
+        alSourceStop(stream);
+        alSourcei(stream, AL_BUFFER, 0);
+    }
 
-	static bool isStreamSound(SoundStream stream, Sound* sound)
-	{
-		if (stream < 0 || stream >= MAX_SOUND_STREAMS) {
-			return false;
-		}
+    static bool isStreamSound(SoundStream stream, Sound* sound)
+    {
+        if (stream < 0 || stream >= MAX_SOUND_STREAMS) {
+            return false;
+        }
 
-		int buffer;
-		alGetSourcei(stream, AL_BUFFER, &buffer);
+        int buffer;
+        alGetSourcei(stream, AL_BUFFER, &buffer);
 
-		return buffer == sound->GetHandle();
-	}
+        return buffer == sound->GetHandle();
+    }
 
-	void StopSound(Sound* sound)
-	{
-		for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
-			if (!isStreamSound(s_Streams[i], sound)) {
-				continue;
-			}
+    void StopSound(Sound* sound)
+    {
+        for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
+            if (!isStreamSound(s_Streams[i], sound)) {
+                continue;
+            }
 
-			StopSound(s_Streams[i]);
-		}
-	}
+            StopSound(s_Streams[i]);
+        }
+    }
 
-	void StopSound()
-	{
-		for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
-			if (!isUsedSoundStream(s_Streams[i])) {
-				continue;
-			}
+    void StopSound()
+    {
+        for (Int64 i = 0; i < MAX_SOUND_STREAMS; i++) {
+            if (!isUsedSoundStream(s_Streams[i])) {
+                continue;
+            }
 
-			StopSound(s_Streams[i]);
-		}
-	}
+            StopSound(s_Streams[i]);
+        }
+    }
 
-	void PauseSound(SoundStream stream)
-	{
-		if (!isUsedSoundStream(stream)) {
-			return;
-		}
+    void PauseSound(SoundStream stream)
+    {
+        if (!isUsedSoundStream(stream)) {
+            return;
+        }
 
-		alSourcePause(stream);
-	}
+        alSourcePause(stream);
+    }
 
-	void ResumeSound(SoundStream stream)
-	{
-		if (!isUsedSoundStream(stream)) {
-			return;
-		}
+    void ResumeSound(SoundStream stream)
+    {
+        if (!isUsedSoundStream(stream)) {
+            return;
+        }
 
-		alSourcePlay(stream);
-	}
+        alSourcePlay(stream);
+    }
 
-	float GetSoundDuration(SoundStream stream)
-	{
-		// TODO: IMPLEMENT THIS.
-		return 0.0f;
-	}
-
-	float GetRemainingDuration(SoundStream stream)
-	{
-		// TODO: IMPLEMENT THIS.
-		return 0.0f;
-	}
+    float GetSoundDuration(SoundStream stream) IR_UNIMPLEMENTED
+    float GetRemainingDuration(SoundStream stream) IR_UNIMPLEMENTED
 
 }

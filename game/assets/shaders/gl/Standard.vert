@@ -28,6 +28,6 @@ void main()
 	pNormal = transpose(mat3(inverse(instData.modelMatrix))) * aNormal;
 	pUV = aUV;
 
-	pInstanceColor = GetColorRGBA8(instData.color);
+	pInstanceColor = UnpackColor(instData.color);
 	pMaterialIndex = instData.matIndex;
 }
