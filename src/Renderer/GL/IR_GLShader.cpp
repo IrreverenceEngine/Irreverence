@@ -41,12 +41,12 @@ namespace IR::Renderer {
         glShaderSource(v_id, 1, (const GLchar* const*)&vscodePtr, NULL);
         glCompileShader(v_id);
         glGetShaderiv(v_id, GL_COMPILE_STATUS, &bSuccess);
-        IR_DEFER({ glDeleteShader(v_id); });
+        IRX_DEFER({ glDeleteShader(v_id); });
 
         bool bFailedShaderCompilation = false;
         if (!bSuccess) {
             glGetShaderInfoLog(v_id, 1024, NULL, failureLog);
-            IR_MSG(ERROR, "GLShader Vertex shader compilation failed:\n %s", failureLog);
+            IRX_MSG(ERROR, "GLShader Vertex shader compilation failed:\n %s", failureLog);
             bFailedShaderCompilation = true;
         }
 
@@ -54,11 +54,11 @@ namespace IR::Renderer {
         glShaderSource(f_id, 1, (const GLchar* const*)&fscodePtr, NULL);
         glCompileShader(f_id);
         glGetShaderiv(f_id, GL_COMPILE_STATUS, &bSuccess);
-        IR_DEFER({ glDeleteShader(f_id); });
+        IRX_DEFER({ glDeleteShader(f_id); });
 
         if (!bSuccess) {
             glGetShaderInfoLog(f_id, 1024, NULL, failureLog);
-            IR_MSG(ERROR, "GLShader Fragment shader compilation failed:\n %s", failureLog);
+            IRX_MSG(ERROR, "GLShader Fragment shader compilation failed:\n %s", failureLog);
             bFailedShaderCompilation = true;
         }
 
@@ -74,7 +74,7 @@ namespace IR::Renderer {
 
         if (!bSuccess) {
             glGetProgramInfoLog(p_id, 1024, NULL, failureLog);
-            IR_MSG(ERROR, "GLShader Linking failed:\n %s", failureLog);
+            IRX_MSG(ERROR, "GLShader Linking failed:\n %s", failureLog);
             glDeleteProgram(m_ID);
             return false;
         }
@@ -110,12 +110,12 @@ namespace IR::Renderer {
         glShaderSource(c_id, 1, (const GLchar* const*)&cscodePtr, NULL);
         glCompileShader(c_id);
         glGetShaderiv(c_id, GL_COMPILE_STATUS, &bSuccess);
-        IR_DEFER({ glDeleteShader(c_id); });
+        IRX_DEFER({ glDeleteShader(c_id); });
 
         bool bFailedShaderCompilation = false;
         if (!bSuccess) {
             glGetShaderInfoLog(c_id, 1024, NULL, failureLog);
-            IR_MSG(ERROR, "GLShader Compute shader compilation failed:\n %s", failureLog);
+            IRX_MSG(ERROR, "GLShader Compute shader compilation failed:\n %s", failureLog);
             
             return true;
         }
@@ -127,7 +127,7 @@ namespace IR::Renderer {
 
         if (!bSuccess) {
             glGetProgramInfoLog(p_id, 1024, NULL, failureLog);
-            IR_MSG(ERROR, "GLShader Linking failed:\n %s", failureLog);
+            IRX_MSG(ERROR, "GLShader Linking failed:\n %s", failureLog);
             glDeleteProgram(m_ID);
             return false;
         }

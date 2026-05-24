@@ -21,16 +21,16 @@ namespace IR::Renderer {
 
         GLenum glFormat = GL_RGBA8;
         GLenum glFormatAlt = GL_RGBA;
-        if (channel_count == 4) IR_LIKELY {
+        if (channel_count == 4) IRX_LIKELY {
             glFormat = GL_RGBA8;
             glFormatAlt = GL_RGBA;
-        } else if (channel_count == 3) IR_LIKELY {
+        } else if (channel_count == 3) IRX_LIKELY {
             glFormat = GL_RGB8;
             glFormatAlt = GL_RGB;
-        } else if (channel_count == 2) IR_UNLIKELY {
+        } else if (channel_count == 2) IRX_UNLIKELY {
             glFormat = GL_RG8;
             glFormatAlt = GL_RG;
-        } else if (channel_count == 1) IR_UNLIKELY {
+        } else if (channel_count == 1) IRX_UNLIKELY {
             glFormat = GL_R8;
             glFormatAlt = GL_RED;
         }
@@ -66,7 +66,7 @@ namespace IR::Renderer {
         if (handle) {
             m_BTHandle = glGetTextureHandleARB(m_ID);
             if (m_BTHandle == 0) {
-                IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
+                IRX_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
             }
 
             glMakeTextureHandleResidentARB(m_BTHandle);
@@ -118,7 +118,7 @@ namespace IR::Renderer {
         if (handle) {
             m_BTHandle = glGetTextureHandleARB(m_ID);
             if (m_BTHandle == 0) {
-                IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
+                IRX_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
             }
 
             glMakeTextureHandleResidentARB(m_BTHandle);
@@ -135,8 +135,8 @@ namespace IR::Renderer {
         m_MipCount = 1;
 
         for (auto& info : infos) {
-            m_Width = IR::Math::Max(m_Width, (UInt32)info.width);
-            m_Height = IR::Math::Max(m_Height, (UInt32)info.height);
+            m_Width = Math::Max(m_Width, (UInt32)info.width);
+            m_Height = Math::Max(m_Height, (UInt32)info.height);
         }
 
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_ID);
@@ -150,16 +150,16 @@ namespace IR::Renderer {
 
         GLenum glFormat = GL_RGBA8;
         GLenum glFormatAlt = GL_RGBA;
-        if (channelnum == 4) IR_LIKELY {
+        if (channelnum == 4) IRX_LIKELY {
             glFormat = GL_RGBA8;
             glFormatAlt = GL_RGBA;
-        } else if (channelnum == 3) IR_LIKELY {
+        } else if (channelnum == 3) IRX_LIKELY {
             glFormat = GL_RGB8;
             glFormatAlt = GL_RGB;
-        } else if (channelnum == 2) IR_UNLIKELY {
+        } else if (channelnum == 2) IRX_UNLIKELY {
             glFormat = GL_RG8;
             glFormatAlt = GL_RG;
-        } else if (channelnum == 1) IR_UNLIKELY {
+        } else if (channelnum == 1) IRX_UNLIKELY {
             glFormat = GL_R8;
             glFormatAlt = GL_RED;
         }
@@ -174,7 +174,7 @@ namespace IR::Renderer {
         if (handle) {
             m_BTHandle = glGetTextureHandleARB(m_ID);
             if (m_BTHandle == 0) {
-                IR_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
+                IRX_MSG(FATAL, "GLTexture failed to make texture handle... this may be due to not having enough VRAM or a driver issue\n");
             }
 
             glMakeTextureHandleResidentARB(m_BTHandle);

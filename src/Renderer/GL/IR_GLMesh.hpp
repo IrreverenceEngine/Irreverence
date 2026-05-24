@@ -20,10 +20,10 @@ namespace IR::Renderer {
         
         void Draw();
 
-        UInt32 GetVertexOffset() const IR_RETURN(m_VertOffset)
-        UInt32 GetIndexOffset() const IR_RETURN(m_IndexOffset)
-        UInt32 GetVertexNum() const IR_RETURN(m_VertNum)
-        UInt32 GetIndexNum() const IR_RETURN(m_IndexNum)
+        UInt32 GetVertexOffset() const IRX_RETURN(m_VertOffset)
+        UInt32 GetIndexOffset() const IRX_RETURN(m_IndexOffset)
+        UInt32 GetVertexNum() const IRX_RETURN(m_VertNum)
+        UInt32 GetIndexNum() const IRX_RETURN(m_IndexNum)
         UInt32 GetLayoutType() const;
 
     private:

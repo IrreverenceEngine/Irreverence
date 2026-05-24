@@ -28,7 +28,7 @@ namespace IR {
 
         s_Window = SDL_CreateWindow("Irreverence", Globals.width, Globals.height, flags);
         if (!s_Window) {
-            IR_MSG(ERROR, "Failed to init Window: Failed to create window");
+            IRX_MSG(ERROR, "Failed to init Window: Failed to create window");
             return false;
         }
 
@@ -36,7 +36,7 @@ namespace IR {
         s_FTNowTime = SDL_GetPerformanceCounter();
         s_FTLastTime = 0;
 
-        IR_MSG(INFO, "Successfully initialized Window");
+        IRX_MSG(INFO, "Successfully initialized Window");
 
         return true;
     }

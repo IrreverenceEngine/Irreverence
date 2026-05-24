@@ -1,7 +1,6 @@
 #pragma once
 
 #include <IR_Common.hpp>
-#include <IR_AABB.hpp>
 #include <IR_LayoutType.hpp>
 
 #include <unordered_map>

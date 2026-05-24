@@ -11,7 +11,7 @@ namespace IR::Renderer {
         void Bind() const;
         bool Update(const void* data, UInt64 size, UInt64 offset, bool copy = false);
 
-        UInt32 GetID() const IR_RETURN(m_ID)
+        UInt32 GetID() const IRX_RETURN(m_ID)
 
     private:
         UInt32 m_ID = 0;

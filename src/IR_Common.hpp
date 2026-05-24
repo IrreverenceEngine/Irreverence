@@ -1,8 +1,5 @@
 #pragma once
 
-#include <IR_Types.hpp>
-#include <IR_Macro.hpp>
-#include <IR_Log.hpp>
+#include <IRX_Common.hpp>
+
 #include <IR_Globals.hpp>
-#include <IR_Defer.hpp>
-#include <IR_Math.hpp>

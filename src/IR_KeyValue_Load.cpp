@@ -36,7 +36,7 @@ namespace IR {
         UInt64 size;
 
         char* contents = file.ReadAll(&size);
-        IR_DEFER({ delete[] contents; });
+        IRX_DEFER({ delete[] contents; });
 
         return LoadMemory(contents, size);
     }
@@ -307,7 +307,7 @@ namespace IR {
             }
 
             if (key.type != TOKEN_STRING) {
-                IR_MSG(ERROR, "Expected string key at position %llu in KeyValue data, found type %d.", index - 1, key.type);
+                IRX_MSG(ERROR, "Expected string key at position %llu in KeyValue data, found type %d.", index - 1, key.type);
                 return false;
             }
 
@@ -342,7 +342,7 @@ namespace IR {
                     KeyValue* next = kv->AddChildObject(key_buffer);
 
                     if (!parse_object(tokens, index, next)) {
-                        IR_MSG(ERROR, "Failed to parse object at position %llu in KeyValue data.", index - 1);
+                        IRX_MSG(ERROR, "Failed to parse object at position %llu in KeyValue data.", index - 1);
                         return false;
                     }
 
@@ -353,7 +353,7 @@ namespace IR {
                     KeyValue* next = kv->AddChildArray(key_buffer);
 
                     if (!parse_array(tokens, index, next)) {
-                        IR_MSG(ERROR, "Failed to parse array at position %llu in KeyValue data.", index - 1);
+                        IRX_MSG(ERROR, "Failed to parse array at position %llu in KeyValue data.", index - 1);
                         return false;
                     }
 
@@ -363,7 +363,7 @@ namespace IR {
                 case TOKEN_NONE:
                 case TOKEN_RSQUARE:
                 case TOKEN_RBRACE: {
-                    IR_MSG(ERROR, "Unexpected token type %d at position %llu in KeyValue data.", value.type, index - 1);
+                    IRX_MSG(ERROR, "Unexpected token type %d at position %llu in KeyValue data.", value.type, index - 1);
                     return false;
                 }
             }
@@ -387,7 +387,7 @@ namespace IR {
 
             if (token.type == TOKEN_RBRACE) {
                 if (!bObjectToArray) {
-                    IR_MSG(ERROR, "Unexpected '}' at position %llu in KeyValue data.", index - 1);
+                    IRX_MSG(ERROR, "Unexpected '}' at position %llu in KeyValue data.", index - 1);
                     return false;
                 }
 
@@ -419,7 +419,7 @@ namespace IR {
                     KeyValue* next = kv->AddChildObject();
 
                     if (!parse_object(tokens, index, next)) {
-                        IR_MSG(ERROR, "Failed to parse object at position %llu in KeyValue data.", index - 1);
+                        IRX_MSG(ERROR, "Failed to parse object at position %llu in KeyValue data.", index - 1);
                         return false;
                     }
 
@@ -430,7 +430,7 @@ namespace IR {
                     KeyValue* next = kv->AddChildArray();
 
                     if (!parse_array(tokens, index, next)) {
-                        IR_MSG(ERROR, "Failed to parse array at position %llu in KeyValue data.", index - 1);
+                        IRX_MSG(ERROR, "Failed to parse array at position %llu in KeyValue data.", index - 1);
                         return false;
                     }
 
@@ -440,7 +440,7 @@ namespace IR {
                 case TOKEN_NONE:
                 case TOKEN_RBRACE:
                 case TOKEN_RSQUARE: {
-                    IR_MSG(ERROR, "Unexpected token type %d at position %llu in KeyValue data.", token.type, index - 1);
+                    IRX_MSG(ERROR, "Unexpected token type %d at position %llu in KeyValue data.", token.type, index - 1);
                     return false;
                 }
             }

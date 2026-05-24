@@ -23,12 +23,12 @@ namespace IR {
         void Fire(const char* key, Int64 value);
         void Fire(const char* key, Float64 value);
 
-        BaseEntity* GetParent() const IR_RETURN(m_pParent);
+        BaseEntity* GetParent() const IRX_RETURN(m_pParent);
         void SetParent(BaseEntity* parent) { m_pParent = parent; }
 
         void Remove();
 
-        Int64 GetID() const IR_RETURN(m_iID);
+        Int64 GetID() const IRX_RETURN(m_iID);
         void SetID(Int64 id) { m_iID = id; }
 
     private:

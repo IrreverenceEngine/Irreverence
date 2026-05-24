@@ -21,7 +21,7 @@ namespace IR::Renderer {
     void GLCmdList::Submit(const GLMesh* mesh, const GLShader* shader, UInt32 instanceId)
     {
         if (!shader) {
-            IR_MSG(FATAL, "Trying to submit null shader to CmdList, probably due to Material missing shader, pls fix.");
+            IRX_MSG(FATAL, "Trying to submit null shader to CmdList, probably due to Material missing shader, pls fix.");
         }
 
         GLCmdElements cmd;
@@ -47,7 +47,7 @@ namespace IR::Renderer {
 
     void GLCmdList::Flush()
     {
-        for (UInt8 i = 0; i < IR_ARRLEN(m_LayoutInfos); i++) {
+        for (UInt8 i = 0; i < IRX_ARRLEN(m_LayoutInfos); i++) {
             LayoutInfo& layoutInfo = m_LayoutInfos[i];
             layoutInfo.shaderLists.clear();
             layoutInfo.shaderOrders.clear();
@@ -59,7 +59,7 @@ namespace IR::Renderer {
         if (m_Outdated) {
             m_Cmds.clear();
 
-            for (UInt8 lType = 0; lType < IR_ARRLEN(m_LayoutInfos); lType++) {
+            for (UInt8 lType = 0; lType < IRX_ARRLEN(m_LayoutInfos); lType++) {
                 LayoutInfo& layoutInfo = m_LayoutInfos[lType];
 
                 for (UInt32 id : layoutInfo.shaderOrders) {
@@ -77,7 +77,7 @@ namespace IR::Renderer {
         m_Buffer.Bind();
 
         UInt64 offset = 0;
-        for (UInt8 lType = 0; lType < IR_ARRLEN(m_LayoutInfos); lType++) {
+        for (UInt8 lType = 0; lType < IRX_ARRLEN(m_LayoutInfos); lType++) {
             LayoutInfo& layoutInfo = m_LayoutInfos[lType];
 
             GLLayout* layout = s_GL->GetLayout((GLLayout::Type)lType);

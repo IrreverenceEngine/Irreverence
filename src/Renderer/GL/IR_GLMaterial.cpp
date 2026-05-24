@@ -9,7 +9,7 @@ namespace IR::Renderer {
     bool GLMaterial::Init(const Texture*(&textures)[MAP__COUNT], Shader* shader)
     {
         if (!shader) {
-            IR_MSG(ERROR, "Material has no shader");
+            IRX_MSG(ERROR, "Material has no shader");
             return false;
         }
 

@@ -8,14 +8,14 @@ namespace IR::Renderer {
     {
         KeyValue* kv = KeyValue::Load(path);
         if (!kv) {
-            IR_MSG(ERROR, "Shader failed to load .irs file \"%s\"", path);
+            IRX_MSG(ERROR, "Shader failed to load .irs file \"%s\"", path);
             return false;
         }
 
         const std::string& type = kv->FindChildString("Type");
 
         if (type.empty()) {
-            IR_MSG(ERROR, "Shader is missing \"Type\" parameter in file \"%s\"", path);
+            IRX_MSG(ERROR, "Shader is missing \"Type\" parameter in file \"%s\"", path);
             return false;
         }
 
@@ -25,13 +25,13 @@ namespace IR::Renderer {
             const std::string& vertPath = kv->FindChildString("Vertex");
 
             if (vertPath.empty()) {
-                IR_MSG(ERROR, "Shader is missing \"Vertex\" parameter in file \"%s\"", path);
+                IRX_MSG(ERROR, "Shader is missing \"Vertex\" parameter in file \"%s\"", path);
                 return false;
             }
 
             const std::string& fragPath = kv->FindChildString("Fragment");
             if (fragPath.empty()) {
-                IR_MSG(ERROR, "Shader is missing \"Fragment\" parameter in file \"%s\"", path);
+                IRX_MSG(ERROR, "Shader is missing \"Fragment\" parameter in file \"%s\"", path);
                 return false;
             }
 
@@ -40,14 +40,14 @@ namespace IR::Renderer {
         } else if (type == "Compute") {
             const std::string& compPath = kv->FindChildString("Compute");
             if (compPath.empty()) {
-                IR_MSG(ERROR, "Shader is missing \"Compute\" parameter in file \"%s\"", path);
+                IRX_MSG(ERROR, "Shader is missing \"Compute\" parameter in file \"%s\"", path);
                 return false;
             }
 
             return InitCompute((assetPath + compPath).c_str());
 
         } else {
-            IR_MSG(ERROR, "Shader unknown \"Type\" value in file \"%s\"", path);
+            IRX_MSG(ERROR, "Shader unknown \"Type\" value in file \"%s\"", path);
             return false;
         }
     }
@@ -56,24 +56,24 @@ namespace IR::Renderer {
     {
         File vsfile(vspath, "r");
         if (!vsfile.IsOpen()) {
-            IR_MSG(ERROR, "Shader failed to open Vertex Shader file \"%s\"", vspath);
+            IRX_MSG(ERROR, "Shader failed to open Vertex Shader file \"%s\"", vspath);
             return false;
         }
 
         char* vscode = vsfile.ReadAll();
-        IR_DEFER({ if (vscode) delete[] vscode; });
+        IRX_DEFER({ if (vscode) delete[] vscode; });
 
         File fsfile(fspath, "r");
         if (!fsfile.IsOpen()) {
-            IR_MSG(ERROR, "Shader failed to open Fragment Shader file \"%s\"", fspath);
+            IRX_MSG(ERROR, "Shader failed to open Fragment Shader file \"%s\"", fspath);
             return false;
         }
 
         char* fscode = fsfile.ReadAll();
-        IR_DEFER({ if (fscode) delete[] fscode; });
+        IRX_DEFER({ if (fscode) delete[] fscode; });
 
 		if (!InitRasterMemory(vscode, fscode)) {
-			IR_MSG(ERROR, "Shader failed to initialize Raster Shader from files \"%s\" and \"%s\"", vspath, fspath);
+			IRX_MSG(ERROR, "Shader failed to initialize Raster Shader from files \"%s\" and \"%s\"", vspath, fspath);
             return false;
         }
 
@@ -84,15 +84,15 @@ namespace IR::Renderer {
     {
         File csfile(cspath, "r");
         if (!csfile.IsOpen()) {
-            IR_MSG(ERROR, "Shader failed to open Compute Shader file \"%s\"", cspath);
+            IRX_MSG(ERROR, "Shader failed to open Compute Shader file \"%s\"", cspath);
             return false;
         }
 
         char* cscode = csfile.ReadAll();
-        IR_DEFER({ if (cscode) delete[] cscode; });
+        IRX_DEFER({ if (cscode) delete[] cscode; });
 
 		if (!InitComputeMemory(cscode)) {
-			IR_MSG(ERROR, "Shader failed to initialize Compute Shader from file \"%s\"", cspath);
+			IRX_MSG(ERROR, "Shader failed to initialize Compute Shader from file \"%s\"", cspath);
 			return false;
 		}
 

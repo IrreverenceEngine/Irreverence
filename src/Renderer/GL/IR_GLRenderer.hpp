@@ -48,7 +48,7 @@ namespace IR::Renderer {
         void RemoveMaterialInfo(UInt32 index);
         bool AddShaderInclude(const char* name);
 
-        const std::vector<std::string>& GetPatchIncludes() const IR_RETURN(m_PatchIncludes)
+        const std::vector<std::string>& GetPatchIncludes() const IRX_RETURN(m_PatchIncludes)
         GLLayout* GetLayout(GLLayout::Type type);
         GLTexture* GetDefaultTexture(Material::Map map);
 

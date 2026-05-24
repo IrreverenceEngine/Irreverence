@@ -159,6 +159,6 @@ namespace IR::Renderer {
         glDrawElements(GL_TRIANGLES, m_IndexNum, GL_UNSIGNED_INT, nullptr);
     }
 
-    UInt32 GLMesh::GetLayoutType() const IR_RETURN((UInt32)m_Layout->GetType())
+    UInt32 GLMesh::GetLayoutType() const IRX_RETURN((UInt32)m_Layout->GetType())
 
 }

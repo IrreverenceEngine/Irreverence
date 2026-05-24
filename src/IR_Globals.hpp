@@ -1,16 +1,18 @@
 #pragma once
 
-#include <IR_Types.hpp>
-#include <IR_Macro.hpp>
+#include <IRX_Types.hpp>
+#include <IRX_Macro.hpp>
+
+using namespace IRX;
 
 namespace IR {
     class Window;
 
     struct GlobalsData {
-        Int32 Width() const IR_RETURN(width)
-        Int32 Height() const IR_RETURN(height)
-        Float64 Curtime() const IR_RETURN(curtime)
-        Float64 Frametime() const IR_RETURN(frametime)
+        Int32 Width() const IRX_RETURN(width)
+        Int32 Height() const IRX_RETURN(height)
+        Float64 Curtime() const IRX_RETURN(curtime)
+        Float64 Frametime() const IRX_RETURN(frametime)
 
         GlobalsData() = default;
         GlobalsData(const GlobalsData&) = delete;

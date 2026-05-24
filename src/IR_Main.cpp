@@ -8,7 +8,6 @@
 #include <IR_Gradient.hpp>
 #include <IR_Assets.hpp>
 #include <IR_CVar.hpp>
-#include <IR_QUtil.hpp>
 #include <IR_Audio.hpp>
 
 #include <glm/gtc/quaternion.hpp>
@@ -22,7 +21,7 @@ static void loadConvars()
     KeyValue* kv = KeyValue::Load("convars.ir");
 
     if (!kv) {
-        IR_MSG(WARN, "Failed to load convars, using defaults");
+        IRX_MSG(WARN, "Failed to load convars, using defaults");
         return;
     }
 
@@ -59,7 +58,7 @@ static void loadConvars()
                     }
 
                     if (subChild->GetType() != KeyValue::Type::NUMBER) {
-                        IR_MSG(WARN, "CVar '%s' has non-number child, skipping", child->GetKey().c_str());
+                        IRX_MSG(WARN, "CVar '%s' has non-number child, skipping", child->GetKey().c_str());
                         continue;
                     }
 
@@ -89,7 +88,7 @@ static void loadConvars()
                     std::string defaultValue = child->FindChildString("default", "");
                     new CVar(key.c_str(), 0, defaultValue.c_str());
                 } else {
-                    IR_MSG(WARN, "CVar '%s' has unknown type '%s', skipping", key.c_str(), type.c_str());
+                    IRX_MSG(WARN, "CVar '%s' has unknown type '%s', skipping", key.c_str(), type.c_str());
                 }
 
                 break;
@@ -113,38 +112,38 @@ int main(int argc, char** argv)
     CVar::Iterate([](CVar* cvar) {
         switch (cvar->GetType()) {
             case CVar::Type::INT64:
-                IR_MSG(INFO, "CVar '%s' = %lld", cvar->GetName().c_str(), cvar->GetInt64());
+                IRX_MSG(INFO, "CVar '%s' = %lld", cvar->GetName().c_str(), cvar->GetInt64());
                 break;
             case CVar::Type::FLOAT64:
-                IR_MSG(INFO, "CVar '%s' = %f", cvar->GetName().c_str(), cvar->GetFloat64());
+                IRX_MSG(INFO, "CVar '%s' = %f", cvar->GetName().c_str(), cvar->GetFloat64());
                 break;
             case CVar::Type::STRING:
-                IR_MSG(INFO, "CVar '%s' = '%s'", cvar->GetName().c_str(), cvar->GetString().c_str());
+                IRX_MSG(INFO, "CVar '%s' = '%s'", cvar->GetName().c_str(), cvar->GetString().c_str());
                 break;
             case CVar::Type::BOOL: {
-                IR_MSG(INFO, "CVar '%s' = %s", cvar->GetName().c_str(), cvar->GetBool() ? "true" : "false");
+                IRX_MSG(INFO, "CVar '%s' = %s", cvar->GetName().c_str(), cvar->GetBool() ? "true" : "false");
                 break;
             }
         }
     });
 
     if (!Window::Init(Renderer::API::OPENGL)) {
-        IR_MSG(FATAL, "Failed to init Window, shutting down!");
+        IRX_MSG(FATAL, "Failed to init Window, shutting down!");
     }
 
     if (!Renderer::Init()) {
-        IR_MSG(FATAL, "Failed to init Renderer, shutting down!");
+        IRX_MSG(FATAL, "Failed to init Renderer, shutting down!");
     }
 
     if (!Physics::Init()) {
-        IR_MSG(FATAL, "Failed to init Physics, shutting down!");
+        IRX_MSG(FATAL, "Failed to init Physics, shutting down!");
     }
 
     if (!Audio::Init()) {
-        IR_MSG(FATAL, "Failed to init Audio, shutting down!");
+        IRX_MSG(FATAL, "Failed to init Audio, shutting down!");
     }
 
-    IR_MSG(INFO, "Successfully initialized Irreverence");
+    IRX_MSG(INFO, "Successfully initialized Irreverence");
 
     std::vector<BinaryMap::EntityData> entDatas;
     Navmesh navmesh;
@@ -154,7 +153,7 @@ int main(int argc, char** argv)
 
     std::vector<glm::vec3> testNavPath;
     if (!navmesh.FindPath(QUtil::QVec3ToVec3({ 56, 824, 8 }), QUtil::QVec3ToVec3({ 1636, 2912, 136 }), testNavPath)) {
-        IR_MSG(WARN, "Could find nav path :(");
+        IRX_MSG(WARN, "Could find nav path :(");
     }
 
     Physics::BeginCompoundObject();

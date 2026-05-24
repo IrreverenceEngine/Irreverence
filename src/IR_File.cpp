@@ -24,7 +24,7 @@ namespace IR {
         m_File = nullptr;
     }
 
-    UInt64 File::Tell() IR_RETURN(IsOpen() ? ftello64((FILE*)m_File) : 0)
+    UInt64 File::Tell() IRX_RETURN(IsOpen() ? ftello64((FILE*)m_File) : 0)
 
     void File::Seek(SeekMode seek, UInt64 pos)
     {

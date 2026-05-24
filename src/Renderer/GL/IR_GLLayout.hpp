@@ -24,10 +24,10 @@ namespace IR::Renderer {
 
         void Destroy();
 
-        UInt32 GetID() const IR_RETURN(m_ID)
-        GLMeshPool& GetMeshPool() IR_RETURN(m_MeshPool)
-        Type GetType() const IR_RETURN(m_Type)
-        UInt32 GetStride() const IR_RETURN(m_Stride)
+        UInt32 GetID() const IRX_RETURN(m_ID)
+        GLMeshPool& GetMeshPool() IRX_RETURN(m_MeshPool)
+        Type GetType() const IRX_RETURN(m_Type)
+        UInt32 GetStride() const IRX_RETURN(m_Stride)
 
     private:
         UInt32 m_ID = 0;

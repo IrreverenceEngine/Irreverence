@@ -52,7 +52,7 @@ namespace IR::Renderer {
 
     class APIHandle {
     public:
-        IR_RENDERER_FUNCS(virtual, IR_UNIMPLEMENTED)
+        IR_RENDERER_FUNCS(virtual, IRX_UNIMPLEMENTED)
     };
 
     enum class API {

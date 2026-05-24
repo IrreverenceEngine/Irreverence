@@ -32,11 +32,11 @@ namespace IR::Renderer {
         void Bind();
         void UnBind();
 
-        UInt32 GetID() const IR_RETURN(m_ID)
-        UInt32 GetWidth() const IR_RETURN(m_Width)
-        UInt32 GetHeight() const IR_RETURN(m_Height)
-        GLTexture* GetColorTexture(UInt8 index) const IR_RETURN(index < MAX_COLOR_ATTACHS ? m_Colors[index] : nullptr)
-        GLTexture* GetDepthTexture() const IR_RETURN(m_Depth)
+        UInt32 GetID() const IRX_RETURN(m_ID)
+        UInt32 GetWidth() const IRX_RETURN(m_Width)
+        UInt32 GetHeight() const IRX_RETURN(m_Height)
+        GLTexture* GetColorTexture(UInt8 index) const IRX_RETURN(index < MAX_COLOR_ATTACHS ? m_Colors[index] : nullptr)
+        GLTexture* GetDepthTexture() const IRX_RETURN(m_Depth)
 
     private:
         UInt32 m_ID = 0;

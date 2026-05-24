@@ -11,19 +11,19 @@ namespace IR::Renderer {
         KeyValue* kv = KeyValue::Load(path);
 
         if (!kv) {
-            IR_MSG(ERROR, "Material failed to load KeyValue file \"%s\"", path);
+            IRX_MSG(ERROR, "Material failed to load KeyValue file \"%s\"", path);
             return false;
         }
 
         KeyValue* material = kv->GetChild(0);
         if (!material) {
-            IR_MSG(ERROR, "Material failed to load get child data in file \"%s\"", path);
+            IRX_MSG(ERROR, "Material failed to load get child data in file \"%s\"", path);
             return false;
         }
 
         KeyValue* params = material->GetChild(0);
         if (!params) {
-            IR_MSG(ERROR, "Material is missing parameters in file \"%s\"", path);
+            IRX_MSG(ERROR, "Material is missing parameters in file \"%s\"", path);
             return false;
         }
 
@@ -31,13 +31,13 @@ namespace IR::Renderer {
 
         std::string shaderName = params->FindChildString("Shader");
         if (shaderName.empty()) {
-            IR_MSG(ERROR, "Material is missing \"Shader\" parameter in file\"%s\"", path);
+            IRX_MSG(ERROR, "Material is missing \"Shader\" parameter in file\"%s\"", path);
             return false;
         }
 
         Shader* shader = Assets::Shader(shaderName.c_str());
         if (!shader) {
-            IR_MSG(ERROR, "Material failed to load a shader file \"%s\"", shaderName.c_str());
+            IRX_MSG(ERROR, "Material failed to load a shader file \"%s\"", shaderName.c_str());
             return false;
         }
 
@@ -51,7 +51,7 @@ namespace IR::Renderer {
 
             const std::string& albedoPath = params->FindChildString("Albedo");
             if (!SetTextureFromPath(MAP_ALBEDO, params->FindChildString("Albedo"), linearize, mipmaps, Renderer::GetTextureError())) {
-                IR_MSG(WARN, "Material is missing \"Albedo\" parameter in file \"%s\"", path);
+                IRX_MSG(WARN, "Material is missing \"Albedo\" parameter in file \"%s\"", path);
             }
 
             SetTextureFromPath(MAP_NORMAL, params->FindChildString("Normal"), linearize, mipmaps, Renderer::GetTextureNormal());
@@ -82,7 +82,7 @@ namespace IR::Renderer {
                 const std::string& cubepath = cubemapParams[i];
                 UInt8* data = stbi_load(("assets/" + cubepath).c_str(), &width, &height, &channels, 4);
                 if (!data) {
-                    IR_MSG(ERROR, "Material cubemap failed to open image \"%s\", reason: %s", cubepath.c_str(), stbi_failure_reason());
+                    IRX_MSG(ERROR, "Material cubemap failed to open image \"%s\", reason: %s", cubepath.c_str(), stbi_failure_reason());
                     success = false;
                     break;
                 }

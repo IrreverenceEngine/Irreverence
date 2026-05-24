@@ -18,7 +18,7 @@ namespace IR::Input {
             kv.second &= HOLD_BIT;
         }
 
-        for (UInt32 i = 0; i < IR_ARRLEN(s_MButtonStates); i++) {
+        for (UInt32 i = 0; i < IRX_ARRLEN(s_MButtonStates); i++) {
             s_MButtonStates[i] &= HOLD_BIT;
         }
 
@@ -41,9 +41,9 @@ namespace IR::Input {
         }
     }
 
-    bool IsKeyPressed(Key key) IR_RETURN(s_KeyStates[(UInt32)key] & PRESSED_BIT)
+    bool IsKeyPressed(Key key) IRX_RETURN(s_KeyStates[(UInt32)key] & PRESSED_BIT)
 
-    bool IsKeyDown(Key key) IR_RETURN(s_KeyStates[(UInt32)key] & HOLD_BIT)
+    bool IsKeyDown(Key key) IRX_RETURN(s_KeyStates[(UInt32)key] & HOLD_BIT)
 
     void MButtonEvent(MButton button, bool pressed)
     {
@@ -67,10 +67,10 @@ namespace IR::Input {
         s_MPos = (bRelative) ? s_MPos + pos : pos;
     }
 
-    bool IsMButtonPressed(MButton button) IR_RETURN(s_MButtonStates[(UInt8)button] & 0x1)
-    bool IsMButtonDown(MButton button) IR_RETURN(s_MButtonStates[(UInt8)button] & 0x2)
+    bool IsMButtonPressed(MButton button) IRX_RETURN(s_MButtonStates[(UInt8)button] & 0x1)
+    bool IsMButtonDown(MButton button) IRX_RETURN(s_MButtonStates[(UInt8)button] & 0x2)
 
-    glm::ivec2 MousePos() IR_RETURN(s_MPos)
-    glm::ivec2 MouseDelta() IR_RETURN(s_MPos - s_MOldPos)
+    glm::ivec2 MousePos() IRX_RETURN(s_MPos)
+    glm::ivec2 MouseDelta() IRX_RETURN(s_MPos - s_MOldPos)
 
 }

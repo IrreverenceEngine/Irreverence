@@ -1,6 +1,6 @@
 #pragma once
 
-#include <IR_Log.hpp>
+#include <IRX_Common.hpp>
 
 #ifdef IR_USE_TRACY
 	#ifndef TRACY_ENABLE

@@ -4,6 +4,6 @@
 
 namespace IR::Renderer {
     struct DX : public APIHandle {
-        IR_RENDERER_FUNCS(, override IR_UNIMPLEMENTED)
+        IR_RENDERER_FUNCS(, override IRX_UNIMPLEMENTED)
     };
 }

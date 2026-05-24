@@ -218,7 +218,7 @@ namespace IR::BinaryMap {
         stream.read((char*)&origin, sizeof(origin));
 
         if (!navmesh.Init(origin, maxPolys, maxTiles, { tileWidth, tileHeight })) {
-            IR_MSG(ERROR, "Binary Map: Failed to load Navmesh");
+            IRX_MSG(ERROR, "Binary Map: Failed to load Navmesh");
             return;
         }
 
@@ -235,7 +235,7 @@ namespace IR::BinaryMap {
             stream.read((char*)tile.data, tile.size);
 
             if (!navmesh.AddTile(tile.data, tile.size)) {
-                IR_MSG(ERROR, "Binary Map: Failed to load add a NavTile to the NavMesh");
+                IRX_MSG(ERROR, "Binary Map: Failed to load add a NavTile to the NavMesh");
                 return;
             };
         }
@@ -245,7 +245,7 @@ namespace IR::BinaryMap {
     {
         std::ifstream stream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
         if (!stream.is_open()) {
-            IR_MSG(ERROR, "Couldn't load Binary Map: couldn't open the file %s", path);
+            IRX_MSG(ERROR, "Couldn't load Binary Map: couldn't open the file %s", path);
             return false;
         }
 
@@ -253,7 +253,7 @@ namespace IR::BinaryMap {
         stream.read((char*)&hdr, sizeof(hdr));
 
         if (hdr.magic != MAGIC) {
-            IR_MSG(ERROR, "Couldn't load Binary Map: this could have happened because, the file may not be a \"irbm\" file. Or you have ARM CPU, we gotta fix that.");
+            IRX_MSG(ERROR, "Couldn't load Binary Map: this could have happened because, the file may not be a \"irbm\" file. Or you have ARM CPU, we gotta fix that.");
             return false;
         }
 

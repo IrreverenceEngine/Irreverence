@@ -10,7 +10,7 @@ namespace IR::Renderer {
         UInt8* data = stbi_load(path, &width, &height, &channels, 0);
 
         if (!data) {
-            IR_MSG(ERROR, "Texture failed to open image \"%s\", reason: %s", path, stbi_failure_reason());
+            IRX_MSG(ERROR, "Texture failed to open image \"%s\", reason: %s", path, stbi_failure_reason());
             return false;
         }
 

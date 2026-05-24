@@ -98,7 +98,7 @@ namespace IR {
         query->findNearestPoly((Float32*)&endNavSpace, (Float32*)&FIND_EXTENDS, filter, &endRef, (Float32*)&nearEnd);
 
         if (!startRef || !endRef) {
-            IR_MSG(WARN, "Navmesh: Couldn't find nearest poly");
+            IRX_MSG(WARN, "Navmesh: Couldn't find nearest poly");
             return false;
         }
 
@@ -117,7 +117,7 @@ namespace IR {
         );
 
         if (dtStatusFailed(status) || polyNum == 0) {
-            IR_MSG(WARN, "Navmesh: Couldn't find path");
+            IRX_MSG(WARN, "Navmesh: Couldn't find path");
             return false;
         }
 
@@ -139,7 +139,7 @@ namespace IR {
         );
 
         if (dtStatusFailed(status) || strtPathNum == 0) {
-            IR_MSG(WARN, "Navmesh: Couldn't find straight path");
+            IRX_MSG(WARN, "Navmesh: Couldn't find straight path");
             return false;
         }
 

@@ -21,8 +21,8 @@ namespace IR::Renderer {
         void Use();
         void Reset() override;
 
-        UInt32 GetInfoIndex() const IR_RETURN(m_InfoIndex)
-        GLShader* GetShader() const IR_RETURN(m_Shader)
+        UInt32 GetInfoIndex() const IRX_RETURN(m_InfoIndex)
+        GLShader* GetShader() const IRX_RETURN(m_Shader)
 
     private:
         GLShader* m_Shader = nullptr;

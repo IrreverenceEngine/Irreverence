@@ -29,8 +29,8 @@ namespace IR::Renderer {
         virtual void SetTexture(Map map, Texture* texture) = 0;
         virtual void SetShader(Shader* shader) = 0;
 
-        Float64 GetKVNumber(const char* key, Float64 def = 0.0) const IR_RETURN(m_KeyValues ? m_KeyValues->FindChildNumber(key, def) : def)
-        std::string GetKVString(const char* key, const char* def = "") const IR_RETURN(m_KeyValues ? m_KeyValues->FindChildString(key, def) : def)
+        Float64 GetKVNumber(const char* key, Float64 def = 0.0) const IRX_RETURN(m_KeyValues ? m_KeyValues->FindChildNumber(key, def) : def)
+        std::string GetKVString(const char* key, const char* def = "") const IRX_RETURN(m_KeyValues ? m_KeyValues->FindChildString(key, def) : def)
 
     protected:
         KeyValue* m_KeyValues = nullptr;

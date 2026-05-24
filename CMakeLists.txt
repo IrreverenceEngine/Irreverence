@@ -8,6 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/game)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/game)
 
+add_subdirectory(vendor/IRX)
+
 option(ENABLE_TRACY "Enable Tracy profiling" OFF)
 
 find_package(OpenGL REQUIRED)
@@ -18,8 +20,6 @@ file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/vendor/glew.tgz DESTINATION ${CMA
 
 set(BUILD_UTILS OFF)
 add_subdirectory(vendor/glew/glew-2.2.0/build/cmake)
-
-add_subdirectory(vendor/glm)
 
 set(SDL_EXAMPLES OFF)
 add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
@@ -63,12 +63,12 @@ target_link_libraries(irreverence PRIVATE
     glm::glm SDL3-static glew_s OpenGL::GL Jolt
   	openal Tracy::TracyClient
     RecastNavigation::Recast RecastNavigation::Detour RecastNavigation::DetourTileCache
+    irx
 )
 
 target_include_directories(irreverence PUBLIC
     src/
   	vendor/glew/glew-2.2.0/include
-    vendor/glm/glm
     vendor/SDL/include
     vendor/JoltPhysics/
   	vendor/openal-soft/include
@@ -76,4 +76,5 @@ target_include_directories(irreverence PUBLIC
     vendor/recastnavigation/Recast/Include
     vendor/recastnavigation/Detour/Include
     vendor/recastnavigation/DetourTileCache/Include
+    irx
 )

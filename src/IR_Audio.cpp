@@ -197,7 +197,7 @@ namespace IR::Audio {
         alSourcePlay(stream);
     }
 
-    float GetSoundDuration(SoundStream stream) IR_UNIMPLEMENTED
-    float GetRemainingDuration(SoundStream stream) IR_UNIMPLEMENTED
+    float GetSoundDuration(SoundStream stream) IRX_UNIMPLEMENTED
+    float GetRemainingDuration(SoundStream stream) IRX_UNIMPLEMENTED
 
 }

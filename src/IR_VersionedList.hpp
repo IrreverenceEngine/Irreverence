@@ -14,16 +14,16 @@ namespace IR {
             bool free : 1;
         };
 
-        bool operator==(const Version& other) const IR_RETURN(number == other.number);
-        bool operator!=(const Version& other) const IR_RETURN(!(*this == other));
+        bool operator==(const Version& other) const IRX_RETURN(number == other.number);
+        bool operator!=(const Version& other) const IRX_RETURN(!(*this == other));
     };
 
     struct Handle {
         Handle(UInt32 index, Version version) : index(index), version(version) {}
 
         UInt32 index = UINT32_MAX;
-        bool operator==(const Handle& other) const IR_RETURN((index == other.index) && (version == other.version));
-        bool operator!=(const Handle& other) const IR_RETURN(!(*this == other));
+        bool operator==(const Handle& other) const IRX_RETURN((index == other.index) && (version == other.version));
+        bool operator!=(const Handle& other) const IRX_RETURN(!(*this == other));
 
         Version version;
     };

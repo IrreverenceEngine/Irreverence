@@ -2,6 +2,8 @@
 
 #include <GL/glew.h>
 
+#include <cstring>
+
 namespace IR::Renderer {
 
     bool GLLighting::Init(UInt8 plightsLoc, UInt8 slightsLoc)
@@ -77,7 +79,7 @@ namespace IR::Renderer {
         }
 
         if (index >= MAX_POINTLIGHTS) {
-            IR_MSG(ERROR, "Renderer: can't add Pointlight due to reaching limit");
+            IRX_MSG(ERROR, "Renderer: can't add Pointlight due to reaching limit");
             return MAX_POINTLIGHTS;
         }
 
@@ -160,7 +162,7 @@ namespace IR::Renderer {
         }
 
         if (index >= MAX_SPOTLIGHTS) {
-            IR_MSG(ERROR, "Renderer: can't add Spotlight due to reaching limit");
+            IRX_MSG(ERROR, "Renderer: can't add Spotlight due to reaching limit");
             return MAX_SPOTLIGHTS;
         }
 

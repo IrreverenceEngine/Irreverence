@@ -33,7 +33,7 @@ namespace IR::Physics {
 
     constexpr UInt8 s_TouchMask[(UInt8)Layer::_COUNT] = {
         /*                    01*/
-        /*NON-MOVING: [0]*/ 0b10,
+        /*NON-MOVING: [0]*/ 0b00,
         /*    MOVING: [1]*/ 0b11,
     };
 
@@ -41,10 +41,10 @@ namespace IR::Physics {
     public:
         BPLayerInterface() {}
 
-        virtual UInt32 GetNumBroadPhaseLayers() const override IR_RETURN((UInt32)Layer::_COUNT)
+        virtual UInt32 GetNumBroadPhaseLayers() const override IRX_RETURN((UInt32)Layer::_COUNT)
 
         virtual JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override
-            IR_RETURN((JPH::BroadPhaseLayer)inLayer)
+            IRX_RETURN((JPH::BroadPhaseLayer)inLayer)
 
         virtual const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override
         {
@@ -60,19 +60,19 @@ namespace IR::Physics {
     class OvsBPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter {
     public:
         virtual bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override
-            IR_RETURN((s_TouchMask[(UInt8)inLayer1] >> (UInt8)inLayer2) & 1)
+            IRX_RETURN((s_TouchMask[(UInt8)inLayer1] >> (UInt8)inLayer2) & 1)
     };
 
     class ObjectLayerPairFilter : public JPH::ObjectLayerPairFilter {
     public:
         virtual bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override
-           IR_RETURN((s_TouchMask[(UInt8)inObject1] >> (UInt8)inObject2) & 1)
+           IRX_RETURN((s_TouchMask[(UInt8)inObject1] >> (UInt8)inObject2) & 1)
     };
 
     class ContactListener : public JPH::ContactListener {
     public:
         virtual JPH::ValidateResult	OnContactValidate(const JPH::Body& inBody1, const JPH::Body& inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult& inCollisionResult) override
-            IR_RETURN(JPH::ValidateResult::AcceptAllContactsForThisBodyPair)
+            IRX_RETURN(JPH::ValidateResult::AcceptAllContactsForThisBodyPair)
 
         virtual void OnContactAdded(
             const JPH::Body& inBody1,
@@ -120,7 +120,7 @@ namespace IR::Physics {
         }
 
         if (index == MAX_OBJECTS) {
-            IR_MSG(FATAL, "We hit max Physics object limit");
+            IRX_MSG(FATAL, "We hit max Physics object limit");
         }
 
         return index;
@@ -247,7 +247,7 @@ namespace IR::Physics {
 		static CVar* tickrate = CVar::Get("tickrate");
 
 		if (!tickrate) {
-			IR_MSG(FATAL, "Failed to get tickrate CVar");
+			IRX_MSG(FATAL, "Failed to get tickrate CVar");
 			return;
 		}
 
@@ -380,7 +380,7 @@ namespace IR::Physics {
         JPH::ConvexHullShape* shape = new JPH::ConvexHullShape(settings, result);
 
         if (result.HasError()) {
-            IR_MSG(ERROR, "Physics couldn't create Convex Hull Shape: %s", result.GetError().c_str());
+            IRX_MSG(ERROR, "Physics couldn't create Convex Hull Shape: %s", result.GetError().c_str());
             delete shape;
             return nullptr;
         }
@@ -401,7 +401,7 @@ namespace IR::Physics {
     void BeginCompoundObject(bool bStatic)
     {
         if (s_CompObjectInfo.settings) {
-            IR_MSG(FATAL, "An Compound Object was not finished before beginning another Compound Object");
+            IRX_MSG(FATAL, "An Compound Object was not finished before beginning another Compound Object");
         }
 
         s_CompObjectInfo.isStatic = bStatic;
@@ -469,7 +469,7 @@ namespace IR::Physics {
         JPH::ConvexHullShape* shape = new JPH::ConvexHullShape(settings, result);
 
         if (result.HasError()) {
-            IR_MSG(ERROR, "Physics couldn't create Convex Hull Shape: %s", result.GetError().c_str());
+            IRX_MSG(ERROR, "Physics couldn't create Convex Hull Shape: %s", result.GetError().c_str());
             delete shape;
             return;
         }
@@ -482,7 +482,7 @@ namespace IR::Physics {
         UInt32 extra
     )
     {
-        IR_DEFER({
+        IRX_DEFER({
             if (s_CompObjectInfo.settings) {
                 delete s_CompObjectInfo.settings;
                 s_CompObjectInfo.settings = nullptr;
@@ -496,7 +496,7 @@ namespace IR::Physics {
         (JPH::CompoundShape*) new JPH::MutableCompoundShape(*(JPH::MutableCompoundShapeSettings*)s_CompObjectInfo.settings, result);
 
         if (result.HasError()) {
-            IR_MSG(ERROR, "Physics couldn't create Convex Hull Shape: %s", result.GetError().c_str());
+            IRX_MSG(ERROR, "Physics couldn't create Convex Hull Shape: %s", result.GetError().c_str());
             delete shape;
             return nullptr;
         }
@@ -596,6 +596,6 @@ namespace IR::Physics {
         vsnprintf(buffer, sizeof(buffer), inFMT, list);
         va_end(list);
 
-        IR_MSG(WARN, "Physics, %s", buffer);
+        IRX_MSG(WARN, "Physics, %s", buffer);
     }
 }

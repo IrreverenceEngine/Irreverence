@@ -45,7 +45,7 @@ namespace IR::Renderer {
         }
 
         if (glCheckNamedFramebufferStatus(m_ID, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            IR_MSG(ERROR, "GL Frame couldn't init. Something fucked up.");
+            IRX_MSG(ERROR, "GL Frame couldn't init. Something fucked up.");
             Destroy();
             return false;
         }

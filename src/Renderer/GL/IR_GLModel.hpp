@@ -14,9 +14,9 @@ namespace IR::Renderer {
         void MakeMesh(const VertexAnimated* vertices, UInt32 vertnum, const UInt32* indices, UInt32 indnum, const Material** skins, UInt8 skinnum) override;
         void ReserveMesh(UInt32 count) override;
 
-        GLMesh& GetMesh(UInt32 i) IR_RETURN(m_Meshes[i].mesh)
-        GLMaterial* GetMeshMaterial(UInt32 i, UInt32 skin) IR_RETURN(skin < MAX_SKINS ? m_Meshes[i].skins[skin] : nullptr)
-        UInt32 GetMeshNum() const IR_RETURN(m_Meshes.size())
+        GLMesh& GetMesh(UInt32 i) IRX_RETURN(m_Meshes[i].mesh)
+        GLMaterial* GetMeshMaterial(UInt32 i, UInt32 skin) IRX_RETURN(skin < MAX_SKINS ? m_Meshes[i].skins[skin] : nullptr)
+        UInt32 GetMeshNum() const IRX_RETURN(m_Meshes.size())
 
     private:
         struct MeshInfo {

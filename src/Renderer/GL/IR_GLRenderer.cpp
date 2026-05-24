@@ -24,8 +24,8 @@ void glMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 
 namespace IR::Renderer {
 
-    const char* GL::GetName() IR_RETURN("OpenGL")
-    const char* GL::GetDirectory() IR_RETURN("gl/")
+    const char* GL::GetName() IRX_RETURN("OpenGL")
+    const char* GL::GetDirectory() IRX_RETURN("gl/")
 
     bool GL::Init()
     {
@@ -41,7 +41,7 @@ namespace IR::Renderer {
         GLenum gcode = glewInit();
 
         if (gcode != GLEW_OK) {
-            IR_MSG(ERROR, "Failed to init GL Renderer: failed to load OpenGL \"%s\"", glewGetErrorString(gcode));
+            IRX_MSG(ERROR, "Failed to init GL Renderer: failed to load OpenGL \"%s\"", glewGetErrorString(gcode));
             return false;
         }
 
@@ -62,7 +62,7 @@ namespace IR::Renderer {
                 errMsg += "\"Shading Language Include\"";
             }
 
-            IR_MSG(ERROR, "%s\n"
+            IRX_MSG(ERROR, "%s\n"
                 "    [Windows] Try using the DirectX Renderer.\n"
                 "    [Linux] Try using the DirectX Renderer with Wine or Proton.", errMsg.c_str());
 
@@ -195,7 +195,7 @@ namespace IR::Renderer {
             !m_ShaderCompositeTrans ||
             !m_ShaderCompositeFinal
         ) {
-            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't load internal shaders");
+            IRX_MSG(ERROR, "Failed to init GL Renderer: couldn't load internal shaders");
             return false;
         }
 
@@ -217,15 +217,15 @@ namespace IR::Renderer {
         const UInt32 planeIndices[] = { 2, 1, 0, 0, 3, 2 };
         const UInt32 scrIndices[] = { 0, 1, 2, 0, 2, 3 };
 
-        UInt32 skyboxIndices[IR_ARRLEN(SKYBOX_VERTICES)];
-        for (UInt32 i = 0; i < IR_ARRLEN(SKYBOX_VERTICES); i++) {
+        UInt32 skyboxIndices[IRX_ARRLEN(SKYBOX_VERTICES)];
+        for (UInt32 i = 0; i < IRX_ARRLEN(SKYBOX_VERTICES); i++) {
             skyboxIndices[i] = i;
         }
 
-        m_MeshCube.InitPool(CUBE_VERTS, IR_ARRLEN(CUBE_VERTS), CUBE_INDICES, IR_ARRLEN(CUBE_INDICES));
-        m_MeshPlane.InitPool(planeVerts, IR_ARRLEN(planeVerts), planeIndices, IR_ARRLEN(planeIndices));
-        m_MeshScreen.Init(scrVerts, IR_ARRLEN(scrVerts), scrIndices, IR_ARRLEN(scrIndices));
-        m_MeshSkybox.Init(SKYBOX_VERTICES, IR_ARRLEN(SKYBOX_VERTICES), skyboxIndices, IR_ARRLEN(SKYBOX_VERTICES));
+        m_MeshCube.InitPool(CUBE_VERTS, IRX_ARRLEN(CUBE_VERTS), CUBE_INDICES, IRX_ARRLEN(CUBE_INDICES));
+        m_MeshPlane.InitPool(planeVerts, IRX_ARRLEN(planeVerts), planeIndices, IRX_ARRLEN(planeIndices));
+        m_MeshScreen.Init(scrVerts, IRX_ARRLEN(scrVerts), scrIndices, IRX_ARRLEN(scrIndices));
+        m_MeshSkybox.Init(SKYBOX_VERTICES, IRX_ARRLEN(SKYBOX_VERTICES), skyboxIndices, IRX_ARRLEN(SKYBOX_VERTICES));
 
         // --- [MATERIALS] ---
 
@@ -550,14 +550,14 @@ namespace IR::Renderer {
         return &m_Meshes.front();
     }
 
-    UInt16 GL::MakePLight() IR_RETURN(m_Lighting.MakePLight())
+    UInt16 GL::MakePLight() IRX_RETURN(m_Lighting.MakePLight())
     void GL::RemovePLight(UInt16 index) { m_Lighting.RemovePLight(index); }
     void GL::SetPLightPosition(UInt16 index, const glm::vec3& pos) { m_Lighting.SetPLightPosition(index, pos); }
     void GL::SetPLightColor(UInt16 index, const Color& col) { m_Lighting.SetPLightColor(index, col); }
     void GL::SetPLightInnerRadius(UInt16 index, const Float32 radius) { m_Lighting.SetPLightInnerRadius(index, radius); }
     void GL::SetPLightOuterRadius(UInt16 index, const Float32 radius) { m_Lighting.SetPLightOuterRadius(index, radius); }
 
-    UInt16 GL::MakeSLight() IR_RETURN(m_Lighting.MakeSLight())
+    UInt16 GL::MakeSLight() IRX_RETURN(m_Lighting.MakeSLight())
     void GL::RemoveSLight(UInt16 index) { m_Lighting.RemoveSLight(index); }
     void GL::SetSLightPosition(UInt16 index, const glm::vec3& pos) { m_Lighting.SetSLightPosition(index, pos); }
     void GL::SetSLightDirection(UInt16 index, const glm::vec3& dir) { m_Lighting.SetSLightDirection(index, dir); }
@@ -567,13 +567,13 @@ namespace IR::Renderer {
     void GL::SetSLightInnerCutoff(UInt16 index, const Float32 deg) { m_Lighting.SetSLightInnerCutoff(index, deg); }
     void GL::SetSLightOuterCutoff(UInt16 index, const Float32 deg) { m_Lighting.SetSLightOuterCutoff(index, deg); }
 
-    Texture* GL::GetTextureWhite() IR_RETURN(&m_TextureWhite);
-    Texture* GL::GetTextureBlack() IR_RETURN(&m_TextureBlack);
-    Texture* GL::GetTextureError() IR_RETURN(&m_TextureError);
-    Texture* GL::GetTextureNormal() IR_RETURN(&m_TextureNormal);
-    Texture* GL::GetTextureSDE() IR_RETURN(&m_TextureSDE);
+    Texture* GL::GetTextureWhite() IRX_RETURN(&m_TextureWhite);
+    Texture* GL::GetTextureBlack() IRX_RETURN(&m_TextureBlack);
+    Texture* GL::GetTextureError() IRX_RETURN(&m_TextureError);
+    Texture* GL::GetTextureNormal() IRX_RETURN(&m_TextureNormal);
+    Texture* GL::GetTextureSDE() IRX_RETURN(&m_TextureSDE);
 
-    Mesh* GL::GetMeshCube() IR_RETURN(&m_MeshCube);
+    Mesh* GL::GetMeshCube() IRX_RETURN(&m_MeshCube);
 
     UInt32 GL::UseTexture(const GLTexture& texture)
     {
@@ -632,13 +632,13 @@ namespace IR::Renderer {
 
         File inclFile(("assets/shaders/gl/include/" + aName).c_str(), "r");
         if (!inclFile.IsOpen()) {
-            IR_MSG(ERROR, "Failed to init GL Renderer: couldn't open include %s", name);
+            IRX_MSG(ERROR, "Failed to init GL Renderer: couldn't open include %s", name);
             return false;
         }
 
         UInt64 inclSize;
         char* inclData = inclFile.ReadAll(&inclSize);
-        IR_DEFER({ if (inclData) delete[] inclData; });
+        IRX_DEFER({ if (inclData) delete[] inclData; });
 
         glNamedStringARB(GL_SHADER_INCLUDE_ARB, aName.size() + 1, ("/" + aName).c_str(), inclSize, inclData);
         m_PatchIncludes.push_back(name);
@@ -653,7 +653,7 @@ namespace IR::Renderer {
         case GLLayout::Type::POSITION: return &m_LayoutPosition;
         case GLLayout::Type::STANDARD: return &m_LayoutStandard;
         case GLLayout::Type::ANIMATED: return &m_LayoutAnimated;
-        default: IR_UNREACHABLE;
+        default: IRX_UNREACHABLE;
         }
     }
 
@@ -663,7 +663,7 @@ namespace IR::Renderer {
         case Material::Map::MAP_ALBEDO: return &m_TextureError;
         case Material::Map::MAP_NORMAL: return &m_TextureNormal;
         case Material::Map::MAP_SDE: return &m_TextureSDE;
-        default: IR_UNREACHABLE;
+        default: IRX_UNREACHABLE;
         }
     }
 
@@ -702,13 +702,13 @@ void glMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, G
 
     switch (severity) {
     case GL_DEBUG_SEVERITY_LOW:
-        IR_MSG(INFO, "GL MSG %i | [%s] [%s] :: %s", id, sourceStr, typeStr, message);
+        IRX_MSG(INFO, "GL MSG %i | [%s] [%s] :: %s", id, sourceStr, typeStr, message);
         break;
     case GL_DEBUG_SEVERITY_MEDIUM:
-        IR_MSG(WARN, "GL MSG %i | [%s] [%s] :: %s", id, sourceStr, typeStr, message);
+        IRX_MSG(WARN, "GL MSG %i | [%s] [%s] :: %s", id, sourceStr, typeStr, message);
         break;
     case GL_DEBUG_SEVERITY_HIGH:
-        IR_MSG(ERROR, "GL MSG %i | [%s] [%s] :: %s", id, sourceStr, typeStr, message);
+        IRX_MSG(ERROR, "GL MSG %i | [%s] [%s] :: %s", id, sourceStr, typeStr, message);
         break;
     }
 }

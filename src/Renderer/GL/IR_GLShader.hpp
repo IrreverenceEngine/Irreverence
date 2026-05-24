@@ -14,7 +14,7 @@ namespace IR::Renderer {
 
         void Bind();
 
-        UInt32 GetID() const IR_RETURN(m_ID)
+        UInt32 GetID() const IRX_RETURN(m_ID)
 
     private:
         UInt32 m_ID = 0;

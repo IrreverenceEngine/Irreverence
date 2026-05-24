@@ -23,7 +23,7 @@ namespace IR {
         char* ReadAll(UInt64* size = nullptr, bool nt = true);
         void Write(const void* data, UInt64 size);
 
-        bool IsOpen() const IR_RETURN(m_File != nullptr);
+        bool IsOpen() const IRX_RETURN(m_File != nullptr);
 
     private:
         void* m_File = nullptr;

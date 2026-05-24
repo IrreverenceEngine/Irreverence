@@ -1,7 +1,6 @@
 #pragma once
 
 #include <IR_Common.hpp>
-#include <IR_Math.hpp>
 #include <string>
 
 namespace IR::Audio {
@@ -47,7 +46,7 @@ namespace IR::Audio {
         Sound(Sound&&) = delete;
         Sound& operator=(Sound&&) = delete;
 
-        SoundHandle GetHandle() const IR_RETURN(m_iHandle);
+        SoundHandle GetHandle() const IRX_RETURN(m_iHandle);
         float GetDuration() const;
 
         void Play(struct SoundParams& params);

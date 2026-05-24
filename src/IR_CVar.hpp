@@ -23,9 +23,9 @@ namespace IR {
 
         ~CVar();
 
-        UInt32 GetFlags() const IR_RETURN(m_Flags)
-        CVar::Type GetType() const IR_RETURN(m_Type)
-        std::string GetName() const IR_RETURN(m_Name)
+        UInt32 GetFlags() const IRX_RETURN(m_Flags)
+        CVar::Type GetType() const IRX_RETURN(m_Type)
+        std::string GetName() const IRX_RETURN(m_Name)
 
         void SetBool(const bool& v);
         void SetInt64(const Int64& v);
@@ -33,10 +33,10 @@ namespace IR {
         void SetString(const std::string& v);
         void SetString(const char* v);
 
-        bool GetBool() const IR_RETURN(m_Value.as_bool)
-        Int64 GetInt64() const IR_RETURN(m_Value.as_int64)
-        Float64 GetFloat64() const IR_RETURN(m_Value.as_float64)
-        std::string GetString() const IR_RETURN(std::string(m_Value.as_string))
+        bool GetBool() const IRX_RETURN(m_Value.as_bool)
+        Int64 GetInt64() const IRX_RETURN(m_Value.as_int64)
+        Float64 GetFloat64() const IRX_RETURN(m_Value.as_float64)
+        std::string GetString() const IRX_RETURN(std::string(m_Value.as_string))
 
         static CVar* Get(const char* name);
 		static void Iterate(const std::function<void(CVar*)>& callback);

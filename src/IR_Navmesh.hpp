@@ -18,7 +18,7 @@ namespace IR {
 
         bool FindPath(const glm::vec3& start, const glm::vec3& end, std::vector<glm::vec3>& path);
 
-        bool IsValid() const IR_RETURN(m_Mesh)
+        bool IsValid() const IRX_RETURN(m_Mesh)
 
     private:
         void* m_Mesh = nullptr;
