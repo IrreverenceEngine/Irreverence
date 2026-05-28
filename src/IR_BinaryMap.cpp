@@ -1,9 +1,12 @@
 #include <IR_BinaryMap.hpp>
 #include <IR_Navmesh.hpp>
 
+#include <IRX_Compression.hpp>
+
 #include <DetourAlloc.h>
 
 #include <fstream>
+#include <sstream>
 
 namespace IR::BinaryMap {
 
@@ -27,6 +30,7 @@ namespace IR::BinaryMap {
     struct BMHeader {
         UInt32 magic;
         UInt32 version;
+        UInt64 uncompressed_size;
 
         BMLumpInfo lumps[LUMPTYPE__COUNT];
     };
@@ -67,7 +71,7 @@ namespace IR::BinaryMap {
         UInt8* data;
     };
 
-    static void ReadEntities(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMEntity>& ents)
+    static void ReadEntities(std::stringstream& stream, UInt32 pos, UInt32 len, std::vector<BMEntity>& ents)
     {
         stream.seekg(pos);
         UInt32 end = pos + len;
@@ -95,7 +99,7 @@ namespace IR::BinaryMap {
         }
     }
 
-    static void ReadBrushes(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMBrush>& brushes)
+    static void ReadBrushes(std::stringstream& stream, UInt32 pos, UInt32 len, std::vector<BMBrush>& brushes)
     {
         BMBrush brush;
         glm::vec3 tmpVec;
@@ -136,7 +140,7 @@ namespace IR::BinaryMap {
         }
     }
 
-    static void ReadFaces(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMFace>& faces)
+    static void ReadFaces(std::stringstream& stream, UInt32 pos, UInt32 len, std::vector<BMFace>& faces)
     {
         BMFace face;
         UInt32 indexCount;
@@ -169,7 +173,7 @@ namespace IR::BinaryMap {
         }
     }
 
-    static void ReadVertices(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<BMVertex>& vertices)
+    static void ReadVertices(std::stringstream& stream, UInt32 pos, UInt32 len, std::vector<BMVertex>& vertices)
     {
         BMVertex vert;
 
@@ -191,14 +195,14 @@ namespace IR::BinaryMap {
         }
     }
 
-    static void ReadMaterialTable(std::ifstream& stream, UInt32 pos, UInt32 len, std::vector<char>& materialtable)
+    static void ReadMaterialTable(std::stringstream& stream, UInt32 pos, UInt32 len, std::vector<char>& materialtable)
     {
         materialtable.resize(len);
         stream.seekg(pos);
         stream.read(materialtable.data(), len);
     }
 
-    static void LoadNavMesh(std::ifstream& stream, UInt32 pos, UInt32 len, Navmesh& navmesh)
+    static void LoadNavMesh(std::stringstream& stream, UInt32 pos, UInt32 len, Navmesh& navmesh)
     {
         if (len == 0) {
             return;
@@ -243,18 +247,49 @@ namespace IR::BinaryMap {
 
     bool Load(const char* path, std::vector<EntityData>& entDatas, Navmesh& navmesh)
     {
-        std::ifstream stream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
-        if (!stream.is_open()) {
+        std::ifstream filestream(("assets/maps/" + std::string(path)).c_str(), std::ios::binary);
+        if (!filestream.is_open()) {
             IRX_MSG(ERROR, "Couldn't load Binary Map: couldn't open the file %s", path);
             return false;
         }
 
+        filestream.seekg(0, std::ios::end);
+        UInt32 filesize = filestream.tellg();
+        filestream.seekg(0, std::ios::beg);
+
         BMHeader hdr;
-        stream.read((char*)&hdr, sizeof(hdr));
+        filestream.read((char*)&hdr, sizeof(hdr));
 
         if (hdr.magic != MAGIC) {
             IRX_MSG(ERROR, "Couldn't load Binary Map: this could have happened because, the file may not be a \"irbm\" file. Or you have ARM CPU, we gotta fix that.");
             return false;
+        }
+
+        std::stringstream stream;
+        if (hdr.uncompressed_size > 0) {
+            stream.write((const char*)&hdr, sizeof(hdr));
+
+            std::vector<UInt8> compressed(filesize - sizeof(hdr));
+            filestream.read((char*)compressed.data(), filesize - sizeof(hdr));
+
+            UInt64 destsize = hdr.uncompressed_size;
+
+            const UInt8* cdata = IRX::Decompress(compressed.data(), filesize - sizeof(hdr), &destsize);
+            IRX_DEFER({ if (cdata) delete[] cdata; });
+            if (!cdata) {
+                IRX_MSG(ERROR, "Failed to decompress file %s", path);
+                return false;
+            }
+
+            if (destsize != hdr.uncompressed_size) {
+                IRX_MSG(ERROR, "Mismatch between uncompressed output size and expected uncompressed size when loading file %s", path);
+                return false;
+            }
+            
+            stream.write((const char*)cdata, destsize);
+        } else {
+            filestream.seekg(0);
+            stream << filestream.rdbuf();
         }
 
         std::vector<BMEntity> ents;
