@@ -21,9 +21,6 @@ file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/vendor/glew.tgz DESTINATION ${CMA
 set(BUILD_UTILS OFF)
 add_subdirectory(vendor/glew/glew-2.2.0/build/cmake)
 
-set(SDL_EXAMPLES OFF)
-add_subdirectory(vendor/SDL EXCLUDE_FROM_ALL)
-
 set(CROSS_PLATFORM_DETERMINISTIC ON)
 set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF)
 add_subdirectory(vendor/JoltPhysics/Build)
@@ -34,11 +31,6 @@ if (WIN32)
 else()
 	find_package(OpenAL REQUIRED)
 endif()
-
-set(RECASTNAVIGATION_DEMO OFF)
-set(RECASTNAVIGATION_TESTS OFF)
-set(RECASTNAVIGATION_EXAMPLES OFF)
-add_subdirectory(vendor/recastnavigation)
 
 file(GLOB_RECURSE IRREVERENCE_SRC CONFIGURE_DEPENDS src/*.cpp)
 
@@ -60,21 +52,16 @@ endif()
 add_subdirectory(vendor/tracy)
 
 target_link_libraries(irreverence PRIVATE
-    glm::glm SDL3-static glew_s OpenGL::GL Jolt
-  	openal Tracy::TracyClient
-    RecastNavigation::Recast RecastNavigation::Detour RecastNavigation::DetourTileCache
     irx
+    glew_s OpenGL::GL Jolt
+  	openal Tracy::TracyClient
 )
 
 target_include_directories(irreverence PUBLIC
-    src/
+    src
+    irx
   	vendor/glew/glew-2.2.0/include
-    vendor/SDL/include
-    vendor/JoltPhysics/
+    vendor/JoltPhysics
   	vendor/openal-soft/include
   	vendor/tracy/public
-    vendor/recastnavigation/Recast/Include
-    vendor/recastnavigation/Detour/Include
-    vendor/recastnavigation/DetourTileCache/Include
-    irx
 )
